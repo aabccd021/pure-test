@@ -20,6 +20,11 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/Task';
 import { match } from 'ts-pattern';
 
+export type WithRetry<T> = {
+  readonly value: T;
+  readonly retry?: retry.RetryPolicy | number;
+};
+
 export type SingleTest<E = unknown, R = unknown> = {
   readonly type: 'single';
   readonly name: string;
@@ -27,7 +32,6 @@ export type SingleTest<E = unknown, R = unknown> = {
   readonly shouldTimeout?: true;
   readonly toResult: R;
   readonly timeout?: number;
-  readonly retry?: retry.RetryPolicy | number;
 };
 
 export type SequentialTest<T = unknown> = {
@@ -137,22 +141,13 @@ export const runTest: RunTest = (test) =>
     )
     .exhaustive();
 
-const getRetryPolicy = (test: Test): retry.RetryPolicy =>
-  match(test)
-    .with({ type: 'single' }, (t) =>
-      typeof t.retry === 'number'
-        ? retry.limitRetries(t.retry)
-        : t.retry === undefined
-        ? retry.limitRetries(0)
-        : t.retry
-    )
-    .with({ type: 'sequential' }, () => retry.limitRetries(0))
-    .exhaustive();
+const getRetryPolicy = (t?: retry.RetryPolicy | number): retry.RetryPolicy =>
+  typeof t === 'number' ? retry.limitRetries(t) : t === undefined ? retry.limitRetries(0) : t;
 
 export const withRetry =
-  (r: RunTest): RunTest =>
-  (test) =>
-    retrying(getRetryPolicy(test), () => r(test), either.isLeft);
+  <T, L, R>(r: (t: T) => TaskEither<L, R>): ((t: WithRetry<T>) => TaskEither<L, R>) =>
+  (testWithRetry) =>
+    retrying(getRetryPolicy(testWithRetry.retry), () => r(testWithRetry.value), either.isLeft);
 
 export const withTimeLog =
   (r: RunTest): RunTest =>
@@ -224,12 +219,17 @@ export const runTests = flow(
   setExitCode1OnError
 );
 
-export const testStrict = <T = unknown>(t: Omit<SingleTest<T, T>, 'type'>): SingleTest<T, T> => ({
+export const test = (t: Omit<SingleTest, 'type'>): SingleTest => ({
   ...t,
   type: 'single',
 });
 
-export const test = (t: Omit<SingleTest, 'type'>): SingleTest => ({
-  ...t,
-  type: 'single',
+export const testWithRetry = ({
+  retry: ret,
+  ...value
+}: Omit<SingleTest, 'type'> & {
+  readonly retry?: retry.RetryPolicy | number;
+}): WithRetry<SingleTest> => ({
+  value: test(value),
+  retry: ret,
 });

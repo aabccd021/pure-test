@@ -8,6 +8,7 @@ import {
   runTest,
   runTests,
   test,
+  testWithRetry,
   withRetry,
 } from '../src';
 
@@ -16,7 +17,7 @@ const tests = [
     name: 'aab',
     expect: pipe(
       [
-        test({
+        testWithRetry({
           name: 'exampleTest',
           expect: task.of({
             minus: 'minusValue',
@@ -45,7 +46,7 @@ const tests = [
     name: 'ccd',
     expect: pipe(
       [
-        test({
+        testWithRetry({
           name: 'exampleTest',
           expect: task.of({}),
           toResult: {
