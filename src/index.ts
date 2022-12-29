@@ -3,7 +3,7 @@ import { diffLines } from 'diff';
 import {
   apply,
   boolean,
-  console,
+  console as fpConsole,
   either,
   io,
   readonlyArray,
@@ -13,6 +13,8 @@ import {
   taskEither,
 } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
+import type { Task } from 'fp-ts/Task';
+import type { TaskEither } from 'fp-ts/TaskEither';
 import { withTimeout } from 'fp-ts-contrib/Task/withTimeout';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/Task';
@@ -31,7 +33,7 @@ export type RetryPolicy =
 export type SingleTest<E = unknown, R = unknown> = {
   readonly type: 'single';
   readonly name: string;
-  readonly expect: task.Task<E>;
+  readonly expect: Task<E>;
   readonly shouldTimeout?: true;
   readonly toResult: R;
   readonly timeout?: number;
@@ -44,7 +46,7 @@ export type SequentialTest<T = unknown> = {
   readonly tests: Record<
     string,
     {
-      readonly expect: task.Task<T>;
+      readonly expect: Task<T>;
       readonly toResult: T;
       readonly shouldTimeout?: true;
       readonly timeout?: number;
@@ -60,8 +62,8 @@ export const stringify = <A>(a: A): either.Either<unknown, string> =>
 export type AssertError =
   | { readonly type: 'changes'; readonly changes: readonly Change[] }
   | { readonly type: 'stringify error'; readonly err: unknown }
-  | { readonly type: 'task'; readonly err: unknown }
-  | { readonly type: 'timeout' };
+  | { readonly type: 'timeout' }
+  | { readonly type: 'unhandled exception'; readonly err: unknown };
 
 export type TestErr = {
   readonly name: string;
@@ -89,14 +91,14 @@ export const assert = (expected: unknown) => (actual: unknown) =>
 
 const runAssertion = <T>(test: {
   readonly name: string;
-  readonly expect: task.Task<T>;
+  readonly expect: Task<T>;
   readonly toResult: T;
   readonly shouldTimeout?: true;
   readonly timeout?: number;
 }) =>
   pipe(
     taskEither.tryCatch(test.expect, identity),
-    taskEither.mapLeft((err) => ({ type: 'task' as const, err })),
+    taskEither.mapLeft((err) => ({ type: 'unhandled exception' as const, err })),
     taskEither.chainEitherKW(assert(test.toResult)),
     withTimeout(
       either.left<AssertError, unknown>({ type: 'timeout' as const }),
@@ -128,7 +130,9 @@ export const coloredDiff = flow(
   readonlyArray.intercalate(string.Monoid)('\n')
 );
 
-const runTestWithoutRetry = (test: Test): taskEither.TaskEither<readonly TestErr[], unknown> =>
+type RunTest = (test: Test) => TaskEither<readonly TestErr[], unknown>;
+
+export const runTest: RunTest = (test) =>
   match(test)
     .with({ type: 'single' }, runAssertion)
     .with({ type: 'sequential' }, (t) =>
@@ -151,8 +155,21 @@ const getRetryPolicy = (test: Test) =>
     .with({ type: 'sequential' }, () => retry.limitRetries(0))
     .exhaustive();
 
-export const runTest = (test: Test): taskEither.TaskEither<readonly TestErr[], unknown> =>
-  retrying(getRetryPolicy(test), () => runTestWithoutRetry(test), either.isLeft);
+export const withRetry =
+  (r: RunTest): RunTest =>
+  (test) =>
+    retrying(getRetryPolicy(test), () => r(test), either.isLeft);
+
+export const withTimeLog =
+  (r: RunTest): RunTest =>
+  (test) =>
+    pipe(
+      // eslint-disable-next-line functional/no-return-void
+      task.fromIO(() => console.time(test.name)),
+      task.chain(() => r(test)),
+      // eslint-disable-next-line functional/no-return-void
+      task.chainFirstIOK(() => () => console.timeEnd(test.name))
+    );
 
 export const runParallel = readonlyArray.sequence(task.ApplicativePar);
 
@@ -180,7 +197,7 @@ export const colorizeChanges = taskEither.mapLeft(
 );
 
 export const logErrors = (
-  res: taskEither.TaskEither<readonly { readonly name: string; readonly err: unknown }[], unknown>
+  res: TaskEither<readonly { readonly name: string; readonly err: unknown }[], unknown>
 ) =>
   pipe(
     res,
@@ -188,8 +205,8 @@ export const logErrors = (
     taskEither.chainFirstIOK(
       readonlyArray.traverse(io.Applicative)((err) =>
         pipe(
-          console.log(`\n${err.name}`),
-          io.chain(() => console.error(err.err))
+          fpConsole.log(`\n${err.name}`),
+          io.chain(() => fpConsole.error(err.err))
         )
       )
     ),
@@ -202,20 +219,11 @@ export const setExitCode1OnError = flow(
   taskEither.swap
 );
 
-export const getTestTasks = readonlyArray.map(runTest);
+const runTestWithTimeLogAndRetry = pipe(runTest, withTimeLog, withRetry);
 
 export const runTests = flow(
-  getTestTasks,
+  readonlyArray.map(runTestWithTimeLogAndRetry),
   runParallel,
-  aggregateErrors,
-  colorizeChanges,
-  logErrors,
-  setExitCode1OnError
-);
-
-export const runTestsSeq = flow(
-  getTestTasks,
-  runSequential,
   aggregateErrors,
   colorizeChanges,
   logErrors,

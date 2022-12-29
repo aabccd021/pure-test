@@ -1,18 +1,19 @@
-import { either, task } from 'fp-ts';
+import { either, readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import {
   aggregateErrors,
   colorizeChanges,
-  getTestTasks,
   runParallel,
+  runTest,
   runTests,
   test,
+  withRetry,
 } from '../src';
 
 const tests = [
   test({
-    name: 'real test',
+    name: 'aab',
     expect: pipe(
       [
         test({
@@ -23,7 +24,7 @@ const tests = [
           toResult: {},
         }),
       ],
-      getTestTasks,
+      readonlyArray.map(withRetry(runTest)),
       runParallel,
       aggregateErrors,
       colorizeChanges
@@ -41,7 +42,7 @@ const tests = [
   }),
 
   test({
-    name: 'real test',
+    name: 'ccd',
     expect: pipe(
       [
         test({
@@ -52,7 +53,7 @@ const tests = [
           },
         }),
       ],
-      getTestTasks,
+      readonlyArray.map(withRetry(runTest)),
       runParallel,
       aggregateErrors,
       colorizeChanges
