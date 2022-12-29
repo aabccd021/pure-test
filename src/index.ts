@@ -20,16 +20,6 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/Task';
 import { match } from 'ts-pattern';
 
-export type RetryPolicy =
-  | {
-      readonly type: 'count';
-      readonly value: number;
-    }
-  | {
-      readonly type: 'policy';
-      readonly value: retry.RetryPolicy;
-    };
-
 export type SingleTest<E = unknown, R = unknown> = {
   readonly type: 'single';
   readonly name: string;
@@ -37,7 +27,7 @@ export type SingleTest<E = unknown, R = unknown> = {
   readonly shouldTimeout?: true;
   readonly toResult: R;
   readonly timeout?: number;
-  readonly retry?: RetryPolicy;
+  readonly retry?: retry.RetryPolicy | number;
 };
 
 export type SequentialTest<T = unknown> = {
@@ -147,11 +137,15 @@ export const runTest: RunTest = (test) =>
     )
     .exhaustive();
 
-const getRetryPolicy = (test: Test) =>
+const getRetryPolicy = (test: Test): retry.RetryPolicy =>
   match(test)
-    .with({ type: 'single', retry: { type: 'policy' } }, (t) => t.retry.value)
-    .with({ type: 'single', retry: { type: 'count' } }, (t) => retry.limitRetries(t.retry.value))
-    .with({ type: 'single' }, () => retry.limitRetries(0))
+    .with({ type: 'single' }, (t) =>
+      typeof t.retry === 'number'
+        ? retry.limitRetries(t.retry)
+        : t.retry === undefined
+        ? retry.limitRetries(0)
+        : t.retry
+    )
     .with({ type: 'sequential' }, () => retry.limitRetries(0))
     .exhaustive();
 
