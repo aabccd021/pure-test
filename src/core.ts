@@ -1,15 +1,20 @@
 import type { Change } from 'diff';
 import { diffLines } from 'diff';
-import { apply, boolean, either, readonlyArray, readonlyRecord, string, taskEither } from 'fp-ts';
+import {
+  apply,
+  boolean,
+  either,
+  readonlyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
+} from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import { match } from 'ts-pattern';
 
-export const test = <T>(param: {
-  readonly name: string;
-  readonly expect: Task<T>;
-  readonly toResult: T;
-}) =>
+export const test = <T>(param: { readonly expect: Task<T>; readonly toResult: T }) =>
   pipe(
     taskEither.tryCatch(param.expect, identity),
     taskEither.mapLeft((err) => ({ type: 'unhandled exception' as const, err })),
@@ -59,3 +64,6 @@ export const coloredDiff = flow(
   ),
   readonlyArray.intercalate(string.Monoid)('\n')
 );
+
+export const runTestPar = task.ApplyPar;
+export const runTestSeq = task.ApplySeq;
