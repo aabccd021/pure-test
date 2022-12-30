@@ -98,7 +98,7 @@ const runAssertion = <T>(test: {
       either.left<AssertError, unknown>({ type: 'timeout' as const }),
       test.timeout ?? 5000
     ),
-    taskEither.mapLeft((err) => [{ name: test.name, err }])
+    taskEither.mapLeft((err) => [{ name: test.name, err }]),
   );
 
 const colored = (prefix: string, color: string) => (change: Change) =>
