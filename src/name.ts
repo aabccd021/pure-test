@@ -1,20 +1,23 @@
-import { taskEither } from 'fp-ts';
+import { readerTaskEither } from 'fp-ts';
 import { identity, pipe } from 'fp-ts/function';
-import type { TaskEither } from 'fp-ts/TaskEither';
+import type { ReaderTaskEither } from 'fp-ts/ReaderTaskEither';
 
 type WithName = <A, L, R>(
-  fab: (a: A) => TaskEither<L, R>
+  fab: ReaderTaskEither<A, L, R>
 ) => // eslint-disable-next-line functional/prefer-tacit
-(p: A & { readonly name: string }) => TaskEither<L, R>;
+ReaderTaskEither<A & { readonly name: string }, L, R>;
 
 export const withName: WithName = identity;
 
-export const withNamedErrors =
-  <A extends { readonly name: string }, L, R>(
-    fab: (a: A) => TaskEither<L, R>
-  ): ((a: A) => TaskEither<{ readonly name: A['name']; readonly error: L }, R>) =>
-  (a) =>
-    pipe(
-      fab(a),
-      taskEither.mapLeft((error) => ({ name: a.name, error }))
-    );
+export const withNamedErrors = <A extends { readonly name: string }, L, R>(
+  fab: ReaderTaskEither<A, L, R>
+): ReaderTaskEither<A, { readonly name: A['name']; readonly error: L }, R> =>
+  pipe(
+    readerTaskEither.ask<A>(),
+    readerTaskEither.chain((a) =>
+      pipe(
+        fab,
+        readerTaskEither.mapLeft((error) => ({ name: a.name, error }))
+      )
+    )
+  );
