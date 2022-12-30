@@ -7,14 +7,9 @@ import { runTestPar, test } from './core';
 import { withName } from './name';
 
 export const withAggregatedErrors =
-  <A extends { readonly name: string }, L, R>(
-    fab: (a: A) => TaskEither<L, R>
-  ): ((a: A) => TaskEither<readonly { readonly name: A['name']; readonly error: L }[], R>) =>
+  <A, L, R>(fab: (a: A) => TaskEither<L, R>): ((a: A) => TaskEither<readonly L[], R>) =>
   (a) =>
-    pipe(
-      fab(a),
-      taskEither.mapLeft((error) => [{ name: a.name, error }])
-    );
+    pipe(fab(a), taskEither.mapLeft(readonlyArray.of));
 
 export const testWithAggregatedErrors = withAggregatedErrors(withName(test));
 
@@ -28,7 +23,7 @@ export const res = pipe(
     testWithAggregatedErrors({ name: 'aab', expect: async () => '', toResult: '' }),
     testWithAggregatedErrors({ name: 'ccd', expect: async () => '', toResult: '' }),
   ],
-  readonlyArray.traverseWithIndex(runTest)((_, v) => v)
+  readonlyArray.sequence(runTest)
 );
 
 export const a = res();

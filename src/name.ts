@@ -1,4 +1,5 @@
-import { identity } from 'fp-ts/function';
+import { taskEither } from 'fp-ts';
+import { identity, pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 type WithName = <A, L, R>(
@@ -7,3 +8,13 @@ type WithName = <A, L, R>(
 (p: A & { readonly name: string }) => TaskEither<L, R>;
 
 export const withName: WithName = identity;
+
+export const withNamedErrors =
+  <A extends { readonly name: string }, L, R>(
+    fab: (a: A) => TaskEither<L, R>
+  ): ((a: A) => TaskEither<{ readonly name: A['name']; readonly error: L }, R>) =>
+  (a) =>
+    pipe(
+      fab(a),
+      taskEither.mapLeft((error) => ({ name: a.name, error }))
+    );
