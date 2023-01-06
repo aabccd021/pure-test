@@ -35,7 +35,7 @@ export type SingleTest<E = unknown, R = unknown> = {
 };
 
 export type SequentialTest<T = unknown> = {
-  readonly type: 'sequential';
+  readonly type: 'group';
   readonly name: string;
   readonly tests: Record<
     string,
@@ -98,7 +98,7 @@ const runAssertion = <T>(test: {
       either.left<AssertError, unknown>({ type: 'timeout' as const }),
       test.timeout ?? 5000
     ),
-    taskEither.mapLeft((err) => [{ name: test.name, err }]),
+    taskEither.mapLeft((err) => [{ name: test.name, err }])
   );
 
 const colored = (prefix: string, color: string) => (change: Change) =>
@@ -129,7 +129,7 @@ type RunTest = (test: Test) => TaskEither<readonly TestErr[], unknown>;
 export const runTest: RunTest = (test) =>
   match(test)
     .with({ type: 'single' }, runAssertion)
-    .with({ type: 'sequential' }, (t) =>
+    .with({ type: 'group' }, (t) =>
       pipe(
         t.tests,
         readonlyRecord.mapWithIndex((subtestName, subTest) => ({

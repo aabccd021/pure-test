@@ -12,8 +12,8 @@ export const withTimeout =
   (p: A & { readonly timeout?: number }) =>
     pipe(fab(p), (ma) =>
       task
-        .getRaceMonoid<Either<L | typeof timedOutError, R>>()
-        .concat(ma, task.delay(p.timeout ?? 5000)(taskEither.left(timedOutError)))
+        .getRaceMonoid<Either<L | { readonly error: typeof timedOutError }, R>>()
+        .concat(ma, task.delay(p.timeout ?? 5000)(taskEither.left({ error: timedOutError })))
     );
 
 export const testWithTimeout = withTimeout(test);

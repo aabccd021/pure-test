@@ -11,13 +11,13 @@ export const withName: WithName = identity;
 
 export const withNamedErrors = <A extends { readonly name: string }, L, R>(
   fab: ReaderTaskEither<A, L, R>
-): ReaderTaskEither<A, { readonly name: A['name']; readonly error: L }, R> =>
+): ReaderTaskEither<A, L & { readonly name: A['name'] }, R> =>
   pipe(
     readerTaskEither.ask<A>(),
     readerTaskEither.chain((a) =>
       pipe(
         fab,
-        readerTaskEither.mapLeft((error) => ({ name: a.name, error }))
+        readerTaskEither.mapLeft((error) => ({ ...error, name: a.name }))
       )
     )
   );
