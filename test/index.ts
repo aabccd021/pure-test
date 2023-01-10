@@ -19,9 +19,7 @@ const tests = [
       [
         testWithRetry({
           name: 'exampleTest',
-          expect: task.of({
-            minus: 'minusValue',
-          }),
+          expect: task.of({ minus: 'minusValue' }),
           toResult: {},
         }),
       ],
@@ -49,9 +47,7 @@ const tests = [
         testWithRetry({
           name: 'exampleTest',
           expect: task.of({}),
-          toResult: {
-            plus: 'plusValue',
-          },
+          toResult: { plus: 'plusValue' },
         }),
       ],
       readonlyArray.map(withRetry(runTest)),

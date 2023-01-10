@@ -1,9 +1,9 @@
 import type { Change } from 'diff';
 import { diffLines } from 'diff';
+import { console as fpConsole } from 'fp-ts';
 import {
   apply,
   boolean,
-  console as fpConsole,
   either,
   io,
   readonlyArray,
@@ -61,7 +61,7 @@ export type AssertError =
 
 export type TestErr = {
   readonly name: string;
-  readonly err: AssertError;
+  readonly detail: AssertError;
 };
 
 export const assert = (expected: unknown) => (actual: unknown) =>
@@ -164,59 +164,52 @@ export const runParallel = readonlyArray.sequence(task.ApplicativePar);
 
 export const runSequential = readonlyArray.sequence(task.ApplicativeSeq);
 
-// eslint-disable-next-line functional/no-return-void
-export const setExitCode = (code: number) => () => {
-  // eslint-disable-next-line functional/immutable-data, functional/no-expression-statement
-  process.exitCode = code;
-};
-
 export const aggregateErrors = task.map(
   readonlyArray.sequence(either.getApplicativeValidation(readonlyArray.getSemigroup<TestErr>()))
 );
 
-export const colorizeChanges = taskEither.mapLeft(
-  readonlyArray.map((err: TestErr) =>
+export const logErrorsF =
+  (c: Pick<typeof fpConsole, 'log'>) => (res: TaskEither<readonly TestErr[], unknown>) =>
     pipe(
-      match(err.err)
-        .with({ type: 'changes' }, ({ changes }) => coloredDiff(changes))
-        .otherwise(identity),
-      (newErr) => ({ ...err, err: newErr })
-    )
-  )
-);
-
-export const logErrors = (
-  res: TaskEither<readonly { readonly name: string; readonly err: unknown }[], unknown>
-) =>
-  pipe(
-    res,
-    taskEither.swap,
-    taskEither.chainFirstIOK(
-      readonlyArray.traverse(io.Applicative)((err) =>
-        pipe(
-          fpConsole.log(`\n${err.name}`),
-          io.chain(() => fpConsole.error(err.err))
+      res,
+      taskEither.swap,
+      taskEither.chainFirstIOK(
+        readonlyArray.traverse(io.Applicative)((err) =>
+          pipe(
+            match(err.detail)
+              .with({ type: 'changes' }, ({ changes }) => coloredDiff(changes))
+              .otherwise((errDetail) => JSON.stringify(errDetail, undefined, 2)),
+            (errStr) =>
+              pipe(
+                c.log(`\n${err.name}`),
+                io.chain(() => c.log(errStr))
+              )
+          )
         )
-      )
-    ),
+      ),
+      taskEither.swap
+    );
+
+export const setExitCodeF = (p: Pick<typeof process, 'exitCode'>) =>
+  flow(
+    taskEither.swap,
+    // eslint-disable-next-line functional/no-return-void
+    taskEither.chainFirstIOK(() => () => {
+      // eslint-disable-next-line functional/immutable-data, functional/no-expression-statement
+      p.exitCode = 1;
+    }),
     taskEither.swap
   );
 
-export const setExitCode1OnError = flow(
-  taskEither.swap,
-  taskEither.chainFirstIOK(() => setExitCode(1)),
-  taskEither.swap
-);
+export const logErrors = logErrorsF(fpConsole);
+export const setExitCode = setExitCodeF(process);
 
 const runTestWithTimeLogAndRetry = pipe(runTest, withTimeLog, withRetry);
 
 export const runTests = flow(
   readonlyArray.map(runTestWithTimeLogAndRetry),
   runParallel,
-  aggregateErrors,
-  colorizeChanges,
-  logErrors,
-  setExitCode1OnError
+  aggregateErrors
 );
 
 export const test = (t: Omit<SingleTest, 'type'>): SingleTest => ({
