@@ -24,24 +24,24 @@ export type TestsWithConfig = {
   readonly concurrency?: { readonly type: 'parallel' } | { readonly type: 'sequential' };
 };
 
-export type TestRunError =
+export type TestFailedError =
   | {
-      readonly error: 'assertion failed';
-      readonly differences: readonly Change[];
+      readonly code: 'assertion failed';
+      readonly diffs: readonly Change[];
     }
   | {
-      readonly error: 'stringify failed';
+      readonly code: 'stringify failed';
       readonly details: unknown;
     }
   | {
-      readonly error: 'timed out';
+      readonly code: 'timed out';
     }
   | {
-      readonly error: 'unhandled exception';
+      readonly code: 'unhandled exception';
       readonly exception: unknown;
     };
 
-export type TestRunErrorResult = {
+export type TestFailedResult = {
   readonly name: string;
-  readonly error: TestRunError;
+  readonly error: TestFailedError;
 };
