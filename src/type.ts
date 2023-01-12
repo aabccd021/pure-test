@@ -28,8 +28,8 @@ export type TestFailedError =
   | {
       readonly code: 'assertion failed';
       readonly diffs: readonly Change[];
-      actual: unknown;
-      expected: unknown
+      readonly actual: unknown;
+      readonly expected: unknown;
     }
   | {
       readonly code: 'stringify failed';
