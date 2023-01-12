@@ -16,23 +16,27 @@ const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)(
   (change: Change) => change.added !== true && change.removed !== true
 );
 
-const assertionFailed = (diffs: readonly Change[]) => ({
-  code: 'assertion failed' as const,
-  diffs,
-});
+const assertionFailed =
+  (result: { readonly expected: unknown; readonly actual: unknown }) =>
+  (diffs: readonly Change[]) => ({
+    code: 'assertion failed' as const,
+    diffs,
+    actual: result.actual,
+    expected: result.expected,
+  });
 
 const stringifyFailed = (details: unknown) => ({ code: 'stringify failed' as const, details });
 
 const stringify = (obj: unknown) =>
   either.tryCatch(() => JSON.stringify(obj, undefined, 2), stringifyFailed);
 
-const assert = (results: { readonly expected: unknown; readonly actual: unknown }) =>
+const assert = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
-    results,
+    result,
     readonlyRecord.map(stringify),
     apply.sequenceS(either.Apply),
     either.map(({ expected, actual }) => diffLines(expected, actual)),
-    either.chainW(either.fromPredicate(hasAnyChange, assertionFailed)),
+    either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result))),
     either.map(() => undefined)
   );
 
