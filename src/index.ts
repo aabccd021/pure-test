@@ -1,105 +1,17 @@
 import type { Change } from 'diff';
-import { diffLines } from 'diff';
-import { console as fpConsole } from 'fp-ts';
-import {
-  apply,
-  boolean,
-  either,
-  io,
-  readonlyArray,
-  readonlyRecord,
-  string,
-  task,
-  taskEither,
-} from 'fp-ts';
+import { boolean, console, either, io, readonlyArray, string, task, taskEither } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
-import { withTimeout } from 'fp-ts-contrib/Task/withTimeout';
-import * as retry from 'retry-ts';
-import { retrying } from 'retry-ts/Task';
 import { match } from 'ts-pattern';
 
-export type WithRetry<T> = {
-  readonly value: T;
-  readonly retry?: retry.RetryPolicy | number;
-};
+import type { SingleAssertionTest } from './type';
 
-export type SingleTest<E = unknown, R = unknown> = {
-  readonly type: 'single';
-  readonly name: string;
-  readonly expect: Task<E>;
-  readonly shouldTimeout?: true;
-  readonly toResult: R;
-  readonly timeout?: number;
-};
-
-export type SequentialTest<T = unknown> = {
-  readonly type: 'group';
-  readonly name: string;
-  readonly tests: Record<
-    string,
-    {
-      readonly expect: Task<T>;
-      readonly toResult: T;
-      readonly shouldTimeout?: true;
-      readonly timeout?: number;
-    }
-  >;
-};
-
-export type Test = SequentialTest | SingleTest;
-
-export const stringify = <A>(a: A): either.Either<unknown, string> =>
-  either.tryCatch(() => JSON.stringify(a, undefined, 2), identity);
-
-export type AssertError =
-  | { readonly type: 'changes'; readonly changes: readonly Change[] }
-  | { readonly type: 'stringify error'; readonly err: unknown }
-  | { readonly type: 'timeout' }
-  | { readonly type: 'unhandled exception'; readonly err: unknown };
-
-export type TestErr = {
-  readonly name: string;
-  readonly detail: AssertError;
-};
-
-export const assert = (expected: unknown) => (actual: unknown) =>
-  pipe(
-    { expected, actual },
-    readonlyRecord.map(stringify),
-    apply.sequenceS(either.Apply),
-    either.bimap(
-      (err) => ({ type: 'stringify error' as const, err }),
-      ({ expected: expectedStr, actual: actualStr }) => diffLines(expectedStr, actualStr)
-    ),
-    either.chainW(
-      either.fromPredicate(
-        readonlyArray.foldMap(boolean.MonoidAll)(
-          (change) => change.added !== true && change.removed !== true
-        ),
-        (changes) => ({ type: 'changes' as const, changes })
-      )
-    )
-  );
-
-const runAssertion = <T>(test: {
-  readonly name: string;
-  readonly expect: Task<T>;
-  readonly toResult: T;
-  readonly shouldTimeout?: true;
-  readonly timeout?: number;
-}) =>
-  pipe(
-    taskEither.tryCatch(test.expect, identity),
-    taskEither.mapLeft((err) => ({ type: 'unhandled exception' as const, err })),
-    taskEither.chainEitherKW(assert(test.toResult)),
-    withTimeout(
-      either.left<AssertError, unknown>({ type: 'timeout' as const }),
-      test.timeout ?? 5000
-    ),
-    taskEither.mapLeft((err) => [{ name: test.name, err }])
-  );
+export const test = (t: Omit<SingleAssertionTest, 'type'>): SingleAssertionTest => ({
+  ...t,
+  type: 'single',
+});
 
 const colored = (prefix: string, color: string) => (change: Change) =>
   pipe(
@@ -114,81 +26,39 @@ const colored = (prefix: string, color: string) => (change: Change) =>
     readonlyArray.intercalate(string.Monoid)(`\n`)
   );
 
-export const coloredDiff = flow(
-  readonlyArray.map((change: Change) =>
-    match(change)
-      .with({ added: true }, colored('+ ', '32'))
-      .with({ removed: true }, colored('- ', '31'))
-      .otherwise(colored('  ', '90'))
-  ),
-  readonlyArray.intercalate(string.Monoid)('\n')
-);
-
-type RunTest = (test: Test) => TaskEither<readonly TestErr[], unknown>;
-
-export const runTest: RunTest = (test) =>
-  match(test)
-    .with({ type: 'single' }, runAssertion)
-    .with({ type: 'group' }, (t) =>
+const formatTestError = (testResultError: TestErrorResult) =>
+  match(testResultError.error)
+    .with({ type: 'changes' }, ({ changes }) =>
       pipe(
-        t.tests,
-        readonlyRecord.mapWithIndex((subtestName, subTest) => ({
-          ...subTest,
-          name: `${t.name} > ${subtestName}`,
-        })),
-        readonlyRecord.traverse(taskEither.ApplicativeSeq)(runAssertion)
+        changes,
+        readonlyArray.map((change) =>
+          match(change)
+            .with({ added: true }, colored('+ ', '32'))
+            .with({ removed: true }, colored('- ', '31'))
+            .otherwise(colored('  ', '90'))
+        ),
+        readonlyArray.intercalate(string.Monoid)('\n')
       )
     )
-    .exhaustive();
-
-const getRetryPolicy = (t?: retry.RetryPolicy | number): retry.RetryPolicy =>
-  typeof t === 'number' ? retry.limitRetries(t) : t === undefined ? retry.limitRetries(0) : t;
-
-export const withRetry =
-  <T, L, R>(r: (t: T) => TaskEither<L, R>): ((t: WithRetry<T>) => TaskEither<L, R>) =>
-  (testWithRetry) =>
-    retrying(getRetryPolicy(testWithRetry.retry), () => r(testWithRetry.value), either.isLeft);
-
-export const withTimeLog =
-  (r: RunTest): RunTest =>
-  (test) =>
-    pipe(
-      // eslint-disable-next-line functional/no-return-void
-      task.fromIO(() => console.time(test.name)),
-      task.chain(() => r(test)),
-      // eslint-disable-next-line functional/no-return-void
-      task.chainFirstIOK(() => () => console.timeEnd(test.name))
-    );
-
-export const runParallel = readonlyArray.sequence(task.ApplicativePar);
-
-export const runSequential = readonlyArray.sequence(task.ApplicativeSeq);
-
-export const aggregateErrors = task.map(
-  readonlyArray.sequence(either.getApplicativeValidation(readonlyArray.getSemigroup<TestErr>()))
-);
+    .otherwise(identity);
 
 export const logErrorsF =
-  (c: Pick<typeof fpConsole, 'log'>) => (res: TaskEither<readonly TestErr[], unknown>) =>
+  (c: Pick<typeof console, 'log'>) => (res: TaskEither<readonly TestErrorResult[], unknown>) =>
     pipe(
       res,
       taskEither.swap,
       taskEither.chainFirstIOK(
-        readonlyArray.traverse(io.Applicative)((err) =>
+        readonlyArray.traverse(io.Applicative)((error) =>
           pipe(
-            match(err.detail)
-              .with({ type: 'changes' }, ({ changes }) => coloredDiff(changes))
-              .otherwise((errDetail) => JSON.stringify(errDetail, undefined, 2)),
-            (errStr) =>
-              pipe(
-                c.log(`\n${err.name}`),
-                io.chain(() => c.log(errStr))
-              )
+            c.log(`\n${error.name}`),
+            io.chain(() => c.log(formatTestError(error)))
           )
         )
       ),
       taskEither.swap
     );
+
+export const logErrors = logErrorsF(console);
 
 export const setExitCodeF = (p: Pick<typeof process, 'exitCode'>) =>
   flow(
@@ -201,28 +71,4 @@ export const setExitCodeF = (p: Pick<typeof process, 'exitCode'>) =>
     taskEither.swap
   );
 
-export const logErrors = logErrorsF(fpConsole);
 export const setExitCode = setExitCodeF(process);
-
-const runTestWithTimeLogAndRetry = pipe(runTest, withTimeLog, withRetry);
-
-export const runTests = flow(
-  readonlyArray.map(runTestWithTimeLogAndRetry),
-  runParallel,
-  aggregateErrors
-);
-
-export const test = (t: Omit<SingleTest, 'type'>): SingleTest => ({
-  ...t,
-  type: 'single',
-});
-
-export const testWithRetry = ({
-  retry: ret,
-  ...value
-}: Omit<SingleTest, 'type'> & {
-  readonly retry?: retry.RetryPolicy | number;
-}): WithRetry<SingleTest> => ({
-  value: test(value),
-  retry: ret,
-});

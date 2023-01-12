@@ -7,6 +7,7 @@ specifiers:
   eslint: ^8.30.0
   fp-ts: ^2.13.1
   fp-ts-contrib: ^0.1.29
+  fp-ts-std: ^0.15.1
   nazna: ^1.14.2
   retry-ts: ^0.1.4
   ts-node: ^10.9.1
@@ -16,6 +17,7 @@ specifiers:
 dependencies:
   diff: 5.1.0
   fp-ts: 2.13.1
+  fp-ts-std: 0.15.1_fp-ts@2.13.1
   retry-ts: 0.1.4_fp-ts@2.13.1
   ts-pattern: 4.0.6
 
@@ -983,6 +985,17 @@ packages:
     dependencies:
       fp-ts: 2.13.1
     dev: true
+
+  /fp-ts-std/0.15.1_fp-ts@2.13.1:
+    resolution: {integrity: sha512-JvWjUki14fxuse8QAFubdNi4g+o7qWq94n31sxlD8hobl8KbyfguK69yQZBkNQu+q+8b5yYxgyevs003w6sDNA==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      fp-ts: ^2.11.0
+      monocle-ts: ^2.3.0
+      newtype-ts: ^0.3.0
+    dependencies:
+      fp-ts: 2.13.1
+    dev: false
 
   /fp-ts-std/0.15.1_sddbbwftoqt3d5g3p7ix53ouca:
     resolution: {integrity: sha512-JvWjUki14fxuse8QAFubdNi4g+o7qWq94n31sxlD8hobl8KbyfguK69yQZBkNQu+q+8b5yYxgyevs003w6sDNA==}

@@ -21,6 +21,7 @@
   "dependencies": {
     "diff": "^5.1.0",
     "fp-ts": "^2.13.1",
+    "fp-ts-std": "^0.15.1",
     "retry-ts": "^0.1.4",
     "ts-pattern": "^4.0.6"
   }
