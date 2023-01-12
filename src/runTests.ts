@@ -21,11 +21,10 @@ const assertionFailed = (diffs: readonly Change[]) => ({
   diffs,
 });
 
+const stringifyFailed = (details: unknown) => ({ code: 'stringify failed' as const, details });
+
 const stringify = (obj: unknown) =>
-  either.tryCatch(
-    () => JSON.stringify(obj, undefined, 2),
-    (details) => ({ code: 'stringify failed' as const, details })
-  );
+  either.tryCatch(() => JSON.stringify(obj, undefined, 2), stringifyFailed);
 
 const assert = (results: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(

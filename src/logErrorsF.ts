@@ -24,23 +24,33 @@ const withNoLastNewline = (mapper: (s: string) => string) => (str: string) =>
     )
   );
 
-const coloredDiffStr = (prefix: string, color: string) => (change: Change) =>
+const mapEachLine = (mapper: (s: string) => string) => (str: string) =>
   pipe(
-    change.value,
+    str,
     withNoLastNewline(
       flow(
         string.split('\n'),
-        readonlyArray.map((line) => `\x1b[${color}m${prefix}${line}\x1b[0m`),
+        readonlyArray.map(mapper),
         readonlyArray.intercalate(string.Monoid)('\n')
       )
     )
   );
 
+const colorStr = (param: { readonly color: string }) => (str: string) =>
+  `\x1b[${param.color}m$${str}\x1b[0m`;
+
+const prefixAndColorDiff =
+  (param: { readonly prefix: string; readonly color: string }) => (change: Change) =>
+    pipe(
+      change.value,
+      mapEachLine(flow(std.string.prepend(param.prefix), colorStr({ color: param.color })))
+    );
+
 const formatDiff = (diff: Change) =>
   match(diff)
-    .with({ added: true }, coloredDiffStr('+ ', '32'))
-    .with({ removed: true }, coloredDiffStr('- ', '31'))
-    .otherwise(coloredDiffStr('  ', '90'));
+    .with({ added: true }, prefixAndColorDiff({ prefix: '+ ', color: '32' }))
+    .with({ removed: true }, prefixAndColorDiff({ prefix: '- ', color: '31' }))
+    .otherwise(prefixAndColorDiff({ prefix: '  ', color: '90' }));
 
 const formatDiffs = flow(
   readonlyArray.map(formatDiff),
