@@ -5,13 +5,14 @@
   "scripts": {
     "build": "tsc",
     "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
-    "test": "pnpm do ./dist/test/index.js",
+    "test": "c8 pnpm do ./test/index",
     "lint": "eslint --max-warnings=0 .",
     "lint:fix": "eslint --max-warnings=0 . --fix"
   },
   "devDependencies": {
     "@types/diff": "^5.0.2",
     "@types/node": "^18.11.18",
+    "c8": "^7.12.0",
     "eslint": "^8.30.0",
     "fp-ts-contrib": "^0.1.29",
     "nazna": "^1.14.2",

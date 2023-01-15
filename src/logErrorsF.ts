@@ -1,65 +1,60 @@
-import type { Change } from 'diff';
 import type { console } from 'fp-ts';
-import { boolean, io, readonlyArray, string, taskEither } from 'fp-ts';
+import { io, readonlyArray, string, taskEither } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as std from 'fp-ts-std';
 import { match } from 'ts-pattern';
 
-import type { TestFailedResult } from './type';
+import type { Change, TestFailedResult } from './type';
 
-const dropLastChar = flow(
-  string.split(''),
-  readonlyArray.dropRight(1),
-  readonlyArray.intercalate(string.Monoid)('')
-);
-
-const withNoLastNewline = (mapper: (s: string) => string) => (str: string) =>
-  pipe(
-    str,
-    string.endsWith('\n'),
-    boolean.match(
-      () => pipe(str, mapper),
-      () => pipe(str, dropLastChar, mapper, std.string.append('\n'))
-    )
-  );
-
-const mapEachLine = (mapper: (s: string) => string) => (str: string) =>
-  pipe(
-    str,
-    withNoLastNewline(
-      flow(
-        string.split('\n'),
-        readonlyArray.map(mapper),
-        readonlyArray.intercalate(string.Monoid)('\n')
+const removeLastNewLine = (str: string) =>
+  string.endsWith('\n')(str)
+    ? pipe(
+        str,
+        string.split(''),
+        readonlyArray.dropRight(1),
+        readonlyArray.intercalate(string.Monoid)('')
       )
-    )
-  );
+    : str;
 
 const colorStr = (param: { readonly color: string }) => (str: string) =>
-  `\x1b[${param.color}m$${str}\x1b[0m`;
+  `\x1b[${param.color}m${str}\x1b[0m`;
 
-const prefixAndColorDiff =
-  (param: { readonly prefix: string; readonly color: string }) => (change: Change) =>
-    pipe(
-      change.value,
-      mapEachLine(flow(std.string.prepend(param.prefix), colorStr({ color: param.color })))
-    );
+const getChangeFormat = (changeType: Change['type']) =>
+  match(changeType)
+    .with('+', () => ({ prefix: '+', color: '32' }))
+    .with('-', () => ({ prefix: '-', color: '31' }))
+    .with('0', () => ({ prefix: ' ', color: '90' }))
+    .exhaustive();
 
-const formatDiff = (diff: Change) =>
-  match(diff)
-    .with({ added: true }, prefixAndColorDiff({ prefix: '+ ', color: '32' }))
-    .with({ removed: true }, prefixAndColorDiff({ prefix: '- ', color: '31' }))
-    .otherwise(prefixAndColorDiff({ prefix: '  ', color: '90' }));
+const formatChangeStr = ({
+  str,
+  changeType,
+}: {
+  readonly str: string;
+  readonly changeType: Change['type'];
+}) =>
+  pipe(changeType, getChangeFormat, ({ prefix, color }) =>
+    pipe(str, std.string.prepend(`${prefix} `), colorStr({ color }))
+  );
 
-const formatDiffs = flow(
-  readonlyArray.map(formatDiff),
+const changeToString = (change: Change) =>
+  pipe(
+    change.value,
+    removeLastNewLine,
+    string.split('\n'),
+    readonlyArray.map((str) => formatChangeStr({ str, changeType: change.type })),
+    readonlyArray.intercalate(string.Monoid)('\n')
+  );
+
+const diffToString = flow(
+  readonlyArray.map(changeToString),
   readonlyArray.intercalate(string.Monoid)('\n')
 );
 
 const formatTestError = (testFailedResult: TestFailedResult) =>
   match(testFailedResult.error)
-    .with({ code: 'assertion failed' }, ({ diffs }) => formatDiffs(diffs))
+    .with({ code: 'assertion failed' }, ({ diff }) => diffToString(diff))
     .otherwise(identity);
 
 type Env = { readonly console: Pick<typeof console, 'log'> };

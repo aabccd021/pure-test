@@ -1,4 +1,3 @@
-import type { Change } from 'diff';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
@@ -9,25 +8,24 @@ export type SingleAssertionTest<E = unknown, R = unknown> = {
   readonly shouldTimeout?: true;
   readonly toResult: R;
   readonly timeout?: number;
-  readonly retry?:
-    | {
-        readonly type: 'policy';
-        readonly policy: retry.RetryPolicy;
-      }
-    | { readonly type: 'count'; readonly count: number };
+  readonly retry?: retry.RetryPolicy;
 };
 
 export type Test = SingleAssertionTest;
 
-export type TestsWithConfig = {
-  readonly tests: readonly Test[];
+export type TestConfig = {
   readonly concurrency?: { readonly type: 'parallel' } | { readonly type: 'sequential' };
+};
+
+export type Change = {
+  readonly type: '-' | '+' | '0';
+  readonly value: string;
 };
 
 export type TestFailedError =
   | {
       readonly code: 'assertion failed';
-      readonly diffs: readonly Change[];
+      readonly diff: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
     }
