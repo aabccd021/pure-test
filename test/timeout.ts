@@ -19,7 +19,6 @@ const caseToTest = (c: Case) =>
       [
         test({
           name: 'foo',
-          shouldTimeout: true,
           act: task.delay(c.testTime)(task.of('foo')),
           assert: 'foo',
           timeout: 500,
@@ -33,14 +32,14 @@ const caseToTest = (c: Case) =>
 
 const cases: readonly Case[] = [
   {
-    name: 'Timed out test should pass when `shouldTimeout` is true',
+    name: 'Timed out test should return timed out error',
     testTime: 1000, // should time out
-    result: either.right(undefined),
+    result: either.left([{ code: 'timed out' as const }]),
   },
   {
-    name: 'In-time test should fail when `shouldTimeout` is true',
-    testTime: 100, // should not time out
-    result: either.left([{ code: 'should be timed out' as const }]),
+    name: 'Non timed out test should pass',
+    testTime: 0, // should not time out
+    result: either.right(undefined),
   },
 ];
 

@@ -7,7 +7,6 @@ export type Assertion<A = unknown, B = unknown> = {
   readonly name: string;
   readonly act: Task<A>;
   readonly assert: B;
-  readonly shouldTimeout?: true;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
@@ -47,9 +46,6 @@ export type AssertionError =
   | {
       readonly code: 'serialization failed';
       readonly details: unknown;
-    }
-  | {
-      readonly code: 'should be timed out';
     }
   | {
       readonly code: 'timed out';

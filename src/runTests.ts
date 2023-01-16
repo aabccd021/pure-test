@@ -54,20 +54,11 @@ const runActualAndAssert = (param: {
   );
 
 const runWithTimeout =
-  (assertion: Pick<Assertion, 'shouldTimeout' | 'timeout'>) =>
+  (assertion: Pick<Assertion, 'timeout'>) =>
   (te: TaskEither<AssertionError, undefined>): TaskEither<AssertionError, undefined> =>
-    pipe(
-      task
-        .getRaceMonoid<Either<AssertionError, undefined>>()
-        .concat(te, task.delay(assertion.timeout ?? 5000)(taskEither.left({ code: 'timed out' }))),
-      task.map((e) =>
-        assertion.shouldTimeout === true
-          ? either.isLeft(e) && e.left.code === 'timed out'
-            ? either.right(undefined)
-            : either.left({ code: 'should be timed out' })
-          : e
-      )
-    );
+    task
+      .getRaceMonoid<Either<AssertionError, undefined>>()
+      .concat(te, task.delay(assertion.timeout ?? 5000)(taskEither.left({ code: 'timed out' })));
 
 const runWithRetry =
   (test: Pick<Assertion, 'retry'>) =>
@@ -77,7 +68,7 @@ const runWithRetry =
 const runAssertion = (assertion: Assertion) =>
   pipe(
     runActualAndAssert({ actualTask: assertion.act, expectedResult: assertion.assert }),
-    runWithTimeout({ timeout: assertion.timeout, shouldTimeout: assertion.shouldTimeout }),
+    runWithTimeout({ timeout: assertion.timeout }),
     runWithRetry({ retry: assertion.retry }),
     taskEither.mapLeft((error) => ({ name: assertion.name, error })),
     arrayTaskValidation.lift
