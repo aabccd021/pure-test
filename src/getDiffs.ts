@@ -5,7 +5,7 @@ import { match } from 'ts-pattern';
 
 import type { Change } from './type';
 
-const stringifyFailed = (details: unknown) => ({ code: 'stringify failed' as const, details });
+const stringifyFailed = (details: unknown) => ({ code: 'serialization failed' as const, details });
 
 const stringify = (obj: unknown) =>
   either.tryCatch(() => JSON.stringify(obj, undefined, 2), stringifyFailed);

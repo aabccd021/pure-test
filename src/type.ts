@@ -1,12 +1,25 @@
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
-export type SingleAssertionTest<E = unknown, R = unknown> = {
-  readonly type: 'single';
+export type Assertion<A = unknown, B = unknown> = {
+  readonly task: Task<A>;
+  readonly toResult: B;
+};
+
+export type SingleAssertionTest = {
+  readonly assertion: 'single';
   readonly name: string;
-  readonly expect: Task<E>;
+  readonly assert: Assertion;
   readonly shouldTimeout?: true;
-  readonly toResult: R;
+  readonly timeout?: number;
+  readonly retry?: retry.RetryPolicy;
+};
+
+export type MultipleAssertionTest = {
+  readonly assertion: 'multiple';
+  readonly name: string;
+  readonly assert: Assertion;
+  readonly shouldTimeout?: true;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
@@ -30,7 +43,7 @@ export type TestFailedError =
       readonly expected: unknown;
     }
   | {
-      readonly code: 'stringify failed';
+      readonly code: 'serialization failed';
       readonly details: unknown;
     }
   | {
