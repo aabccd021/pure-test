@@ -9,7 +9,15 @@ import { match } from 'ts-pattern';
 
 import * as arrayTaskValidation from './arrayTaskValidation';
 import { getDiffs } from './getDiffs';
-import type { Change, SingleAssertionTest, Test, TestConfig, TestFailedResult } from './type';
+import type {
+  Assertion,
+  Change,
+  Concurrency,
+  MultipleAssertionTest,
+  Test,
+  TestConfig,
+  TestFailedResult,
+} from './type';
 
 const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => diff.type === '0');
 
@@ -22,7 +30,7 @@ const assertionFailed =
     expected: result.expected,
   });
 
-const assert = (result: { readonly expected: unknown; readonly actual: unknown }) =>
+const assertEqual = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
     getDiffs,
@@ -41,37 +49,62 @@ const runActualAndAssert = (param: {
 }) =>
   pipe(
     taskEither.tryCatch(param.actualTask, unhandledException),
-    taskEither.chainEitherKW((actual) => assert({ actual, expected: param.expectedResult }))
+    taskEither.chainEitherKW((actual) => assertEqual({ actual, expected: param.expectedResult }))
   );
 
 const timedOutError = { code: 'timed out' } as const;
 
 const runWithTimeout =
-  (test: Pick<SingleAssertionTest, 'timeout'>) =>
+  (test: Pick<Assertion, 'timeout'>) =>
   <L, R>(te: TaskEither<L, R>) =>
     task
       .getRaceMonoid<Either<L | typeof timedOutError, R>>()
       .concat(te, task.delay(test.timeout ?? 5000)(taskEither.left(timedOutError)));
 
 const runWithRetry =
-  (test: Pick<SingleAssertionTest, 'retry'>) =>
+  (test: Pick<Assertion, 'retry'>) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
-const runTest = (test: SingleAssertionTest) =>
+const runAssertion = (assertion: Assertion) =>
   pipe(
-    runActualAndAssert({ actualTask: test.expect, expectedResult: test.toResult }),
-    runWithTimeout({ timeout: test.timeout }),
-    runWithRetry({ retry: test.retry }),
-    taskEither.mapLeft((error) => ({ name: test.name, error })),
+    runActualAndAssert({ actualTask: assertion.act, expectedResult: assertion.assert }),
+    runWithTimeout({ timeout: assertion.timeout }),
+    runWithRetry({ retry: assertion.retry }),
+    taskEither.mapLeft((error) => ({ name: assertion.name, error })),
     arrayTaskValidation.lift
   );
 
-const runWithConcurrency = (config: Pick<TestConfig, 'concurrency'>) =>
+const runWithConcurrency = (config: { readonly concurrency?: Concurrency }) =>
   match(config.concurrency)
     .with(undefined, () => readonlyArray.sequence(task.ApplicativePar))
     .with({ type: 'parallel' }, () => readonlyArray.sequence(task.ApplicativePar))
     .with({ type: 'sequential' }, () => readonlyArray.sequence(task.ApplicativeSeq))
+    .exhaustive();
+
+const runMultipleAssertion = (
+  test: MultipleAssertionTest
+): TaskEither<readonly TestFailedResult[], undefined> =>
+  pipe(
+    test.asserts,
+    readonlyArray.map(runAssertion),
+    runWithConcurrency({ concurrency: test.concurrency }),
+    arrayTaskValidation.run,
+    taskEither.bimap(
+      readonlyArray.map(
+        (error): TestFailedResult => ({
+          ...error,
+          name: `${test.name} > ${error.name}`,
+        })
+      ),
+      () => undefined
+    )
+  );
+
+const runTest = (test: Test): TaskEither<readonly TestFailedResult[], undefined> =>
+  match(test)
+    .with({ assertion: 'single' }, ({ assert }) => runAssertion(assert))
+    .with({ assertion: 'multiple' }, runMultipleAssertion)
     .exhaustive();
 
 export const runTests =
