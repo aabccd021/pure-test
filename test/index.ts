@@ -1,15 +1,17 @@
-import { ioRef, task } from 'fp-ts';
+import { ioRef, readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import { logErrors, logErrorsF, runTests, setExitCode, test } from '../src';
 import { testW } from '../src/test';
 
-const testLogResult = (p: {
+type Test = {
   readonly name: string;
   readonly actual: unknown;
   readonly expected: unknown;
   readonly log: string;
-}) =>
+};
+
+const testLogResult = (p: Test) =>
   test({
     name: p.name,
     act: pipe(
@@ -38,8 +40,8 @@ const testLogResult = (p: {
     assert: ['\nfoo test', p.log],
   });
 
-const tests = [
-  testLogResult({
+const tests: readonly Test[] = [
+  {
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
     actual: { minus: 'minusValue' },
     expected: {},
@@ -48,9 +50,8 @@ const tests = [
       `\n\x1b[32m+ {\x1b[0m` +
       `\n\x1b[32m+   "minus": "minusValue"\x1b[0m` +
       `\n\x1b[32m+ }\x1b[0m`,
-  }),
-
-  testLogResult({
+  },
+  {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
     actual: {},
     expected: { plus: 'plusValue' },
@@ -59,7 +60,13 @@ const tests = [
       `\n\x1b[31m-   "plus": "plusValue"\x1b[0m` +
       `\n\x1b[31m- }\x1b[0m` +
       `\n\x1b[32m+ {}\x1b[0m`,
-  }),
+  },
 ];
 
-export const main = pipe(tests, runTests({}), logErrors, setExitCode);
+export const main = pipe(
+  tests,
+  readonlyArray.map(testLogResult),
+  runTests({}),
+  logErrors,
+  setExitCode
+);
