@@ -44,40 +44,79 @@ const cases = [
     actual: { minus: 'minusValue' },
     expected: {},
     log:
-      `\x1b[31m- {}\x1b[0m` +
-      `\n\x1b[32m+ {\x1b[0m` +
-      `\n\x1b[32m+   "minus": "minusValue"\x1b[0m` +
-      `\n\x1b[32m+ }\x1b[0m`,
+      `\x1b[31m- {}\x1b[0m\n` +
+      `\x1b[32m+ {\x1b[0m\n` +
+      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
+      `\x1b[32m+ }\x1b[0m`,
   },
+
   {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
     actual: {},
     expected: { plus: 'plusValue' },
     log:
-      `\x1b[31m- {\x1b[0m` +
-      `\n\x1b[31m-   "plus": "plusValue"\x1b[0m` +
-      `\n\x1b[31m- }\x1b[0m` +
-      `\n\x1b[32m+ {}\x1b[0m`,
+      `\x1b[31m- {\x1b[0m\n` +
+      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
+      `\x1b[31m- }\x1b[0m\n` +
+      `\x1b[32m+ {}\x1b[0m`,
   },
+
   {
     name: 'can use undefined in actual',
     actual: { minus: 'minusValue' },
     expected: undefined,
     log:
-      `\x1b[31m- undefined\x1b[0m` +
-      `\n\x1b[32m+ {\x1b[0m` +
-      `\n\x1b[32m+   "minus": "minusValue"\x1b[0m` +
-      `\n\x1b[32m+ }\x1b[0m`,
+      `\x1b[31m- undefined\x1b[0m\n` +
+      `\x1b[32m+ {\x1b[0m\n` +
+      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
+      `\x1b[32m+ }\x1b[0m`,
   },
+
   {
     name: 'can use undefined in expected',
     actual: undefined,
     expected: { plus: 'plusValue' },
     log:
-      `\x1b[31m- {\x1b[0m` +
-      `\n\x1b[31m-   "plus": "plusValue"\x1b[0m` +
-      `\n\x1b[31m- }\x1b[0m` +
-      `\n\x1b[32m+ undefined\x1b[0m`,
+      `\x1b[31m- {\x1b[0m\n` +
+      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
+      `\x1b[31m- }\x1b[0m\n` +
+      `\x1b[32m+ undefined\x1b[0m`,
+  },
+
+  {
+    name: 'can use undefined in actual',
+    actual: { minus: 'minusValue' },
+    expected: undefined,
+    log:
+      `\x1b[31m- undefined\x1b[0m\n` +
+      `\x1b[32m+ {\x1b[0m\n` +
+      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
+      `\x1b[32m+ }\x1b[0m`,
+  },
+
+  {
+    name: 'can use undefined in expected',
+    actual: undefined,
+    expected: { plus: 'plusValue' },
+    log:
+      `\x1b[31m- {\x1b[0m\n` +
+      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
+      `\x1b[31m- }\x1b[0m\n` +
+      `\x1b[32m+ undefined\x1b[0m`,
+  },
+
+  {
+    name: 'can differentiate actual undefined and expected string "undefined"',
+    actual: 'undefined',
+    expected: undefined,
+    log: `\x1b[31m- undefined\x1b[0m\n` + `\x1b[32m+ "undefined"\x1b[0m`,
+  },
+
+  {
+    name: 'can differentiate actual string "undefined" and expected undefined',
+    actual: undefined,
+    expected: 'undefined',
+    log: `\x1b[31m- "undefined"\x1b[0m\n` + `\x1b[32m+ undefined\x1b[0m`,
   },
 ];
 
