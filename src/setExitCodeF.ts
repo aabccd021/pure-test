@@ -1,7 +1,9 @@
 import { taskEither } from 'fp-ts';
 import { flow } from 'fp-ts/function';
 
-export const setExitCodeF = (env: { readonly process: Pick<typeof process, 'exitCode'> }) =>
+export type Env = { readonly process: Pick<typeof process, 'exitCode'> };
+
+export const setExitCodeF = (env: Env) =>
   flow(
     taskEither.swap,
     // eslint-disable-next-line functional/no-return-void
