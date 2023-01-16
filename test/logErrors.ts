@@ -4,20 +4,22 @@ import { pipe } from 'fp-ts/function';
 import { logErrorsF, runTests, test } from '../src';
 import { testW } from '../src/test';
 
-const caseToTest = (p: {
+type Case = {
   readonly name: string;
   readonly actual: unknown;
   readonly expected: unknown;
   readonly log: string;
-}) =>
+};
+
+const caseToTest = (tc: Case) =>
   test({
-    name: p.name,
+    name: tc.name,
     act: pipe(
       task.Do,
       task.bind('logsRef', () => task.fromIO(ioRef.newIORef<readonly unknown[]>([]))),
       task.bind('env', ({ logsRef }) =>
         task.of({
-          console: { log: (newLog: unknown) => logsRef.modify((logs) => [...logs, newLog]) },
+          console: { log: (newLog: unknown) => logsRef.modify(readonlyArray.append(newLog)) },
         })
       ),
       task.chainFirst(({ env }) =>
@@ -25,8 +27,8 @@ const caseToTest = (p: {
           [
             testW({
               name: 'foo',
-              act: task.of(p.actual),
-              assert: p.expected,
+              act: task.of(tc.actual),
+              assert: tc.expected,
             }),
           ],
           runTests({}),
@@ -35,10 +37,10 @@ const caseToTest = (p: {
       ),
       task.chainIOK(({ logsRef }) => logsRef.read)
     ),
-    assert: ['\nfoo', p.log],
+    assert: ['\nfoo', tc.log],
   });
 
-const cases = [
+const cases: readonly Case[] = [
   {
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
     actual: { minus: 'minusValue' },

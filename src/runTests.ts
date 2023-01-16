@@ -3,8 +3,10 @@ import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
+import * as std from 'fp-ts-std';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
+import { modify } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
 import * as arrayTaskValidation from './arrayTaskValidation';
@@ -90,12 +92,7 @@ const runMultipleAssertion = (
     runWithConcurrency({ concurrency: test.concurrency }),
     arrayTaskValidation.run,
     taskEither.bimap(
-      readonlyArray.map(
-        (error): TestFailedResult => ({
-          ...error,
-          name: `${test.name} > ${error.name}`,
-        })
-      ),
+      readonlyArray.map(modify('name', std.string.prepend(`${test.name} > `))),
       () => undefined
     )
   );
