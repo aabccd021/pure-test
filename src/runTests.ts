@@ -25,7 +25,7 @@ const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => 
 const assertionFailed =
   (result: { readonly expected: unknown; readonly actual: unknown }) =>
   (diff: readonly Change[]) => ({
-    code: 'assertion failed' as const,
+    code: 'not equal' as const,
     diff,
     actual: result.actual,
     expected: result.expected,

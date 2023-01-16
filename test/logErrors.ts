@@ -59,6 +59,26 @@ const cases = [
       `\n\x1b[31m- }\x1b[0m` +
       `\n\x1b[32m+ {}\x1b[0m`,
   },
+  {
+    name: 'can use undefined in actual',
+    actual: { minus: 'minusValue' },
+    expected: undefined,
+    log:
+      `\x1b[31m- undefined\x1b[0m` +
+      `\n\x1b[32m+ {\x1b[0m` +
+      `\n\x1b[32m+   "minus": "minusValue"\x1b[0m` +
+      `\n\x1b[32m+ }\x1b[0m`,
+  },
+  {
+    name: 'can use undefined in expected',
+    actual: undefined,
+    expected: { plus: 'plusValue' },
+    log:
+      `\x1b[31m- {\x1b[0m` +
+      `\n\x1b[31m-   "plus": "plusValue"\x1b[0m` +
+      `\n\x1b[31m- }\x1b[0m` +
+      `\n\x1b[32m+ undefined\x1b[0m`,
+  },
 ];
 
 export const tests = readonlyArray.map(caseToTest)(cases);

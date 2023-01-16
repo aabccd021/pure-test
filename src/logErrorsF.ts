@@ -54,7 +54,7 @@ const diffToString = flow(
 
 const formatTestError = (testFailedResult: TestFailedResult) =>
   match(testFailedResult.error)
-    .with({ code: 'assertion failed' }, ({ diff }) => diffToString(diff))
+    .with({ code: 'not equal' }, ({ diff }) => diffToString(diff))
     .otherwise(identity);
 
 type Env = { readonly console: Pick<typeof console, 'log'> };

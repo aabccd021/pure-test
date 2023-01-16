@@ -5,12 +5,24 @@ import { match } from 'ts-pattern';
 
 import type { Change } from './type';
 
-const stringifyFailed = (details: unknown) => ({ code: 'serialization failed' as const, details });
-
 const stringify = (obj: unknown) =>
-  either.tryCatch(() => JSON.stringify(obj, undefined, 2), stringifyFailed);
+  either.tryCatch(
+    () => {
+      const s = JSON.stringify(obj, undefined, 2);
+      // eslint-disable-next-line functional/no-conditional-statement
+      if (typeof s !== 'string') {
+        // eslint-disable-next-line functional/no-throw-statement
+        throw new Error('Converting unsupported structure to JSON');
+      }
+      return s;
+    },
+    (details: unknown) => ({ code: 'serialization failed' as const, details })
+  );
 
-export const getDiffs = (result: { readonly expected: unknown; readonly actual: unknown }) =>
+export const getDiffsNonUndefined = (result: {
+  readonly expected: unknown;
+  readonly actual: unknown;
+}) =>
   pipe(
     result,
     readonlyRecord.map(stringify),
@@ -26,3 +38,32 @@ export const getDiffs = (result: { readonly expected: unknown; readonly actual: 
       )
     )
   );
+
+export const getDiffs = (result: { readonly expected: unknown; readonly actual: unknown }) =>
+  match(result)
+    .with({ expected: undefined, actual: undefined }, () => either.right([]))
+    .with({ expected: undefined }, ({ actual }) =>
+      pipe(
+        actual,
+        stringify,
+        either.chain((value) =>
+          either.right([
+            { type: '-' as const, value: 'undefined' },
+            { type: '+' as const, value },
+          ])
+        )
+      )
+    )
+    .with({ actual: undefined }, ({ expected }) =>
+      pipe(
+        expected,
+        stringify,
+        either.chain((value) =>
+          either.right([
+            { type: '-' as const, value },
+            { type: '+' as const, value: 'undefined' },
+          ])
+        )
+      )
+    )
+    .otherwise(getDiffsNonUndefined);

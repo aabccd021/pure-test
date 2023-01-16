@@ -7,8 +7,8 @@ import { testW } from '../src/test';
 
 const caseToTest = (p: {
   readonly name: string;
-  readonly actual: unknown;
-  readonly expected: unknown;
+  readonly actual: string;
+  readonly expected: string;
   readonly exitCode: number;
 }) =>
   test({
