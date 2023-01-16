@@ -49,6 +49,9 @@ export type AssertionError =
       readonly details: unknown;
     }
   | {
+      readonly code: 'should be timed out';
+    }
+  | {
       readonly code: 'timed out';
     }
   | {

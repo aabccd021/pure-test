@@ -11,6 +11,7 @@ import * as arrayTaskValidation from './arrayTaskValidation';
 import { getDiffs } from './getDiffs';
 import type {
   Assertion,
+  AssertionError,
   Change,
   Concurrency,
   MultipleAssertionTest,
@@ -52,14 +53,21 @@ const runActualAndAssert = (param: {
     taskEither.chainEitherKW((actual) => assertEqual({ actual, expected: param.expectedResult }))
   );
 
-const timedOutError = { code: 'timed out' } as const;
-
 const runWithTimeout =
-  (test: Pick<Assertion, 'timeout'>) =>
-  <L, R>(te: TaskEither<L, R>) =>
-    task
-      .getRaceMonoid<Either<L | typeof timedOutError, R>>()
-      .concat(te, task.delay(test.timeout ?? 5000)(taskEither.left(timedOutError)));
+  (assertion: Pick<Assertion, 'shouldTimeout' | 'timeout'>) =>
+  (te: TaskEither<AssertionError, undefined>): TaskEither<AssertionError, undefined> =>
+    pipe(
+      task
+        .getRaceMonoid<Either<AssertionError, undefined>>()
+        .concat(te, task.delay(assertion.timeout ?? 5000)(taskEither.left({ code: 'timed out' }))),
+      task.map((e) =>
+        assertion.shouldTimeout === true
+          ? either.isLeft(e) && e.left.code === 'timed out'
+            ? either.right(undefined)
+            : either.left({ code: 'should be timed out' })
+          : e
+      )
+    );
 
 const runWithRetry =
   (test: Pick<Assertion, 'retry'>) =>
@@ -69,7 +77,7 @@ const runWithRetry =
 const runAssertion = (assertion: Assertion) =>
   pipe(
     runActualAndAssert({ actualTask: assertion.act, expectedResult: assertion.assert }),
-    runWithTimeout({ timeout: assertion.timeout }),
+    runWithTimeout({ timeout: assertion.timeout, shouldTimeout: assertion.shouldTimeout }),
     runWithRetry({ retry: assertion.retry }),
     taskEither.mapLeft((error) => ({ name: assertion.name, error })),
     arrayTaskValidation.lift

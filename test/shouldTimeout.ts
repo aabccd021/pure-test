@@ -1,42 +1,46 @@
-import { either, readonlyArray, task } from 'fp-ts';
+import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { runTests, test } from '../src';
-import { testW } from '../src/test';
+import { runTests } from '../src';
+import { test } from '../src/test';
+import type { AssertionError } from '../src/type';
 
-const caseToTest = (p: {
+type Case = {
   readonly name: string;
-  readonly shouldTimeout: true | undefined;
-  readonly testPass: boolean;
-}) =>
+  readonly testTime: number;
+  readonly result: Either<readonly AssertionError[], undefined>;
+};
+
+const caseToTest = (c: Case) =>
   test({
-    name: p.name,
+    name: c.name,
     act: pipe(
       [
-        testW({
+        test({
           name: 'foo',
-          shouldTimeout: p.shouldTimeout,
-          act: task.delay(1000)(task.of(undefined)),
-          assert: undefined,
+          shouldTimeout: true,
+          act: task.delay(c.testTime)(task.of('foo')),
+          assert: 'foo',
           timeout: 500,
         }),
       ],
       runTests({}),
-      task.map(either.isRight)
+      taskEither.mapLeft(readonlyArray.map(({ error }) => error))
     ),
-    assert: p.testPass,
+    assert: c.result,
   });
 
-const cases = [
+const cases: readonly Case[] = [
   {
     name: 'Timed out test should pass when `shouldTimeout` is true',
-    shouldTimeout: true as const,
-    testPass: true,
+    testTime: 1000, // should time out
+    result: either.right(undefined),
   },
   {
-    name: 'Timed out test should fail by default',
-    shouldTimeout: undefined,
-    testPass: false,
+    name: 'In-time test should fail when `shouldTimeout` is true',
+    testTime: 100, // should not time out
+    result: either.left([{ code: 'should be timed out' as const }]),
   },
 ];
 
