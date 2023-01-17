@@ -1,0 +1,35 @@
+name: Release
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chimeraant/dev@v1.3.3
+      - run: pnpm test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chimeraant/dev@v1.3.3
+      - run: pnpm lint
+
+  release:
+    needs: [
+      test,
+      lint 
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chimeraant/dev@v1.3.3
+      - run: pnpm build
+      - run: pnpm semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
