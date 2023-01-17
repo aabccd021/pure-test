@@ -9,6 +9,7 @@ specifiers:
   eslint-config-chimeraant: ^1.2.5
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
+  pnpm: ^7.25.0
   retry-ts: ^0.1.4
   semantic-release: ^20.0.2
   spectacles-ts: ^1.0.7
@@ -31,6 +32,7 @@ devDependencies:
   c8: 7.12.0
   eslint: 8.30.0
   eslint-config-chimeraant: 1.2.5_lzzuuodtsqwxnvqeq4g4likcqa
+  pnpm: 7.25.0
   semantic-release: 20.0.2
   ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
   tsup: 6.5.0_z6wznmtyb6ovnulj6iujpct7um
@@ -2958,6 +2960,12 @@ packages:
     dependencies:
       find-up: 2.1.0
       load-json-file: 4.0.0
+    dev: true
+
+  /pnpm/7.25.0:
+    resolution: {integrity: sha512-FGFQUON8kJ6ma39elJ8lyD8wPIfgp3opGJD9sX0TgIJk4zSr556qCgC8AN+3BFHe4yuRkEauf4JVLW2RKyyEcA==}
+    engines: {node: '>=14.6'}
+    hasBin: true
     dev: true
 
   /postcss-load-config/3.1.4_ts-node@10.9.1:
