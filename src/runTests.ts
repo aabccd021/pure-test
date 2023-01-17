@@ -60,7 +60,10 @@ const runWithTimeout =
   (te: TaskEither<AssertionError, undefined>): TaskEither<AssertionError, undefined> =>
     task
       .getRaceMonoid<Either<AssertionError, undefined>>()
-      .concat(te, task.delay(assertion.timeout ?? 5000)(taskEither.left({ code: 'timed out' })));
+      .concat(
+        te,
+        pipe({ code: 'timed out' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
+      );
 
 const runWithRetry =
   (test: Pick<Assertion, 'retry'>) =>
