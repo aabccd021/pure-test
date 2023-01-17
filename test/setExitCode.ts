@@ -1,8 +1,8 @@
 import { readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-import { runTests, setExitCodeF, test } from '../src';
-import type { Env } from '../src/setExitCodeF';
+import { runTests, test } from '../src';
+import { Env, setExitCodeF } from '../src/setExitCodeF';
 import { testW } from '../src/test';
 
 const caseToTest = (p: {
