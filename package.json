@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "tsup --format cjs,esm",
+    "build": "tsup --format cjs,esm --dts",
     "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
     "test": "c8 pnpm do ./test/index",
     "lint": "eslint --max-warnings=0 .",
