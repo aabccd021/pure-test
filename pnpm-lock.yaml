@@ -7,7 +7,6 @@ specifiers:
   diff: ^5.1.0
   eslint: ^8.30.0
   fp-ts: ^2.13.1
-  fp-ts-contrib: ^0.1.29
   fp-ts-std: ^0.15.1
   nazna: ^1.14.2
   retry-ts: ^0.1.4
@@ -31,8 +30,7 @@ devDependencies:
   '@types/node': 18.11.18
   c8: 7.12.0
   eslint: 8.30.0
-  fp-ts-contrib: 0.1.29_fp-ts@2.13.1
-  nazna: 1.14.2_42xcexmyfasmb4qiah3ejddbmy
+  nazna: 1.14.2_lzzuuodtsqwxnvqeq4g4likcqa
   semantic-release: 20.0.2
   ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
   tsup: 6.5.0_z6wznmtyb6ovnulj6iujpct7um
@@ -187,7 +185,7 @@ packages:
       '@morphic-ts/common': 3.0.0
     dev: true
 
-  /@morphic-ts/batteries/3.0.0_vhavpe6mtoh6rzqmz3k3o6ac3m:
+  /@morphic-ts/batteries/3.0.0_2x54dg72khmbsf7etz42ozzw3a:
     resolution: {integrity: sha512-gFR+6aKRbcIUxXK/7JjnBjrM6RQqiw35StqgE2bzl3wxHrWvAeciDBAU9FcfeLIe0TcbtqyVeqcFTrF99RUJLw==}
     peerDependencies:
       fast-equals: ^2.0.0
@@ -203,7 +201,7 @@ packages:
       '@morphic-ts/eq-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/fastcheck-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/io-ts-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
-      '@morphic-ts/json-schema-interpreters': 3.0.0_x2qpmuq5piogdi3dqvgneo65hu
+      '@morphic-ts/json-schema-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/ord-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/show-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
@@ -276,7 +274,7 @@ packages:
       - fp-ts
     dev: true
 
-  /@morphic-ts/json-schema-interpreters/3.0.0_x2qpmuq5piogdi3dqvgneo65hu:
+  /@morphic-ts/json-schema-interpreters/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
     resolution: {integrity: sha512-KmQEn5uuCWnCkIl773bjOQFc9K3nQl+ur5rm32vCCwQDxGk0Q2MFHA5W5lvybfh6f3FGVLpzmCp6OT9qUC3lHw==}
     peerDependencies:
       fp-ts: ^2.5.3
@@ -289,7 +287,6 @@ packages:
       '@morphic-ts/common': 3.0.0
       '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       fp-ts: 2.13.1
-      fp-ts-contrib: 0.1.29_fp-ts@2.13.1
       io-ts: 2.2.20_fp-ts@2.13.1
       io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
       newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
@@ -1982,14 +1979,6 @@ packages:
       signal-exit: 3.0.7
     dev: true
 
-  /fp-ts-contrib/0.1.29_fp-ts@2.13.1:
-    resolution: {integrity: sha512-y+f+xlZqYgj2t+Alu/oat10UC491PByvH7XrT0ITc/DbDJK7LDJLShZJy2orjE7PlcJkO5niDenc1A/woyeB/Q==}
-    peerDependencies:
-      fp-ts: ^2.1.2
-    dependencies:
-      fp-ts: 2.13.1
-    dev: true
-
   /fp-ts-std/0.15.1_fp-ts@2.13.1:
     resolution: {integrity: sha512-JvWjUki14fxuse8QAFubdNi4g+o7qWq94n31sxlD8hobl8KbyfguK69yQZBkNQu+q+8b5yYxgyevs003w6sDNA==}
     engines: {node: '>=14'}
@@ -2762,11 +2751,11 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /nazna/1.14.2_42xcexmyfasmb4qiah3ejddbmy:
+  /nazna/1.14.2_lzzuuodtsqwxnvqeq4g4likcqa:
     resolution: {integrity: sha512-mldWXF2/9gC2OLPtnMN66yfLfVsPmHLADo8GDQpFaU2WnriOIlGtnw8su0rolDPkh14hrAy1zTU+LAmz4ASCeg==}
     hasBin: true
     dependencies:
-      '@morphic-ts/batteries': 3.0.0_vhavpe6mtoh6rzqmz3k3o6ac3m
+      '@morphic-ts/batteries': 3.0.0_2x54dg72khmbsf7etz42ozzw3a
       '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@morphic-ts/summoners': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
       '@types/child-process-promise': 2.2.2
