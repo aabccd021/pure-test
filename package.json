@@ -7,8 +7,8 @@
     "lint:fix": "eslint --max-warnings=0 . --fix"
   },
   "sideEffects": false,
-  "name": "bxb",
-  "repository": "https://github.com/aabccd021/bxb",
+  "name": "lazytest",
+  "repository": "https://github.com/aabccd021/lazytest",
   "version": "0.0.0-semantic-release",
   "license": "MIT",
   "files": [
