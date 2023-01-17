@@ -7,7 +7,7 @@
     "lint:fix": "eslint --max-warnings=0 . --fix"
   },
   "sideEffects": false,
-  "name": "lazytest",
+  "name": "pure-test",
   "repository": "https://github.com/aabccd021/lazytest",
   "version": "0.0.0-semantic-release",
   "license": "MIT",
