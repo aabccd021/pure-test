@@ -1,4 +1,4 @@
-# lazy-test
+# pure-test
 
 - parallel by default
 - parallel tests can be coverted to sequential

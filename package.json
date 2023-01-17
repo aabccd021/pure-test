@@ -8,7 +8,7 @@
   },
   "sideEffects": false,
   "name": "pure-test",
-  "repository": "https://github.com/aabccd021/lazytest",
+  "repository": "https://github.com/aabccd021/pure-test",
   "version": "0.0.0-semantic-release",
   "license": "MIT",
   "files": [
