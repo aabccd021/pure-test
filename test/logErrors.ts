@@ -15,10 +15,8 @@ const caseToTest = (tc: Case) =>
   test({
     name: tc.name,
     act: pipe(
-      task.Do,
-      task.bind('logsRef', () => task.fromIO(ioRef.newIORef<string>(''))),
-      task.bind('env', ({ logsRef }) => task.of({ console: { log: logsRef.write } })),
-      task.chainFirst(({ env }) =>
+      task.fromIO(ioRef.newIORef<string>('')),
+      task.chainFirst((logRef) =>
         pipe(
           [
             testW({
@@ -28,15 +26,15 @@ const caseToTest = (tc: Case) =>
             }),
           ],
           runTests({}),
-          logErrorsF(env)
+          logErrorsF({ console: { log: logRef.write } })
         )
       ),
-      task.chainIOK(({ logsRef }) => logsRef.read),
+      task.chainIOK((logRef) => logRef.read),
       task.map(string.split('\n'))
     ),
     assert: [
       `\x1b[31m\x1b[1m\x1b[7m FAIL \x1b[27m\x1b[22m\x1b[39m foo`,
-      `\x1b[31m\x1b[1mAssertionError\x1b[22m\x1b[39m:`,
+      `\x1b[31m\x1b[1mAssertionError:\x1b[22m\x1b[39m`,
       ``,
       ...tc.log,
       ``,

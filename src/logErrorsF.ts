@@ -67,7 +67,7 @@ const indent = flow(
 
 const formatErrorResult = (errorResult: TestFailedResult) => [
   `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
-  `${c.red(c.bold(errorResult.error.code))}:`,
+  c.red(c.bold(`${errorResult.error.code}:`)),
   '',
   pipe(errorResult.error, formatError, indent),
   '',
