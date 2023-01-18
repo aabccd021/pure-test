@@ -1,6 +1,6 @@
-import type { console } from 'fp-ts';
 import { readonlyArray, string, taskEither } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
+import type { IO } from 'fp-ts/IO';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as std from 'fp-ts-std';
 import c from 'picocolors';
@@ -59,8 +59,6 @@ const formatError = (error: TestError): string =>
     .with({ code: 'AssertionError' }, ({ diff }) => diffToString(diff))
     .otherwise((err) => JSON.stringify(err, undefined, 2));
 
-type Env = { readonly console: Pick<typeof console, 'log'> };
-
 const indent = flow(
   string.split('\n'),
   readonlyArray.map(std.string.prepend('  ')),
@@ -75,13 +73,15 @@ const formatErrorResult = (errorResult: TestFailedResult) => [
   '',
 ];
 
-export const logErrorsF = (env: Env) => (res: TaskEither<readonly TestFailedResult[], undefined>) =>
-  pipe(
-    res,
-    taskEither.swap,
-    taskEither.map(
-      flow(readonlyArray.chain(formatErrorResult), readonlyArray.intercalate(string.Monoid)('\n'))
-    ),
-    taskEither.chainIOK(env.console.log),
-    taskEither.swap
-  );
+export const logErrorsF =
+  (env: { readonly console: { readonly log: (str: string) => IO<void> } }) =>
+  (res: TaskEither<readonly TestFailedResult[], undefined>) =>
+    pipe(
+      res,
+      taskEither.swap,
+      taskEither.map(
+        flow(readonlyArray.chain(formatErrorResult), readonlyArray.intercalate(string.Monoid)('\n'))
+      ),
+      taskEither.chainIOK(env.console.log),
+      taskEither.swap
+    );
