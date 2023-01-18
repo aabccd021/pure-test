@@ -1,5 +1,9 @@
-import { setExitCodeF } from './setExitCodeF';
+import { exitF } from './exitF';
 
-export { setExitCodeF };
+export { exitF };
 
-export const setExitCode = setExitCodeF({ process });
+export const exit = exitF({
+  process: {
+    exit: (exitCode) => () => process.exit(exitCode),
+  },
+});
