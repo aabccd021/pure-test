@@ -13,12 +13,12 @@ import * as arrayTaskValidation from './arrayTaskValidation';
 import { getDiffs } from './getDiffs';
 import type {
   Assertion,
-  TestError,
   Change,
   Concurrency,
   MultipleAssertionTest,
   Test,
   TestConfig,
+  TestError,
   TestFailedResult,
 } from './type';
 

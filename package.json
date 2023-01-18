@@ -2,7 +2,7 @@
   "scripts": {
     "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
     "test": "pnpm do ./test/index",
-    "lint": "eslint --max-warnings=0 . --ignore-path .gitignore",
+    "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
     "lint:fix": "pnpm lint --fix"
   },
   "sideEffects": false,
