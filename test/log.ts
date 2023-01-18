@@ -1,7 +1,7 @@
 import { ioRef, readonlyArray, string, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-import { logErrorsF, runTests, test } from '../src';
+import { logF, runTests, test } from '../src';
 import { testW } from '../src/test';
 
 const green = '\x1b[32m';
@@ -38,7 +38,7 @@ const caseToTest = (tc: Case) =>
             }),
           ],
           runTests({}),
-          logErrorsF({ console: { log: logRef.write } })
+          logF({ console: { log: logRef.write } })
         )
       ),
       task.chainIOK((logRef) => logRef.read),

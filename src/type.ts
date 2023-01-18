@@ -1,3 +1,4 @@
+import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
@@ -55,7 +56,15 @@ export type TestError =
       readonly exception: unknown;
     };
 
-export type TestFailedResult = {
+export type TestFailResult = {
   readonly name: string;
   readonly error: TestError;
 };
+
+export type TestPassResult = {
+  readonly name: string;
+};
+
+export type TestEitherResult = Either<TestFailResult, TestPassResult>;
+
+export type TestsResult = Either<readonly TestEitherResult[], readonly TestPassResult[]>;

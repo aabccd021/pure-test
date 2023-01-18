@@ -6,7 +6,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestError, TestFailedResult } from './type';
+import type { Change, TestError, TestFailResult } from './type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -57,7 +57,7 @@ const indent = flow(
   readonlyArray.intercalate(string.Monoid)('\n')
 );
 
-const formatErrorResult = (errorResult: TestFailedResult) => [
+const formatErrorResult = (errorResult: TestFailResult) => [
   `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
   c.red(c.bold(`${errorResult.error.code}:`)),
   '',
@@ -65,9 +65,9 @@ const formatErrorResult = (errorResult: TestFailedResult) => [
   '',
 ];
 
-export const logErrorsF =
+export const logF =
   (env: { readonly console: { readonly log: (str: string) => IO<void> } }) =>
-  (res: TaskEither<readonly TestFailedResult[], undefined>) =>
+  (res: TaskEither<readonly TestFailResult[], undefined>) =>
     pipe(
       res,
       taskEither.swap,

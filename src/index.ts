@@ -1,9 +1,9 @@
 import { console } from 'fp-ts';
 
-import { logErrorsF } from './logErrorsF';
+import { logF } from './log';
 import { runTests } from './runTests';
 import { test } from './test';
 
-export { logErrorsF, runTests, test };
+export { logF, runTests, test };
 
-export const logErrors = logErrorsF({ console });
+export const log = logF({ console });
