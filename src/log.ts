@@ -1,12 +1,12 @@
-import { readonlyArray, string, taskEither } from 'fp-ts';
+import { either, readonlyArray, string, task } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
-import type { TaskEither } from 'fp-ts/TaskEither';
+import type { Task } from 'fp-ts/Task';
 import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestError, TestFailResult } from './type';
+import type { Change, TestError, TestFailResult, TestResult } from './type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -65,15 +65,13 @@ const formatErrorResult = (errorResult: TestFailResult) => [
   '',
 ];
 
-export const logF =
-  (env: { readonly console: { readonly log: (str: string) => IO<void> } }) =>
-  (res: TaskEither<readonly TestFailResult[], undefined>) =>
-    pipe(
-      res,
-      taskEither.swap,
-      taskEither.map(
-        flow(readonlyArray.chain(formatErrorResult), readonlyArray.intercalate(string.Monoid)('\n'))
-      ),
-      taskEither.chainIOK(env.console.log),
-      taskEither.swap
-    );
+export const logF = (env: {
+  readonly console: { readonly log: (str: string) => IO<void> };
+}): ((res: Task<readonly TestResult[]>) => Task<readonly TestResult[]>) =>
+  task.chainFirstIOK(
+    flow(
+      readonlyArray.chain(either.match(formatErrorResult, () => [])),
+      readonlyArray.intercalate(string.Monoid)('\n'),
+      env.console.log
+    )
+  );

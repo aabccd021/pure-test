@@ -1,4 +1,4 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import { runTests } from '../src';
@@ -34,15 +34,16 @@ export const tests = [
     act: pipe(
       [
         test({
-          name: '',
+          name: 'foo',
           act: task.of(() => 42),
           assert: () => 42,
         }),
       ],
-      runTests({}),
-      taskEither.mapLeft(readonlyArray.map(({ error }) => error))
+      runTests({})
     ),
-    assert: either.left([{ code: 'serialization failed' as const, details: {} }]),
+    assert: [
+      either.left({ name: 'foo', error: { code: 'serialization failed' as const, details: {} } }),
+    ],
   }),
 
   test({

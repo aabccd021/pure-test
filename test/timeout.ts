@@ -1,4 +1,4 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, readonlyArray, task } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
@@ -9,7 +9,7 @@ import type { TestError } from '../src/type';
 type Case = {
   readonly name: string;
   readonly testTime: number;
-  readonly result: Either<readonly TestError[], undefined>;
+  readonly result: Either<TestError, undefined>;
 };
 
 const caseToTest = (c: Case) =>
@@ -25,16 +25,23 @@ const caseToTest = (c: Case) =>
         }),
       ],
       runTests({}),
-      taskEither.mapLeft(readonlyArray.map(({ error }) => error))
+      task.map(
+        readonlyArray.map(
+          either.bimap(
+            ({ error }) => error,
+            () => undefined
+          )
+        )
+      )
     ),
-    assert: c.result,
+    assert: [c.result],
   });
 
 const cases: readonly Case[] = [
   {
     name: 'Timed out test should return timed out error',
     testTime: 1000, // should time out
-    result: either.left([{ code: 'timed out' as const }]),
+    result: either.left({ code: 'timed out' as const }),
   },
   {
     name: 'Non timed out test should pass',
