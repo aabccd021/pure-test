@@ -6,7 +6,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestFailedResult } from './type';
+import type { AssertionError, Change, TestFailedResult } from './type';
 
 const removeLastNewLine = (str: string) =>
   string.endsWith('\n')(str)
@@ -54,22 +54,29 @@ const diffToString = flow(
   readonlyArray.intercalate(string.Monoid)('\n')
 );
 
-const formatTestError = (testFailedResult: TestFailedResult): string =>
-  match(testFailedResult.error)
+const formatError = (error: AssertionError): string =>
+  match(error)
     .with({ code: 'not equal' }, ({ diff }) => diffToString(diff))
     .otherwise((err) => JSON.stringify(err, undefined, 2));
 
 type Env = { readonly console: Pick<typeof console, 'log'> };
 
-const formatError = (error: TestFailedResult) =>
-  `${c.red(c.bold(c.inverse(' FAIL ')))} ${error.name}\n` + `${formatTestError(error)}`;
+const indent = flow(
+  string.split('\n'),
+  readonlyArray.map(std.string.prepend('  ')),
+  readonlyArray.intercalate(string.Monoid)('\n')
+);
+
+const formatErrorResult = (errorResult: TestFailedResult) =>
+  `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}\n` +
+  `${pipe(errorResult.error, formatError, indent)}\n`;
 
 export const logErrorsF = (env: Env) => (res: TaskEither<readonly TestFailedResult[], undefined>) =>
   pipe(
     res,
     taskEither.swap,
     taskEither.map(
-      flow(readonlyArray.map(formatError), readonlyArray.intercalate(string.Monoid)('\n\n'))
+      flow(readonlyArray.map(formatErrorResult), readonlyArray.intercalate(string.Monoid)('\n\n'))
     ),
     taskEither.chainIOK(env.console.log),
     taskEither.swap
