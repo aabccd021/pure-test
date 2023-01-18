@@ -1,8 +1,9 @@
 import type { console } from 'fp-ts';
-import { io, readonlyArray, string, taskEither } from 'fp-ts';
+import { readonlyArray, string, taskEither } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as std from 'fp-ts-std';
+import c from 'picocolors';
 import { match } from 'ts-pattern';
 
 import type { Change, TestFailedResult } from './type';
@@ -17,14 +18,18 @@ const removeLastNewLine = (str: string) =>
       )
     : str;
 
-const colorStr = (param: { readonly color: string }) => (str: string) =>
-  `\x1b[${param.color}m${str}\x1b[0m`;
-
-const getChangeFormat = (changeType: Change['type']) =>
+const getPrefix = (changeType: Change['type']) =>
   match(changeType)
-    .with('+', () => ({ prefix: '+', color: '32' }))
-    .with('-', () => ({ prefix: '-', color: '31' }))
-    .with('0', () => ({ prefix: ' ', color: '90' }))
+    .with('+', () => '+')
+    .with('-', () => '-')
+    .with('0', () => ' ')
+    .exhaustive();
+
+const getColor = (changeType: Change['type']): ((s: string) => string) =>
+  match(changeType)
+    .with('+', () => c.red)
+    .with('-', () => c.green)
+    .with('0', () => identity)
     .exhaustive();
 
 const formatChangeStr = ({
@@ -33,10 +38,7 @@ const formatChangeStr = ({
 }: {
   readonly str: string;
   readonly changeType: Change['type'];
-}) =>
-  pipe(changeType, getChangeFormat, ({ prefix, color }) =>
-    pipe(str, std.string.prepend(`${prefix} `), colorStr({ color }))
-  );
+}) => pipe(str, std.string.prepend(`${getPrefix(changeType)} `), getColor(changeType));
 
 const changeToString = (change: Change) =>
   pipe(
@@ -52,23 +54,23 @@ const diffToString = flow(
   readonlyArray.intercalate(string.Monoid)('\n')
 );
 
-const formatTestError = (testFailedResult: TestFailedResult) =>
+const formatTestError = (testFailedResult: TestFailedResult): string =>
   match(testFailedResult.error)
     .with({ code: 'not equal' }, ({ diff }) => diffToString(diff))
-    .otherwise(identity);
+    .otherwise((err) => JSON.stringify(err, undefined, 2));
 
 type Env = { readonly console: Pick<typeof console, 'log'> };
 
-const logErrorF = (env: Env) => (error: TestFailedResult) =>
-  pipe(
-    env.console.log(`\n${error.name}`),
-    io.chain(() => env.console.log(formatTestError(error)))
-  );
+const formatError = (error: TestFailedResult) =>
+  `${c.red(c.bold(c.inverse(' FAIL ')))} ${error.name}\n` + `${formatTestError(error)}`;
 
 export const logErrorsF = (env: Env) => (res: TaskEither<readonly TestFailedResult[], undefined>) =>
   pipe(
     res,
     taskEither.swap,
-    taskEither.chainFirstIOK(readonlyArray.traverse(io.Applicative)(logErrorF(env))),
+    taskEither.map(
+      flow(readonlyArray.map(formatError), readonlyArray.intercalate(string.Monoid)('\n\n'))
+    ),
+    taskEither.chainIOK(env.console.log),
     taskEither.swap
   );

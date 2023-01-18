@@ -1,7 +1,7 @@
 {
   "scripts": {
     "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
-    "test": "c8 pnpm do ./test/index",
+    "test": "pnpm do ./test/index",
     "lint": "eslint --max-warnings=0 . --ignore-path .gitignore",
     "lint:fix": "pnpm lint --fix"
   },
@@ -59,6 +59,7 @@
     "diff": "^5.1.0",
     "fp-ts": "^2.13.1",
     "fp-ts-std": "^0.15.1",
+    "picocolors": "^1.0.0",
     "retry-ts": "^0.1.4",
     "spectacles-ts": "^1.0.7",
     "ts-pattern": "^4.0.6"

@@ -37,7 +37,7 @@ const caseToTest = (tc: Case) =>
       ),
       task.chainIOK(({ logsRef }) => logsRef.read)
     ),
-    assert: ['\nfoo', tc.log],
+    assert: [`\x1b[31m\x1b[1m\x1b[7m FAIL \x1b[27m\x1b[22m\x1b[39m foo\n${tc.log}`],
   });
 
 const cases: readonly Case[] = [
@@ -46,10 +46,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: {},
     log:
-      `\x1b[31m- {}\x1b[0m\n` +
-      `\x1b[32m+ {\x1b[0m\n` +
-      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
-      `\x1b[32m+ }\x1b[0m`,
+      `\x1b[32m- {}\x1b[39m\n` +
+      `\x1b[31m+ {\x1b[39m\n` +
+      `\x1b[31m+   "minus": "minusValue"\x1b[39m\n` +
+      `\x1b[31m+ }\x1b[39m`,
   },
 
   {
@@ -57,10 +57,10 @@ const cases: readonly Case[] = [
     actual: {},
     expected: { plus: 'plusValue' },
     log:
-      `\x1b[31m- {\x1b[0m\n` +
-      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
-      `\x1b[31m- }\x1b[0m\n` +
-      `\x1b[32m+ {}\x1b[0m`,
+      `\x1b[32m- {\x1b[39m\n` +
+      `\x1b[32m-   "plus": "plusValue"\x1b[39m\n` +
+      `\x1b[32m- }\x1b[39m\n` +
+      `\x1b[31m+ {}\x1b[39m`,
   },
 
   {
@@ -68,10 +68,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: undefined,
     log:
-      `\x1b[31m- undefined\x1b[0m\n` +
-      `\x1b[32m+ {\x1b[0m\n` +
-      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
-      `\x1b[32m+ }\x1b[0m`,
+      `\x1b[32m- undefined\x1b[39m\n` +
+      `\x1b[31m+ {\x1b[39m\n` +
+      `\x1b[31m+   "minus": "minusValue"\x1b[39m\n` +
+      `\x1b[31m+ }\x1b[39m`,
   },
 
   {
@@ -79,10 +79,10 @@ const cases: readonly Case[] = [
     actual: undefined,
     expected: { plus: 'plusValue' },
     log:
-      `\x1b[31m- {\x1b[0m\n` +
-      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
-      `\x1b[31m- }\x1b[0m\n` +
-      `\x1b[32m+ undefined\x1b[0m`,
+      `\x1b[32m- {\x1b[39m\n` +
+      `\x1b[32m-   "plus": "plusValue"\x1b[39m\n` +
+      `\x1b[32m- }\x1b[39m\n` +
+      `\x1b[31m+ undefined\x1b[39m`,
   },
 
   {
@@ -90,10 +90,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: undefined,
     log:
-      `\x1b[31m- undefined\x1b[0m\n` +
-      `\x1b[32m+ {\x1b[0m\n` +
-      `\x1b[32m+   "minus": "minusValue"\x1b[0m\n` +
-      `\x1b[32m+ }\x1b[0m`,
+      `\x1b[32m- undefined\x1b[39m\n` +
+      `\x1b[31m+ {\x1b[39m\n` +
+      `\x1b[31m+   "minus": "minusValue"\x1b[39m\n` +
+      `\x1b[31m+ }\x1b[39m`,
   },
 
   {
@@ -101,24 +101,24 @@ const cases: readonly Case[] = [
     actual: undefined,
     expected: { plus: 'plusValue' },
     log:
-      `\x1b[31m- {\x1b[0m\n` +
-      `\x1b[31m-   "plus": "plusValue"\x1b[0m\n` +
-      `\x1b[31m- }\x1b[0m\n` +
-      `\x1b[32m+ undefined\x1b[0m`,
+      `\x1b[32m- {\x1b[39m\n` +
+      `\x1b[32m-   "plus": "plusValue"\x1b[39m\n` +
+      `\x1b[32m- }\x1b[39m\n` +
+      `\x1b[31m+ undefined\x1b[39m`,
   },
 
   {
     name: 'can differentiate actual undefined and expected string "undefined"',
     actual: 'undefined',
     expected: undefined,
-    log: `\x1b[31m- undefined\x1b[0m\n` + `\x1b[32m+ "undefined"\x1b[0m`,
+    log: `\x1b[32m- undefined\x1b[39m\n` + `\x1b[31m+ "undefined"\x1b[39m`,
   },
 
   {
     name: 'can differentiate actual string "undefined" and expected undefined',
     actual: undefined,
     expected: 'undefined',
-    log: `\x1b[31m- "undefined"\x1b[0m\n` + `\x1b[32m+ undefined\x1b[0m`,
+    log: `\x1b[32m- "undefined"\x1b[39m\n` + `\x1b[31m+ undefined\x1b[39m`,
   },
 ];
 

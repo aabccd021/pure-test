@@ -9,6 +9,7 @@ specifiers:
   eslint-config-chimeraant: ^1.2.6
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
+  picocolors: ^1.0.0
   pnpm: ^7.25.0
   retry-ts: ^0.1.4
   semantic-release: ^20.0.2
@@ -22,6 +23,7 @@ dependencies:
   diff: 5.1.0
   fp-ts: 2.13.1
   fp-ts-std: 0.15.1_sddbbwftoqt3d5g3p7ix53ouca
+  picocolors: 1.0.0
   retry-ts: 0.1.4_fp-ts@2.13.1
   spectacles-ts: 1.0.7_fp-ts@2.13.1
   ts-pattern: 4.0.6
@@ -2938,6 +2940,10 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
     dev: true
+
+  /picocolors/1.0.0:
+    resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
+    dev: false
 
   /picomatch/2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
