@@ -76,11 +76,11 @@ const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
     )
   );
 
-const runSequential =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>, onLeft: (t: T) => Either<L, R>) =>
-  (tests: readonly T[]): Task<readonly Either<L, R>[]> =>
+const runSequentialUntilFail =
+  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
     pipe(
-      tests,
+      ts,
       readonlyArray.reduce(
         taskEither.of<readonly Either<L, R>[], readonly Either<L, R>[]>([]),
         (acc, el) =>
@@ -96,13 +96,13 @@ const runSequential =
                 )
               )
             ),
-            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(onLeft(el)))
+            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el)))
           )
       ),
       taskEither.toUnion
     );
 
-const runAssertionsSequential = runSequential(runAssertion, (assertion) =>
+const runAssertionsSequential = runSequentialUntilFail(runAssertion, (assertion) =>
   either.left({ name: assertion.name, error: { code: 'Skipped' as const } })
 );
 
@@ -164,7 +164,7 @@ const getTestName = (test: Test): string =>
     .with({ assertion: 'multiple' }, ({ name }) => name)
     .exhaustive();
 
-const runTestsSequential = runSequential(runTest, (test) =>
+const runTestsSequential = runSequentialUntilFail(runTest, (test) =>
   either.left({ name: getTestName(test), error: { code: 'Skipped' as const } })
 );
 
