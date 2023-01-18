@@ -13,7 +13,7 @@ import * as arrayTaskValidation from './arrayTaskValidation';
 import { getDiffs } from './getDiffs';
 import type {
   Assertion,
-  AssertionError,
+  TestError,
   Change,
   Concurrency,
   MultipleAssertionTest,
@@ -27,7 +27,7 @@ const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => 
 const assertionFailed =
   (result: { readonly expected: unknown; readonly actual: unknown }) =>
   (diff: readonly Change[]) => ({
-    code: 'not equal' as const,
+    code: 'AssertionError' as const,
     diff,
     actual: result.actual,
     expected: result.expected,
@@ -57,9 +57,9 @@ const runActualAndAssert = (param: {
 
 const runWithTimeout =
   (assertion: Pick<Assertion, 'timeout'>) =>
-  (te: TaskEither<AssertionError, undefined>): TaskEither<AssertionError, undefined> =>
+  (te: TaskEither<TestError, undefined>): TaskEither<TestError, undefined> =>
     task
-      .getRaceMonoid<Either<AssertionError, undefined>>()
+      .getRaceMonoid<Either<TestError, undefined>>()
       .concat(
         te,
         pipe({ code: 'timed out' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))

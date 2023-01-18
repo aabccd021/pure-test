@@ -36,9 +36,9 @@ export type Change = {
   readonly value: string;
 };
 
-export type AssertionError =
+export type TestError =
   | {
-      readonly code: 'not equal';
+      readonly code: 'AssertionError';
       readonly diff: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
@@ -57,5 +57,5 @@ export type AssertionError =
 
 export type TestFailedResult = {
   readonly name: string;
-  readonly error: AssertionError;
+  readonly error: TestError;
 };

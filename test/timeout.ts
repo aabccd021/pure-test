@@ -4,12 +4,12 @@ import { pipe } from 'fp-ts/function';
 
 import { runTests } from '../src';
 import { test } from '../src/test';
-import type { AssertionError } from '../src/type';
+import type { TestError } from '../src/type';
 
 type Case = {
   readonly name: string;
   readonly testTime: number;
-  readonly result: Either<readonly AssertionError[], undefined>;
+  readonly result: Either<readonly TestError[], undefined>;
 };
 
 const caseToTest = (c: Case) =>
