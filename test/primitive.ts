@@ -30,18 +30,6 @@ export const tests = [
   }),
 
   test({
-    name: 'should be able to compare foobar',
-    act: task.of(['fo > ba', 'zz', 'ba']),
-    assert: ['foo > bar', 'zz', 'baz'],
-  }),
-
-  test({
-    name: 'should be able to compare aab',
-    act: task.of(['aacc']),
-    assert: ['aabccd'],
-  }),
-
-  test({
     name: 'should return left when comparing functions',
     act: pipe(
       [

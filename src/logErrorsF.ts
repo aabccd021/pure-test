@@ -8,16 +8,6 @@ import { match } from 'ts-pattern';
 
 import type { Change, TestError, TestFailedResult } from './type';
 
-const removeLastNewLine = (str: string) =>
-  string.endsWith('\n')(str)
-    ? pipe(
-        str,
-        string.split(''),
-        readonlyArray.dropRight(1),
-        readonlyArray.intercalate(string.Monoid)('')
-      )
-    : str;
-
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
     .with('+', () => '+')
@@ -32,31 +22,33 @@ const getColor = (changeType: Change['type']): ((s: string) => string) =>
     .with('0', () => identity)
     .exhaustive();
 
-const formatChangeStr = ({
-  str,
-  changeType,
-}: {
-  readonly str: string;
-  readonly changeType: Change['type'];
-}) => pipe(str, std.string.prepend(`${getPrefix(changeType)} `), getColor(changeType));
+const formatChangeStr = (change: Change) =>
+  pipe(change.value, std.string.prepend(`${getPrefix(change.type)} `), getColor(change.type));
 
-const changeToString = (change: Change) =>
+const getChangeNum = (diff: readonly Change[], changeType: Change['type']) =>
   pipe(
-    change.value,
-    removeLastNewLine,
-    string.split('\n'),
-    readonlyArray.map((str) => formatChangeStr({ str, changeType: change.type })),
-    readonlyArray.intercalate(string.Monoid)('\n')
+    diff,
+    readonlyArray.filter((change) => change.type === changeType),
+    readonlyArray.size
   );
 
-const diffToString = flow(
-  readonlyArray.map(changeToString),
-  readonlyArray.intercalate(string.Monoid)('\n')
-);
+const diffNums = (diff: readonly Change[]) => [
+  c.green(`- Expected  - ${getChangeNum(diff, '-')}`),
+  c.red(`+ Received  + ${getChangeNum(diff, '+')}`),
+  '',
+];
+
+const diffToString = readonlyArray.map(formatChangeStr);
 
 const formatError = (error: TestError): string =>
   match(error)
-    .with({ code: 'AssertionError' }, ({ diff }) => diffToString(diff))
+    .with({ code: 'AssertionError' }, ({ diff }) =>
+      pipe(
+        [diffNums(diff), diffToString(diff)],
+        readonlyArray.flatten,
+        readonlyArray.intercalate(string.Monoid)('\n')
+      )
+    )
     .otherwise((err) => JSON.stringify(err, undefined, 2));
 
 const indent = flow(

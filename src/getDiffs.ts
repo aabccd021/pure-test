@@ -1,6 +1,6 @@
 import { diffLines } from 'diff';
-import { apply, either, readonlyArray, readonlyRecord } from 'fp-ts';
-import { pipe } from 'fp-ts/function';
+import { apply, either, readonlyArray, readonlyRecord, string } from 'fp-ts';
+import { flow, pipe } from 'fp-ts/function';
 import { match } from 'ts-pattern';
 
 const stringify = (obj: unknown) =>
@@ -19,6 +19,16 @@ const stringify = (obj: unknown) =>
         (details: unknown) => ({ code: 'serialization failed' as const, details })
       );
 
+const removeLastNewLine = (str: string) =>
+  string.endsWith('\n')(str)
+    ? pipe(
+        str,
+        string.split(''),
+        readonlyArray.dropRight(1),
+        readonlyArray.intercalate(string.Monoid)('')
+      )
+    : str;
+
 export const getDiffs = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
@@ -26,11 +36,21 @@ export const getDiffs = (result: { readonly expected: unknown; readonly actual: 
     apply.sequenceS(either.Apply),
     either.map(({ expected, actual }) => diffLines(expected, actual)),
     either.map(
-      readonlyArray.map((change) =>
-        match(change)
-          .with({ added: true }, ({ value }) => ({ type: '+' as const, value }))
-          .with({ removed: true }, ({ value }) => ({ type: '-' as const, value }))
-          .otherwise(({ value }) => ({ type: '0' as const, value }))
+      flow(
+        readonlyArray.map((change) =>
+          match(change)
+            .with({ added: true }, ({ value }) => ({ type: '+' as const, value }))
+            .with({ removed: true }, ({ value }) => ({ type: '-' as const, value }))
+            .otherwise(({ value }) => ({ type: '0' as const, value }))
+        ),
+        readonlyArray.chain((change) =>
+          pipe(
+            change.value,
+            removeLastNewLine,
+            string.split('\n'),
+            readonlyArray.map((value) => ({ type: change.type, value }))
+          )
+        )
       )
     )
   );
