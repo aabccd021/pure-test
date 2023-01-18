@@ -11,6 +11,16 @@ type Case = {
   readonly log: readonly string[];
 };
 
+const green = '\x1b[32m';
+const red = '\x1b[31m';
+const colorEnd = '\x1b[39m';
+
+const bold = '\x1b[1m';
+const boldEnd = '\x1b[22m';
+
+const invert = '\x1b[7m';
+const invertEnd = '\x1b[27m';
+
 const caseToTest = (tc: Case) =>
   test({
     name: tc.name,
@@ -33,8 +43,8 @@ const caseToTest = (tc: Case) =>
       task.map(string.split('\n'))
     ),
     assert: [
-      `\x1b[31m\x1b[1m\x1b[7m FAIL \x1b[27m\x1b[22m\x1b[39m foo`,
-      `\x1b[31m\x1b[1mAssertionError:\x1b[22m\x1b[39m`,
+      `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
+      `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
       ``,
       ...tc.log,
       ``,
@@ -47,10 +57,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: {},
     log: [
-      `  \x1b[32m- {}\x1b[39m`,
-      `  \x1b[31m+ {\x1b[39m`,
-      `  \x1b[31m+   "minus": "minusValue"\x1b[39m`,
-      `  \x1b[31m+ }\x1b[39m`,
+      `  ${green}- {}${colorEnd}`,
+      `  ${red}+ {${colorEnd}`,
+      `  ${red}+   "minus": "minusValue"${colorEnd}`,
+      `  ${red}+ }${colorEnd}`,
     ],
   },
 
@@ -59,10 +69,10 @@ const cases: readonly Case[] = [
     actual: {},
     expected: { plus: 'plusValue' },
     log: [
-      `  \x1b[32m- {\x1b[39m`,
-      `  \x1b[32m-   "plus": "plusValue"\x1b[39m`,
-      `  \x1b[32m- }\x1b[39m`,
-      `  \x1b[31m+ {}\x1b[39m`,
+      `  ${green}- {${colorEnd}`,
+      `  ${green}-   "plus": "plusValue"${colorEnd}`,
+      `  ${green}- }${colorEnd}`,
+      `  ${red}+ {}${colorEnd}`,
     ],
   },
 
@@ -71,10 +81,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: undefined,
     log: [
-      `  \x1b[32m- undefined\x1b[39m`,
-      `  \x1b[31m+ {\x1b[39m`,
-      `  \x1b[31m+   "minus": "minusValue"\x1b[39m`,
-      `  \x1b[31m+ }\x1b[39m`,
+      `  ${green}- undefined${colorEnd}`,
+      `  ${red}+ {${colorEnd}`,
+      `  ${red}+   "minus": "minusValue"${colorEnd}`,
+      `  ${red}+ }${colorEnd}`,
     ],
   },
 
@@ -83,10 +93,10 @@ const cases: readonly Case[] = [
     actual: undefined,
     expected: { plus: 'plusValue' },
     log: [
-      `  \x1b[32m- {\x1b[39m`,
-      `  \x1b[32m-   "plus": "plusValue"\x1b[39m`,
-      `  \x1b[32m- }\x1b[39m`,
-      `  \x1b[31m+ undefined\x1b[39m`,
+      `  ${green}- {${colorEnd}`,
+      `  ${green}-   "plus": "plusValue"${colorEnd}`,
+      `  ${green}- }${colorEnd}`,
+      `  ${red}+ undefined${colorEnd}`,
     ],
   },
 
@@ -95,10 +105,10 @@ const cases: readonly Case[] = [
     actual: { minus: 'minusValue' },
     expected: undefined,
     log: [
-      `  \x1b[32m- undefined\x1b[39m`,
-      `  \x1b[31m+ {\x1b[39m`,
-      `  \x1b[31m+   "minus": "minusValue"\x1b[39m`,
-      `  \x1b[31m+ }\x1b[39m`,
+      `  ${green}- undefined${colorEnd}`,
+      `  ${red}+ {${colorEnd}`,
+      `  ${red}+   "minus": "minusValue"${colorEnd}`,
+      `  ${red}+ }${colorEnd}`,
     ],
   },
 
@@ -107,10 +117,10 @@ const cases: readonly Case[] = [
     actual: undefined,
     expected: { plus: 'plusValue' },
     log: [
-      `  \x1b[32m- {\x1b[39m`,
-      `  \x1b[32m-   "plus": "plusValue"\x1b[39m`,
-      `  \x1b[32m- }\x1b[39m`,
-      `  \x1b[31m+ undefined\x1b[39m`,
+      `  ${green}- {${colorEnd}`,
+      `  ${green}-   "plus": "plusValue"${colorEnd}`,
+      `  ${green}- }${colorEnd}`,
+      `  ${red}+ undefined${colorEnd}`,
     ],
   },
 
@@ -118,14 +128,14 @@ const cases: readonly Case[] = [
     name: 'can differentiate actual undefined and expected string "undefined"',
     actual: 'undefined',
     expected: undefined,
-    log: [`  \x1b[32m- undefined\x1b[39m`, `  \x1b[31m+ "undefined"\x1b[39m`],
+    log: [`  ${green}- undefined${colorEnd}`, `  ${red}+ "undefined"${colorEnd}`],
   },
 
   {
     name: 'can differentiate actual string "undefined" and expected undefined',
     actual: undefined,
     expected: 'undefined',
-    log: [`  \x1b[32m- "undefined"\x1b[39m`, `  \x1b[31m+ undefined\x1b[39m`],
+    log: [`  ${green}- "undefined"${colorEnd}`, `  ${red}+ undefined${colorEnd}`],
   },
 ];
 
