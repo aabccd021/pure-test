@@ -1,13 +1,24 @@
-import { boolean, either, readonlyArray, task, taskEither } from 'fp-ts';
+import {
+  apply,
+  array,
+  boolean,
+  either,
+  readonlyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
+} from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
+import * as iots from 'io-ts';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
-import { getDiffs } from './getDiffs';
+import { diffLines } from './diffLines';
 import type {
   Assertion,
   AssertionError,
@@ -15,6 +26,7 @@ import type {
   Change,
   Concurrency,
   MultipleAssertionTest,
+  SerializationError,
   Test,
   TestConfig,
   TestResult,
@@ -80,10 +92,49 @@ const assertionFailed =
     expected: result.expected,
   });
 
+const stringify = (
+  path: readonly (number | string)[],
+  obj: unknown
+): Either<SerializationError, string> =>
+  typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
+    ? either.right(JSON.stringify(obj))
+    : obj === undefined
+    ? either.right('undefined')
+    : Array.isArray(obj)
+    ? pipe(
+        obj,
+        array.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v)),
+        either.map(
+          flow(
+            array.map((x) => `  ${x},\n`),
+            array.intercalate(string.Monoid)(''),
+            (x) => `[\n${x}]`
+          )
+        )
+      )
+    : pipe(
+        obj,
+        iots.UnknownRecord.decode,
+        either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+        either.chain(
+          readonlyRecord.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v))
+        ),
+        either.map(
+          flow(
+            readonlyRecord.foldMapWithIndex(string.Ord)(string.Monoid)(
+              (k, v) => `  "${k}": ${v},\n`
+            ),
+            (x) => `{\n${x}}`
+          )
+        )
+      );
+
 const assertEqual = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
-    getDiffs,
+    readonlyRecord.map((obj) => stringify([], obj)),
+    apply.sequenceS(either.Apply),
+    either.map(diffLines),
     either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result)))
   );
 

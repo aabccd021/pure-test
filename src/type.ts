@@ -39,6 +39,11 @@ export type Change = {
   readonly value: string;
 };
 
+export type DiffLines = (p: {
+  readonly expected: string;
+  readonly actual: string;
+}) => readonly Change[];
+
 export type SerializationError = {
   readonly code: 'SerializationError';
   readonly path: readonly (number | string)[];
