@@ -13,11 +13,61 @@ import type {
   AssertionError,
   AssertionResult,
   Change,
+  Concurrency,
   MultipleAssertionTest,
   Test,
   TestConfig,
   TestResult,
 } from './type';
+
+const runSequentialFailFast =
+  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
+    pipe(
+      ts,
+      readonlyArray.reduce(
+        taskEither.of<readonly Either<L, R>[], readonly Either<L, R>[]>([]),
+        (acc, el) =>
+          pipe(
+            acc,
+            taskEither.chain((accr) =>
+              pipe(
+                el,
+                f,
+                taskEither.bimap(
+                  (ell): readonly Either<L, R>[] => [...accr, either.left(ell)],
+                  (elr): readonly Either<L, R>[] => [...accr, either.right(elr)]
+                )
+              )
+            ),
+            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el)))
+          )
+      ),
+      taskEither.toUnion
+    );
+
+const runSequential =
+  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  ({
+    failFast,
+  }: {
+    readonly failFast?: false;
+  }): ((tests: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+    match(failFast)
+      .with(undefined, () => runSequentialFailFast(f, afterFail))
+      .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(f))
+      .exhaustive();
+
+const run = <T, L, R>(
+  concurrency: Concurrency | undefined,
+  f: (t: T) => TaskEither<L, R>,
+  afterFail: (t: T) => Either<L, R>
+): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+  match(concurrency)
+    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(f))
+    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(f))
+    .with({ type: 'sequential' }, runSequential(f, afterFail))
+    .exhaustive();
 
 const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => diff.type === '0');
 
@@ -76,47 +126,10 @@ const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
     )
   );
 
-const runSequentialUntilFail =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
-  (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
-    pipe(
-      ts,
-      readonlyArray.reduce(
-        taskEither.of<readonly Either<L, R>[], readonly Either<L, R>[]>([]),
-        (acc, el) =>
-          pipe(
-            acc,
-            taskEither.chain((accr) =>
-              pipe(
-                el,
-                f,
-                taskEither.bimap(
-                  (ell): readonly Either<L, R>[] => [...accr, either.left(ell)],
-                  (elr): readonly Either<L, R>[] => [...accr, either.right(elr)]
-                )
-              )
-            ),
-            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el)))
-          )
-      ),
-      taskEither.toUnion
-    );
-
-const runAssertionsSequential = runSequentialUntilFail(runAssertion, (assertion) =>
-  either.left({ name: assertion.name, error: { code: 'Skipped' as const } })
-);
-
-export const runAssertions = (
-  config: Pick<MultipleAssertionTest, 'concurrency'>
-): ((tests: readonly Assertion[]) => Task<readonly AssertionResult[]>) =>
-  match(config.concurrency)
-    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(runAssertion))
-    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(runAssertion))
-    .with({ type: 'sequentialAll' }, () =>
-      readonlyArray.traverse(task.ApplicativeSeq)(runAssertion)
-    )
-    .with({ type: 'sequential' }, () => runAssertionsSequential)
-    .exhaustive();
+const runAssertions = (config: Pick<MultipleAssertionTest, 'concurrency'>) =>
+  run(config.concurrency, runAssertion, (assertion) =>
+    either.left({ name: assertion.name, error: { code: 'Skipped' as const } })
+  );
 
 const runMultipleAssertion = (test: MultipleAssertionTest): Task<TestResult> =>
   pipe(
@@ -164,16 +177,9 @@ const getTestName = (test: Test): string =>
     .with({ assertion: 'multiple' }, ({ name }) => name)
     .exhaustive();
 
-const runTestsSequential = runSequentialUntilFail(runTest, (test) =>
-  either.left({ name: getTestName(test), error: { code: 'Skipped' as const } })
-);
-
 export const runTests = (
   config: TestConfig
 ): ((tests: readonly Test[]) => Task<readonly TestResult[]>) =>
-  match(config.concurrency)
-    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(runTest))
-    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(runTest))
-    .with({ type: 'sequentialAll' }, () => readonlyArray.traverse(task.ApplicativeSeq)(runTest))
-    .with({ type: 'sequential' }, () => runTestsSequential)
-    .exhaustive();
+  run(config.concurrency, runTest, (test) =>
+    either.left({ name: getTestName(test), error: { code: 'Skipped' as const } })
+  );

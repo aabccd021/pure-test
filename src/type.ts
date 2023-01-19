@@ -4,8 +4,7 @@ import type * as retry from 'retry-ts';
 
 export type Concurrency =
   | { readonly type: 'parallel' }
-  | { readonly type: 'sequential' }
-  | { readonly type: 'sequentialAll' };
+  | { readonly type: 'sequential'; readonly failFast?: false };
 
 export type Assertion<A = unknown, B = unknown> = {
   readonly name: string;
