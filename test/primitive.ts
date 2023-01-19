@@ -1,4 +1,4 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import { runTests } from '../src';
@@ -30,19 +30,53 @@ export const tests = [
   }),
 
   test({
+    name: 'should be able to compare object with number index',
+    act: task.of({ 1: 1 }),
+    assert: { 1: 1 },
+  }),
+
+  test({
     name: 'should return left when comparing functions',
     act: pipe(
       [
         test({
-          name: '',
+          name: 'foo',
           act: task.of(() => 42),
           assert: () => 42,
         }),
       ],
-      runTests({}),
-      taskEither.mapLeft(readonlyArray.map(({ error }) => error))
+      runTests({})
     ),
-    assert: either.left([{ code: 'serialization failed' as const, details: {} }]),
+    assert: [
+      either.left({
+        name: 'foo',
+        error: { code: 'SerializationError' as const, path: [] },
+      }),
+    ],
+  }),
+
+  test({
+    name: 'should return left when comparing functions inside path',
+    act: pipe(
+      [
+        test({
+          name: 'foo',
+          act: task.of({
+            path1: () => 42,
+          }),
+          assert: {
+            path1: () => 42,
+          },
+        }),
+      ],
+      runTests({})
+    ),
+    assert: [
+      either.left({
+        name: 'foo',
+        error: { code: 'SerializationError' as const, path: ['path1'] },
+      }),
+    ],
   }),
 
   test({

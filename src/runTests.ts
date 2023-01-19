@@ -1,44 +1,141 @@
-import { boolean, either, readonlyArray, task, taskEither } from 'fp-ts';
+import {
+  apply,
+  array,
+  boolean,
+  either,
+  readonlyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
+} from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
-import * as std from 'fp-ts-std';
+import * as iots from 'io-ts';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
-import { modify } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
-import * as arrayTaskValidation from './arrayTaskValidation';
-import { getDiffs } from './getDiffs';
+import { diffLines } from './diffLines';
 import type {
   Assertion,
   AssertionError,
+  AssertionResult,
   Change,
   Concurrency,
   MultipleAssertionTest,
+  SerializationError,
   Test,
   TestConfig,
-  TestFailedResult,
+  TestResult,
 } from './type';
+
+const runSequentialFailFast =
+  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
+    pipe(
+      ts,
+      readonlyArray.reduce(
+        taskEither.of<readonly Either<L, R>[], readonly Either<L, R>[]>([]),
+        (acc, el) =>
+          pipe(
+            acc,
+            taskEither.chain((accr) =>
+              pipe(
+                el,
+                f,
+                taskEither.bimap(
+                  (ell): readonly Either<L, R>[] => [...accr, either.left(ell)],
+                  (elr): readonly Either<L, R>[] => [...accr, either.right(elr)]
+                )
+              )
+            ),
+            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el)))
+          )
+      ),
+      taskEither.toUnion
+    );
+
+const runSequential =
+  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  ({
+    failFast,
+  }: {
+    readonly failFast?: false;
+  }): ((tests: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+    match(failFast)
+      .with(undefined, () => runSequentialFailFast(f, afterFail))
+      .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(f))
+      .exhaustive();
+
+const run = <T, L, R>(
+  concurrency: Concurrency | undefined,
+  f: (t: T) => TaskEither<L, R>,
+  afterFail: (t: T) => Either<L, R>
+): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+  match(concurrency)
+    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(f))
+    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(f))
+    .with({ type: 'sequential' }, runSequential(f, afterFail))
+    .exhaustive();
 
 const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => diff.type === '0');
 
 const assertionFailed =
   (result: { readonly expected: unknown; readonly actual: unknown }) =>
   (diff: readonly Change[]) => ({
-    code: 'not equal' as const,
+    code: 'AssertionError' as const,
     diff,
     actual: result.actual,
     expected: result.expected,
   });
 
+const stringify = (
+  path: readonly (number | string)[],
+  obj: unknown
+): Either<SerializationError, string> =>
+  typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
+    ? either.right(JSON.stringify(obj))
+    : obj === undefined
+    ? either.right('undefined')
+    : Array.isArray(obj)
+    ? pipe(
+        obj,
+        array.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v)),
+        either.map(
+          flow(
+            array.map((x) => `  ${x},\n`),
+            array.intercalate(string.Monoid)(''),
+            (x) => `[\n${x}]`
+          )
+        )
+      )
+    : pipe(
+        obj,
+        iots.UnknownRecord.decode,
+        either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+        either.chain(
+          readonlyRecord.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v))
+        ),
+        either.map(
+          flow(
+            readonlyRecord.foldMapWithIndex(string.Ord)(string.Monoid)(
+              (k, v) => `  "${k}": ${v},\n`
+            ),
+            (x) => `{\n${x}}`
+          )
+        )
+      );
+
 const assertEqual = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
-    getDiffs,
-    either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result))),
-    either.map(() => undefined)
+    readonlyRecord.map((obj) => stringify([], obj)),
+    apply.sequenceS(either.Apply),
+    either.map(diffLines),
+    either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result)))
   );
 
 const unhandledException = (exception: unknown) => ({
@@ -56,10 +153,9 @@ const runActualAndAssert = (param: {
   );
 
 const runWithTimeout =
-  (assertion: Pick<Assertion, 'timeout'>) =>
-  (te: TaskEither<AssertionError, undefined>): TaskEither<AssertionError, undefined> =>
+  (assertion: Pick<Assertion, 'timeout'>) => (te: TaskEither<AssertionError, unknown>) =>
     task
-      .getRaceMonoid<Either<AssertionError, undefined>>()
+      .getRaceMonoid<Either<AssertionError, unknown>>()
       .concat(
         te,
         pipe({ code: 'timed out' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
@@ -70,49 +166,71 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
-const runAssertion = (assertion: Assertion) =>
+const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
   pipe(
     runActualAndAssert({ actualTask: assertion.act, expectedResult: assertion.assert }),
     runWithTimeout({ timeout: assertion.timeout }),
     runWithRetry({ retry: assertion.retry }),
-    taskEither.mapLeft((error) => ({ name: assertion.name, error })),
-    arrayTaskValidation.lift
-  );
-
-const runWithConcurrency = (config: { readonly concurrency?: Concurrency }) =>
-  match(config.concurrency)
-    .with(undefined, () => readonlyArray.sequence(task.ApplicativePar))
-    .with({ type: 'parallel' }, () => readonlyArray.sequence(task.ApplicativePar))
-    .with({ type: 'sequential' }, () => readonlyArray.sequence(task.ApplicativeSeq))
-    .exhaustive();
-
-const runMultipleAssertion = (
-  test: MultipleAssertionTest
-): TaskEither<readonly TestFailedResult[], undefined> =>
-  pipe(
-    test.asserts,
-    readonlyArray.map(runAssertion),
-    runWithConcurrency({ concurrency: test.concurrency }),
-    arrayTaskValidation.run,
     taskEither.bimap(
-      readonlyArray.map(modify('name', std.string.prepend(`${test.name} > `))),
-      () => undefined
+      (error) => ({ name: assertion.name, error }),
+      () => ({ name: assertion.name })
     )
   );
 
-const runTest = (test: Test): TaskEither<readonly TestFailedResult[], undefined> =>
+const runAssertions = (config: Pick<MultipleAssertionTest, 'concurrency'>) =>
+  run(config.concurrency, runAssertion, (assertion) =>
+    either.left({ name: assertion.name, error: { code: 'Skipped' as const } })
+  );
+
+const runMultipleAssertion = (test: MultipleAssertionTest): Task<TestResult> =>
+  pipe(
+    test.asserts,
+    runAssertions({ concurrency: test.concurrency }),
+    task.map(
+      flow(
+        readonlyArray.reduce(
+          either.of<readonly AssertionResult[], readonly AssertionResult[]>([]),
+          (acc, el) =>
+            pipe(
+              acc,
+              either.chain((accr) =>
+                pipe(
+                  el,
+                  either.bimap(
+                    (ell): readonly AssertionResult[] => [...accr, either.left(ell)],
+                    (elr): readonly AssertionResult[] => [...accr, either.right(elr)]
+                  )
+                )
+              ),
+              either.mapLeft(readonlyArray.append(el))
+            )
+        ),
+        either.bimap(
+          (results) => ({
+            name: test.name,
+            error: { code: 'MultipleAssertionError' as const, results },
+          }),
+          () => ({ name: test.name })
+        )
+      )
+    )
+  );
+
+const runTest = (test: Test): Task<TestResult> =>
   match(test)
     .with({ assertion: 'single' }, ({ assert }) => runAssertion(assert))
     .with({ assertion: 'multiple' }, runMultipleAssertion)
     .exhaustive();
 
-export const runTests =
-  (testsWithConfig: TestConfig) =>
-  (tests: readonly Test[]): TaskEither<readonly TestFailedResult[], undefined> =>
-    pipe(
-      tests,
-      readonlyArray.map(runTest),
-      runWithConcurrency({ concurrency: testsWithConfig.concurrency }),
-      arrayTaskValidation.run,
-      taskEither.map(() => undefined)
-    );
+const getTestName = (test: Test): string =>
+  match(test)
+    .with({ assertion: 'single' }, ({ assert }) => assert.name)
+    .with({ assertion: 'multiple' }, ({ name }) => name)
+    .exhaustive();
+
+export const runTests = (
+  config: TestConfig
+): ((tests: readonly Test[]) => Task<readonly TestResult[]>) =>
+  run(config.concurrency, runTest, (test) =>
+    either.left({ name: getTestName(test), error: { code: 'Skipped' as const } })
+  );

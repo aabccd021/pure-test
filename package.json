@@ -1,14 +1,12 @@
 {
   "scripts": {
-    "build": "tsup",
-    "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
-    "test": "c8 pnpm do ./test/index",
-    "lint": "eslint --max-warnings=0 .",
-    "lint:fix": "eslint --max-warnings=0 . --fix"
+    "test": "exec-main ./test/index",
+    "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
+    "lint:fix": "pnpm lint --fix"
   },
   "sideEffects": false,
   "name": "pure-test",
-  "repository": "https://github.com/aabccd021/lazytest",
+  "repository": "https://github.com/aabccd021/pure-test",
   "version": "0.0.0-semantic-release",
   "license": "MIT",
   "files": [
@@ -53,10 +51,15 @@
       "@semantic-release/github"
     ]
   },
+  "eslintConfig": {
+    "extends": "chimeraant"
+  },
   "dependencies": {
     "diff": "^5.1.0",
     "fp-ts": "^2.13.1",
     "fp-ts-std": "^0.15.1",
+    "io-ts": "^2.2.20",
+    "picocolors": "^1.0.0",
     "retry-ts": "^0.1.4",
     "spectacles-ts": "^1.0.7",
     "ts-pattern": "^4.0.6"
@@ -66,7 +69,9 @@
     "@types/node": "^18.11.18",
     "c8": "^7.12.0",
     "eslint": "^8.30.0",
-    "nazna": "^1.14.2",
+    "eslint-config-chimeraant": "^1.2.6",
+    "pnpm": "^7.25.0",
+    "exec-main": "^1.0.1",
     "semantic-release": "^20.0.2",
     "ts-node": "^10.9.1",
     "tsup": "^6.5.0",

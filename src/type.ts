@@ -1,7 +1,10 @@
+import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
-export type Concurrency = { readonly type: 'parallel' } | { readonly type: 'sequential' };
+export type Concurrency =
+  | { readonly type: 'parallel' }
+  | { readonly type: 'sequential'; readonly failFast?: false };
 
 export type Assertion<A = unknown, B = unknown> = {
   readonly name: string;
@@ -36,16 +39,26 @@ export type Change = {
   readonly value: string;
 };
 
+export type DiffLines = (p: {
+  readonly expected: string;
+  readonly actual: string;
+}) => readonly Change[];
+
+export type SerializationError = {
+  readonly code: 'SerializationError';
+  readonly path: readonly (number | string)[];
+};
+
 export type AssertionError =
+  | SerializationError
   | {
-      readonly code: 'not equal';
+      readonly code: 'AssertionError';
       readonly diff: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
     }
   | {
-      readonly code: 'serialization failed';
-      readonly details: unknown;
+      readonly code: 'Skipped';
     }
   | {
       readonly code: 'timed out';
@@ -55,7 +68,33 @@ export type AssertionError =
       readonly exception: unknown;
     };
 
-export type TestFailedResult = {
+export type AssertionFailResult = {
   readonly name: string;
   readonly error: AssertionError;
 };
+
+export type AssertionPassResult = {
+  readonly name: string;
+};
+
+export type AssertionResult = Either<AssertionFailResult, AssertionPassResult>;
+
+export type TestError =
+  | AssertionError
+  | {
+      readonly code: 'MultipleAssertionError';
+      readonly results: readonly AssertionResult[];
+    };
+
+export type TestFailResult = {
+  readonly name: string;
+  readonly error: TestError;
+};
+
+export type TestPassResult = {
+  readonly name: string;
+};
+
+export type TestResult = Either<TestFailResult, TestPassResult>;
+
+export type TestsResult = Either<readonly TestResult[], readonly TestPassResult[]>;

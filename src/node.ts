@@ -1,5 +1,4 @@
-import { setExitCodeF } from './setExitCodeF';
+import { exit } from './exit';
+import { exitF } from './exitF';
 
-export { setExitCodeF };
-
-export const setExitCode = setExitCodeF({ process });
+export { exit, exitF };
