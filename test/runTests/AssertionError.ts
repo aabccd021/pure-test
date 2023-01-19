@@ -71,6 +71,56 @@ const cases: readonly Case[] = [
   },
 
   {
+    name: 'multiple line minus diff is indented correctly',
+    actual: {
+      nested: {
+        minus: 'minusValue',
+      },
+    },
+    expected: {},
+    error: {
+      actual: {
+        nested: {
+          minus: 'minusValue',
+        },
+      },
+      expected: {},
+      diff: [
+        { type: '0', value: `{` },
+        { type: '+', value: `  "nested": {` },
+        { type: '+', value: `    "minus": "minusValue",` },
+        { type: '+', value: `  },` },
+        { type: '0', value: `}` },
+      ],
+    },
+  },
+
+  {
+    name: 'multiple line plus diff is indented correctly',
+    actual: {},
+    expected: {
+      nested: {
+        plus: 'plusValue',
+      },
+    },
+    error: {
+      actual: {},
+      expected: {
+        nested: {
+          plus: 'plusValue',
+        },
+      },
+      diff: [
+        { type: '0', value: `{` },
+        { type: '-', value: `  "nested": {` },
+        { type: '-', value: `    "plus": "plusValue",` },
+        { type: '-', value: `  },` },
+        { type: '0', value: `}` },
+      ],
+    },
+  },
+
+  {
     name: 'can use undefined in actual',
     actual: { minus: 'minusValue' },
     expected: undefined,
