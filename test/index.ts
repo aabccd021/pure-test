@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/function';
 import * as src from '../src';
 import * as srcNode from '../src/node';
 import * as exit from './exitF';
-import * as logErrorDetails from './logErrorDetails';
+import * as logErrorDetails from './logErrorDetailsF';
 import * as primitive from './primitive';
 import * as timeout from './timeout';
 
