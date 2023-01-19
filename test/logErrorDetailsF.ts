@@ -61,28 +61,18 @@ const cases: readonly Case[] = [
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
     actual: { minus: 'minusValue' },
     expected: {},
-    numMinus: 1,
-    numPlus: 3,
-    log: [
-      `  ${green}- {}${colorEnd}`,
-      `  ${red}+ {${colorEnd}`,
-      `  ${red}+   "minus": "minusValue"${colorEnd}`,
-      `  ${red}+ }${colorEnd}`,
-    ],
+    numMinus: 0,
+    numPlus: 1,
+    log: [`    {`, `  ${red}+   "minus": "minusValue",${colorEnd}`, `    }`],
   },
 
   {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
     actual: {},
     expected: { plus: 'plusValue' },
-    numMinus: 3,
-    numPlus: 1,
-    log: [
-      `  ${green}- {${colorEnd}`,
-      `  ${green}-   "plus": "plusValue"${colorEnd}`,
-      `  ${green}- }${colorEnd}`,
-      `  ${red}+ {}${colorEnd}`,
-    ],
+    numMinus: 1,
+    numPlus: 0,
+    log: [`    {`, `  ${green}-   "plus": "plusValue",${colorEnd}`, `    }`],
   },
 
   {
@@ -94,7 +84,7 @@ const cases: readonly Case[] = [
     log: [
       `  ${green}- undefined${colorEnd}`,
       `  ${red}+ {${colorEnd}`,
-      `  ${red}+   "minus": "minusValue"${colorEnd}`,
+      `  ${red}+   "minus": "minusValue",${colorEnd}`,
       `  ${red}+ }${colorEnd}`,
     ],
   },
@@ -107,35 +97,7 @@ const cases: readonly Case[] = [
     numPlus: 1,
     log: [
       `  ${green}- {${colorEnd}`,
-      `  ${green}-   "plus": "plusValue"${colorEnd}`,
-      `  ${green}- }${colorEnd}`,
-      `  ${red}+ undefined${colorEnd}`,
-    ],
-  },
-
-  {
-    name: 'can use undefined in actual',
-    actual: { minus: 'minusValue' },
-    expected: undefined,
-    numPlus: 3,
-    numMinus: 1,
-    log: [
-      `  ${green}- undefined${colorEnd}`,
-      `  ${red}+ {${colorEnd}`,
-      `  ${red}+   "minus": "minusValue"${colorEnd}`,
-      `  ${red}+ }${colorEnd}`,
-    ],
-  },
-
-  {
-    name: 'can use undefined in expected',
-    actual: undefined,
-    expected: { plus: 'plusValue' },
-    numPlus: 1,
-    numMinus: 3,
-    log: [
-      `  ${green}- {${colorEnd}`,
-      `  ${green}-   "plus": "plusValue"${colorEnd}`,
+      `  ${green}-   "plus": "plusValue",${colorEnd}`,
       `  ${green}- }${colorEnd}`,
       `  ${red}+ undefined${colorEnd}`,
     ],

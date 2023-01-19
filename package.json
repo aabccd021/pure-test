@@ -59,6 +59,7 @@
     "diff": "^5.1.0",
     "fp-ts": "^2.13.1",
     "fp-ts-std": "^0.15.1",
+    "io-ts": "^2.2.20",
     "picocolors": "^1.0.0",
     "retry-ts": "^0.1.4",
     "spectacles-ts": "^1.0.7",

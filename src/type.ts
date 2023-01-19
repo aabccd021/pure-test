@@ -39,16 +39,18 @@ export type Change = {
   readonly value: string;
 };
 
+export type SerializationError = {
+  readonly code: 'SerializationError';
+  readonly path: readonly (number | string)[];
+};
+
 export type AssertionError =
+  | SerializationError
   | {
       readonly code: 'AssertionError';
       readonly diff: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
-    }
-  | {
-      readonly code: 'serialization failed';
-      readonly details: unknown;
     }
   | {
       readonly code: 'Skipped';

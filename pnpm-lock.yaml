@@ -9,6 +9,7 @@ specifiers:
   eslint-config-chimeraant: ^1.2.6
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
+  io-ts: ^2.2.20
   picocolors: ^1.0.0
   pnpm: ^7.25.0
   retry-ts: ^0.1.4
@@ -23,6 +24,7 @@ dependencies:
   diff: 5.1.0
   fp-ts: 2.13.1
   fp-ts-std: 0.15.1_sddbbwftoqt3d5g3p7ix53ouca
+  io-ts: 2.2.20_fp-ts@2.13.1
   picocolors: 1.0.0
   retry-ts: 0.1.4_fp-ts@2.13.1
   spectacles-ts: 1.0.7_fp-ts@2.13.1
@@ -2120,6 +2122,14 @@ packages:
       from2: 2.3.0
       p-is-promise: 3.0.0
     dev: true
+
+  /io-ts/2.2.20_fp-ts@2.13.1:
+    resolution: {integrity: sha512-Rq2BsYmtwS5vVttie4rqrOCIfHCS9TgpRLFpKQCM1wZBBRY9nWVGmEvm2FnDbSE2un1UE39DvFpTR5UL47YDcA==}
+    peerDependencies:
+      fp-ts: ^2.5.0
+    dependencies:
+      fp-ts: 2.13.1
+    dev: false
 
   /is-arrayish/0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}

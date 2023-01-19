@@ -32,10 +32,8 @@ const caseToTest = (tc: Case) =>
       either.left({
         name: 'foo',
         error: {
+          ...tc.error,
           code: 'AssertionError' as const,
-          diff: tc.error.diff,
-          actual: tc.error.actual,
-          expected: tc.error.expected,
         },
       }),
     ],
@@ -50,10 +48,9 @@ const cases: readonly Case[] = [
       actual: { minus: 'minusValue' },
       expected: {},
       diff: [
-        { type: '-', value: `{}` },
-        { type: '+', value: `{` },
-        { type: '+', value: `  "minus": "minusValue"` },
-        { type: '+', value: `}` },
+        { type: '0', value: `{` },
+        { type: '+', value: `  "minus": "minusValue",` },
+        { type: '0', value: `}` },
       ],
     },
   },
@@ -66,10 +63,9 @@ const cases: readonly Case[] = [
       actual: {},
       expected: { plus: 'plusValue' },
       diff: [
-        { type: '-', value: `{` },
-        { type: '-', value: `  "plus": "plusValue"` },
-        { type: '-', value: `}` },
-        { type: '+', value: `{}` },
+        { type: '0', value: `{` },
+        { type: '-', value: `  "plus": "plusValue",` },
+        { type: '0', value: `}` },
       ],
     },
   },
@@ -84,7 +80,7 @@ const cases: readonly Case[] = [
       diff: [
         { type: '-', value: `undefined` },
         { type: '+', value: `{` },
-        { type: '+', value: `  "minus": "minusValue"` },
+        { type: '+', value: `  "minus": "minusValue",` },
         { type: '+', value: `}` },
       ],
     },
@@ -99,39 +95,7 @@ const cases: readonly Case[] = [
       expected: { plus: 'plusValue' },
       diff: [
         { type: '-', value: `{` },
-        { type: '-', value: `  "plus": "plusValue"` },
-        { type: '-', value: `}` },
-        { type: '+', value: `undefined` },
-      ],
-    },
-  },
-
-  {
-    name: 'can use undefined in actual',
-    actual: { minus: 'minusValue' },
-    expected: undefined,
-    error: {
-      actual: { minus: 'minusValue' },
-      expected: undefined,
-      diff: [
-        { type: '-', value: `undefined` },
-        { type: '+', value: `{` },
-        { type: '+', value: `  "minus": "minusValue"` },
-        { type: '+', value: `}` },
-      ],
-    },
-  },
-
-  {
-    name: 'can use undefined in expected',
-    actual: undefined,
-    expected: { plus: 'plusValue' },
-    error: {
-      actual: undefined,
-      expected: { plus: 'plusValue' },
-      diff: [
-        { type: '-', value: `{` },
-        { type: '-', value: `  "plus": "plusValue"` },
+        { type: '-', value: `  "plus": "plusValue",` },
         { type: '-', value: `}` },
         { type: '+', value: `undefined` },
       ],

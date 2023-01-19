@@ -1,22 +1,49 @@
 import { diffLines } from 'diff';
-import { apply, either, readonlyArray, readonlyRecord, string } from 'fp-ts';
+import { apply, array, either, readonlyArray, readonlyRecord, string } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
+import * as iots from 'io-ts';
 import { match } from 'ts-pattern';
 
-const stringify = (obj: unknown) =>
-  obj === undefined
+import type { SerializationError } from './type';
+
+const stringifyE = (
+  path: readonly (number | string)[],
+  obj: unknown
+): Either<SerializationError, string> =>
+  typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
+    ? either.right(JSON.stringify(obj))
+    : obj === undefined
     ? either.right('undefined')
-    : either.tryCatch(
-        () => {
-          const s = JSON.stringify(obj, undefined, 2);
-          // eslint-disable-next-line functional/no-conditional-statement
-          if (typeof s !== 'string') {
-            // eslint-disable-next-line functional/no-throw-statement
-            throw new Error('Converting unsupported structure to JSON');
-          }
-          return s;
-        },
-        (details: unknown) => ({ code: 'serialization failed' as const, details })
+    : Array.isArray(obj)
+    ? pipe(
+        obj,
+        array.traverseWithIndex(either.Applicative)((k, v) => stringifyE([...path, k], v)),
+        either.map(
+          flow(
+            array.map((x) => `  ${x},\n`),
+            array.intercalate(string.Monoid)(''),
+            (x) => `[\n${x}]`
+          )
+        )
+      )
+    : pipe(
+        obj,
+        iots.UnknownRecord.decode,
+        either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+        either.chain(
+          readonlyRecord.traverseWithIndex(either.Applicative)((k, v) =>
+            stringifyE([...path, k], v)
+          )
+        ),
+        either.map(
+          flow(
+            readonlyRecord.foldMapWithIndex(string.Ord)(string.Monoid)(
+              (k, v) => `  "${k}": ${v},\n`
+            ),
+            (x) => `{\n${x}}`
+          )
+        )
       );
 
 const removeLastNewLine = (str: string) =>
@@ -32,7 +59,7 @@ const removeLastNewLine = (str: string) =>
 export const getDiffs = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
-    readonlyRecord.map(stringify),
+    readonlyRecord.map((obj) => stringifyE([], obj)),
     apply.sequenceS(either.Apply),
     either.map(({ expected, actual }) => diffLines(expected, actual)),
     either.map(
