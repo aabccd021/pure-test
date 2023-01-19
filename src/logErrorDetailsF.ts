@@ -65,7 +65,7 @@ const formatErrorResult = (errorResult: TestFailResult) => [
   '',
 ];
 
-export const logF = (env: {
+export const logErrorDetailsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
 }): ((res: Task<readonly TestResult[]>) => Task<readonly TestResult[]>) =>
   task.chainFirstIOK(

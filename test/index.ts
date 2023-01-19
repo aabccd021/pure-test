@@ -10,4 +10,10 @@ import * as timeout from './timeout';
 
 const tests = [log.tests, exit.tests, timeout.tests, primitive.tests];
 
-export const main = pipe(tests, readonlyArray.flatten, src.runTests({}), src.log, srcNode.exit);
+export const main = pipe(
+  tests,
+  readonlyArray.flatten,
+  src.runTests({}),
+  src.logErrorDetails,
+  srcNode.exit
+);
