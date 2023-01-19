@@ -6,9 +6,10 @@ import * as srcNode from '../src/node';
 import * as exit from './exitF';
 import * as logErrorDetails from './logErrorDetailsF';
 import * as primitive from './primitive';
+import * as runTests from './runTests';
 import * as timeout from './timeout';
 
-const tests = [logErrorDetails.tests, exit.tests, timeout.tests, primitive.tests];
+const tests = [logErrorDetails.tests, exit.tests, timeout.tests, primitive.tests, runTests.tests];
 
 export const main = pipe(
   tests,

@@ -1,6 +1,5 @@
-import { logErrorDetails } from './logErrorDetails';
-import { logErrorDetailsF } from './logErrorDetailsF';
-import { runTests } from './runTests';
-import { test } from './test';
-
-export { logErrorDetails, logErrorDetailsF, runTests, test };
+export * from './logErrorDetails';
+export * from './logErrorDetailsF';
+export * from './runTests';
+export * from './test';
+export * from './type';
