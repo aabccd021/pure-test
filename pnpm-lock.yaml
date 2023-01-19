@@ -7,6 +7,7 @@ specifiers:
   diff: ^5.1.0
   eslint: ^8.30.0
   eslint-config-chimeraant: ^1.2.6
+  exec-main: ^1.0.1
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
   io-ts: ^2.2.20
@@ -36,6 +37,7 @@ devDependencies:
   c8: 7.12.0
   eslint: 8.30.0
   eslint-config-chimeraant: 1.2.6_lzzuuodtsqwxnvqeq4g4likcqa
+  exec-main: 1.0.2_ts-node@10.9.1
   pnpm: 7.25.0
   semantic-release: 20.0.2
   ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
@@ -1690,6 +1692,15 @@ packages:
   /esutils/2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /exec-main/1.0.2_ts-node@10.9.1:
+    resolution: {integrity: sha512-ScpgKnKzz7sbVVonltPIL3Ucr4SmNFBXFfD4Y6N0nvKwS9bEhK9masZhPUXRoGApY4IAHUL7WL4LD03sJPouuw==}
+    hasBin: true
+    peerDependencies:
+      ts-node: ^10.9.1
+    dependencies:
+      ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
     dev: true
 
   /execa/5.1.1:

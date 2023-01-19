@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "do": "sh -c 'ts-node --compilerOptions \"{\\\"isolatedModules\\\": false}\" --eval \"import(\\\"$0\\\").then(a => a.main());\"'",
-    "test": "pnpm do ./test/index",
+    "test": "exec-main ./test/index",
     "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
     "lint:fix": "pnpm lint --fix"
   },
@@ -72,6 +71,7 @@
     "eslint": "^8.30.0",
     "eslint-config-chimeraant": "^1.2.6",
     "pnpm": "^7.25.0",
+    "exec-main": "^1.0.1",
     "semantic-release": "^20.0.2",
     "ts-node": "^10.9.1",
     "tsup": "^6.5.0",
