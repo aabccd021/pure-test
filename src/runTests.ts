@@ -1,9 +1,9 @@
 import {
   apply,
-  array,
   boolean,
   either,
   readonlyArray,
+  readonlyNonEmptyArray,
   readonlyRecord,
   string,
   task,
@@ -11,6 +11,7 @@ import {
 } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
+import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
@@ -92,47 +93,61 @@ const assertionFailed =
     expected: result.expected,
   });
 
-const stringify = (
-  path: readonly (number | string)[],
-  obj: unknown
-): Either<SerializationError, string> =>
-  typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
-    ? either.right(JSON.stringify(obj))
-    : obj === undefined
-    ? either.right('undefined')
-    : Array.isArray(obj)
-    ? pipe(
-        obj,
-        array.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v)),
-        either.map(
-          flow(
-            array.map((x) => `  ${x},\n`),
-            array.intercalate(string.Monoid)(''),
-            (x) => `[\n${x}]`
+const serializeToLines =
+  (path: readonly (number | string)[]) =>
+  (obj: unknown): Either<SerializationError, ReadonlyNonEmptyArray<string>> =>
+    typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
+      ? either.right([JSON.stringify(obj)])
+      : obj === undefined
+      ? either.right(['undefined'])
+      : Array.isArray(obj)
+      ? pipe(
+          obj,
+          readonlyArray.traverseWithIndex(either.Applicative)((k, v) =>
+            serializeToLines([...path, k])(v)
+          ),
+          either.map(
+            flow(
+              readonlyArray.flatten,
+              readonlyArray.map((x) => `  ${x},`),
+              (xs) => [`[`, ...xs, `]`]
+            )
           )
         )
-      )
-    : pipe(
-        obj,
-        iots.UnknownRecord.decode,
-        either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
-        either.chain(
-          readonlyRecord.traverseWithIndex(either.Applicative)((k, v) => stringify([...path, k], v))
-        ),
-        either.map(
-          flow(
-            readonlyRecord.foldMapWithIndex(string.Ord)(string.Monoid)(
-              (k, v) => `  "${k}": ${v},\n`
-            ),
-            (x) => `{\n${x}}`
+      : pipe(
+          obj,
+          iots.UnknownRecord.decode,
+          either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+          either.chain(
+            readonlyRecord.traverseWithIndex(either.Applicative)((k, v) =>
+              serializeToLines([...path, k])(v)
+            )
+          ),
+          either.map(
+            flow(
+              readonlyRecord.foldMapWithIndex(string.Ord)(readonlyArray.getMonoid<string>())(
+                (k, v) =>
+                  pipe(
+                    v,
+                    readonlyNonEmptyArray.modifyHead((x) => `"${k}": ${x}`),
+                    readonlyNonEmptyArray.modifyLast((x) => `${x},`)
+                  )
+              ),
+              readonlyArray.map((x) => `  ${x}`),
+              (xs) => [`{`, ...xs, `}`]
+            )
           )
-        )
-      );
+        );
+
+const serialize = flow(
+  serializeToLines([]),
+  either.map(readonlyArray.intercalate(string.Monoid)('\n'))
+);
 
 const assertEqual = (result: { readonly expected: unknown; readonly actual: unknown }) =>
   pipe(
     result,
-    readonlyRecord.map((obj) => stringify([], obj)),
+    readonlyRecord.map(serialize),
     apply.sequenceS(either.Apply),
     either.map(diffLines),
     either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result)))
