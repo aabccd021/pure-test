@@ -32,8 +32,8 @@ const caseToTest = (tc: Case) =>
       either.left({
         name: 'foo',
         error: {
-          ...tc.error,
           code: 'AssertionError' as const,
+          ...tc.error,
         },
       }),
     ],
@@ -121,8 +121,8 @@ const cases: readonly Case[] = [
     actual: undefined,
     expected: 'undefined',
     error: {
-      actual: undefined,
       expected: 'undefined',
+      actual: undefined,
       diff: [
         { type: '-', value: `"undefined"` },
         { type: '+', value: `undefined` },

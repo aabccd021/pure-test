@@ -32,7 +32,7 @@ export const tests = [
   test({
     name: 'should be able to compare object with number index',
     act: task.of({ 1: 1 }),
-    assert: { 1: 2 },
+    assert: { 1: 1 },
   }),
 
   test({
