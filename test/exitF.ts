@@ -1,35 +1,33 @@
 import { ioRef, readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-import { runTests, test } from '../src';
+import { assert, runTests, test } from '../src';
 import { exitF } from '../src/exitF';
-import { testW } from '../src/test';
 
-const caseToTest = (p: {
+const caseToTest = (tc: {
   readonly name: string;
   readonly actual: string;
   readonly exitCode: number | undefined;
 }) =>
   test({
-    name: p.name,
+    name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef<number | undefined>(undefined)),
       task.chainFirst((exitCodeRef) =>
         pipe(
           [
-            testW({
+            test({
               name: 'tesnNme',
-              act: task.of(p.actual),
-              assert: 'foo',
+              act: pipe(tc.actual, assert.equal('foo'), task.of),
             }),
           ],
           runTests({}),
           exitF({ process: { exit: exitCodeRef.write } })
         )
       ),
-      task.chainIOK((exitCodeRef) => exitCodeRef.read)
+      task.chainIOK((exitCodeRef) => exitCodeRef.read),
+      task.map(assert.equal(tc.exitCode))
     ),
-    assert: p.exitCode,
   });
 
 const cases = [

@@ -1,8 +1,7 @@
 import { ioRef, readonlyArray, string, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-import { logErrorDetailsF, runTests, test } from '../src';
-import { testW } from '../src/test';
+import { assert, logErrorDetailsF, runTests, test } from '../src';
 
 const green = '\x1b[32m';
 const red = '\x1b[31m';
@@ -31,10 +30,9 @@ const caseToTest = (tc: Case) =>
       task.chainFirst((logRef) =>
         pipe(
           [
-            testW({
+            test({
               name: 'foo',
-              act: task.of(tc.actual),
-              assert: tc.expected,
+              act: pipe(tc.actual, assert.equal(tc.expected), task.of),
             }),
           ],
           runTests({}),
@@ -42,18 +40,20 @@ const caseToTest = (tc: Case) =>
         )
       ),
       task.chainIOK((logRef) => logRef.read),
-      task.map(string.split('\n'))
+      task.map(string.split('\n')),
+      task.map(
+        assert.equalArray([
+          `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
+          `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
+          ``,
+          `  ${green}- Expected  - ${tc.numMinus}${colorEnd}`,
+          `  ${red}+ Received  + ${tc.numPlus}${colorEnd}`,
+          `  `,
+          ...tc.log,
+          ``,
+        ])
+      )
     ),
-    assert: [
-      `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
-      `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
-      ``,
-      `  ${green}- Expected  - ${tc.numMinus}${colorEnd}`,
-      `  ${red}+ Received  + ${tc.numPlus}${colorEnd}`,
-      `  `,
-      ...tc.log,
-      ``,
-    ],
   });
 
 const cases: readonly Case[] = [

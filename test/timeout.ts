@@ -1,9 +1,8 @@
 import { either, readonlyArray, task } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 
-import { runTests } from '../src';
-import { test } from '../src/test';
+import { assert, runTests, test } from '../src';
 import type { TestError } from '../src/type';
 
 type Case = {
@@ -12,40 +11,45 @@ type Case = {
   readonly result: Either<TestError, undefined>;
 };
 
-const caseToTest = (c: Case) =>
+const timeoutTime = 500;
+const timeoutTestTime = 1000;
+const nonTimeoutTestTime = 0;
+
+const caseToTest = (tc: Case) =>
   test({
-    name: c.name,
+    name: tc.name,
     act: pipe(
       [
         test({
           name: 'foo',
-          act: task.delay(c.testTime)(task.of('foo')),
-          assert: 'foo',
-          timeout: 500,
+          act: pipe('foo', task.of, task.delay(tc.testTime), task.map(assert.equal('foo'))),
+          timeout: timeoutTime,
         }),
       ],
       runTests({}),
       task.map(
-        readonlyArray.map(
-          either.bimap(
-            ({ error }) => error,
-            () => undefined
-          )
+        flow(
+          readonlyArray.map(
+            either.bimap(
+              ({ error }) => error,
+              () => undefined
+            )
+          ),
+          assert.equalArray([tc.result])
         )
       )
     ),
-    assert: [c.result],
   });
 
 const cases: readonly Case[] = [
   {
     name: 'Timed out test should return timed out error',
-    testTime: 1000, // should time out
+    testTime: timeoutTestTime,
     result: either.left({ code: 'timed out' as const }),
   },
   {
     name: 'Non timed out test should pass',
-    testTime: 0, // should not time out
+    testTime: nonTimeoutTestTime,
     result: either.right(undefined),
   },
 ];

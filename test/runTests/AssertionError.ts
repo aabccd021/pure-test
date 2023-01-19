@@ -2,7 +2,7 @@ import { either, readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import type { Change } from '../../src';
-import { runTests, test, testW } from '../../src';
+import { assert, runTests, test } from '../../src';
 
 type Case = {
   readonly name: string;
@@ -20,23 +20,24 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       [
-        testW({
+        test({
           name: 'foo',
-          act: task.of(tc.actual),
-          assert: tc.expected,
+          act: pipe(tc.actual, assert.equal(tc.expected), task.of),
         }),
       ],
-      runTests({})
+      runTests({}),
+      task.map(
+        assert.equalArrayW([
+          either.left({
+            name: 'foo',
+            error: {
+              code: 'AssertionError' as const,
+              ...tc.error,
+            },
+          }),
+        ])
+      )
     ),
-    assert: [
-      either.left({
-        name: 'foo',
-        error: {
-          code: 'AssertionError' as const,
-          ...tc.error,
-        },
-      }),
-    ],
   });
 
 const cases: readonly Case[] = [

@@ -2,33 +2,46 @@ import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
+export type AssertEqual = {
+  readonly type: 'AssertEqual';
+  readonly expected: unknown;
+  readonly actual: unknown;
+};
+
+export type Assert = AssertEqual;
+
 export type Concurrency =
   | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast?: false };
 
-export type Assertion<A = unknown, B = unknown> = {
+export type Assertion = {
   readonly name: string;
-  readonly act: Task<A>;
-  readonly assert: B;
+  readonly act: Task<Assert>;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
 
-export type SingleAssertionTest = {
-  readonly assertion: 'single';
+export type Test = {
+  readonly type: 'test';
   readonly todo?: true;
   readonly assert: Assertion;
 };
 
-export type MultipleAssertionTest = {
-  readonly assertion: 'multiple';
+export const test = ({ todo, ...assert }: Assertion & { readonly todo?: true }): Test => ({
+  type: 'test',
+  todo,
+  assert,
+});
+
+export type Group = {
+  readonly type: 'group';
   readonly name: string;
   readonly todo?: true;
   readonly concurrency?: Concurrency;
   readonly asserts: readonly Assertion[];
 };
 
-export type Test = MultipleAssertionTest | SingleAssertionTest;
+export type TestOrGroup = Group | Test;
 
 export type TestConfig = {
   readonly concurrency?: Concurrency;
