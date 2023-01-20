@@ -6,7 +6,7 @@ import * as std from 'fp-ts-std';
 import * as c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestError, TestFailResult, TestsResult } from './type';
+import type { Change, SuiteResult, TestError, TestFailResult } from './type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -60,7 +60,7 @@ const formatErrorResult = (errorResult: TestFailResult): readonly string[] =>
 
 export const logErrorDetailsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<TestsResult>) => Task<TestsResult>) =>
+}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
   flow(
     taskEither.swap,
     taskEither.chainFirstIOK(

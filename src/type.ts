@@ -123,4 +123,4 @@ export type TestPassResult = {
 
 export type TestResult = Either<TestFailResult, TestPassResult>;
 
-export type TestsResult = Either<readonly TestResult[], readonly TestPassResult[]>;
+export type SuiteResult = Either<readonly TestResult[], readonly TestPassResult[]>;

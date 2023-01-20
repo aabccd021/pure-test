@@ -14,11 +14,11 @@ import type {
   AssertionResult,
   Concurrency,
   Group,
+  SuiteResult,
   TestConfig,
   TestOrGroup,
   TestPassResult,
   TestResult,
-  TestsResult,
 } from './type';
 
 const runSequentialFailFast =
@@ -159,7 +159,7 @@ const getTestName = (test: TestOrGroup): string =>
     .with({ type: 'group' }, ({ name }) => name)
     .exhaustive();
 
-const aggregateTestResult2 = (r: readonly TestResult[]): TestsResult =>
+const aggregateTestResult2 = (r: readonly TestResult[]): SuiteResult =>
   pipe(
     r,
     readonlyArray.reduce(
@@ -169,7 +169,7 @@ const aggregateTestResult2 = (r: readonly TestResult[]): TestsResult =>
           acc,
           either.mapLeft(readonlyArray.append(el)),
           either.chain(
-            (accr): TestsResult =>
+            (accr): SuiteResult =>
               pipe(
                 el,
                 either.bimap(
@@ -187,7 +187,7 @@ const aggregateTestResult2 = (r: readonly TestResult[]): TestsResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: readonly TestOrGroup[]) => Task<TestsResult>) =>
+): ((tests: readonly TestOrGroup[]) => Task<SuiteResult>) =>
   flow(
     runWithConcurrency({
       concurrency: config.concurrency,
