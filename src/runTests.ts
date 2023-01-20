@@ -14,6 +14,7 @@ import type {
   AssertionResult,
   Concurrency,
   Group,
+  SuiteError,
   SuiteResult,
   TestConfig,
   TestOrGroup,
@@ -187,13 +188,15 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: readonly TestOrGroup[]) => Task<SuiteResult>) =>
-  flow(
-    runWithConcurrency({
-      concurrency: config.concurrency,
-      run: runTest,
-      afterFail: (test) =>
-        either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
-    }),
-    task.map(aggregateTestResult)
+): ((tests: TaskEither<SuiteError, readonly TestOrGroup[]>) => Task<SuiteResult>) =>
+  taskEither.chain(
+    flow(
+      runWithConcurrency({
+        concurrency: config.concurrency,
+        run: runTest,
+        afterFail: (test) =>
+          either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
+      }),
+      task.map(aggregateTestResult)
+    )
   );

@@ -1,4 +1,4 @@
-import { either, readonlyArray, task } from 'fp-ts';
+import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import type { Change, SuiteError } from '../../src';
@@ -17,16 +17,16 @@ type Case = {
 
 const caseToTest = (tc: Case) =>
   test({
-    name: tc.name,
+    name: `AssertionError > ${tc.name}`,
     act: pipe(
-      [
+      taskEither.right([
         test({
           name: 'foo',
           act: pipe(tc.actual, assert.equal(tc.expected), task.of),
         }),
-      ],
+      ]),
       runTests({}),
-      assert.taskEitherLeftAnd(
+      assert.chainTaskEitherLeft(
         assert.equal<SuiteError>({
           type: 'TestError',
           results: [

@@ -14,7 +14,7 @@ const caseToTest = (tc: TestCase) =>
   test({
     name: tc.name,
     act: pipe(
-      [
+      taskEither.right([
         test({
           name: 'should pass',
           act: pipe('foo', assert.equal('foo'), task.of),
@@ -27,7 +27,7 @@ const caseToTest = (tc: TestCase) =>
           name: 'should skip',
           act: pipe('foo', assert.equal('bar'), task.of),
         }),
-      ],
+      ]),
       runTests({
         concurrency: {
           type: 'sequential',

@@ -1,4 +1,4 @@
-import { ioRef, readonlyArray, task } from 'fp-ts';
+import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import { assert, runTests, test } from '../../../src';
@@ -16,7 +16,7 @@ const caseToTest = (tc: TestCase) =>
       task.fromIO(ioRef.newIORef(false)),
       task.chainFirst((isLastTestExecutedRef) =>
         pipe(
-          [
+          taskEither.right([
             test({
               name: 'should pass',
               act: pipe('foo', assert.equal('foo'), task.of),
@@ -34,7 +34,7 @@ const caseToTest = (tc: TestCase) =>
                 task.chainFirstIOK(() => isLastTestExecutedRef.write(true))
               ),
             }),
-          ],
+          ]),
           runTests({
             concurrency: {
               type: 'sequential',

@@ -1,4 +1,4 @@
-import { ioRef, readonlyArray, task } from 'fp-ts';
+import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import { assert, runTests, test } from '../src';
@@ -15,12 +15,12 @@ const caseToTest = (tc: {
       task.fromIO(ioRef.newIORef<number | undefined>(undefined)),
       task.chainFirst((exitCodeRef) =>
         pipe(
-          [
+          taskEither.right([
             test({
               name: 'tesnNme',
               act: pipe(tc.actual, assert.equal('foo'), task.of),
             }),
-          ],
+          ]),
           runTests({}),
           exitF({ process: { exit: exitCodeRef.write } })
         )

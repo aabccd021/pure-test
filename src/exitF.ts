@@ -1,9 +1,9 @@
 import { either, task } from 'fp-ts';
 import { flow } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
-import type { Task } from 'fp-ts/Task';
+import type { TaskEither } from 'fp-ts/TaskEither';
 
-import type { SuiteResult } from './type';
+import type { SuiteError, TestPassResult } from './type';
 
 export type Env = { readonly process: Pick<typeof process, 'exit'> };
 
@@ -11,7 +11,9 @@ export const exitF = (env: {
   readonly process: {
     readonly exit: (exitCode: number | undefined) => IO<void>;
   };
-}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
+}): ((
+  res: TaskEither<SuiteError, readonly TestPassResult[]>
+) => TaskEither<SuiteError, readonly TestPassResult[]>) =>
   task.chainFirstIOK(
     flow(
       either.match(

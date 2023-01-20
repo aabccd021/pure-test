@@ -20,13 +20,13 @@ const caseToTest = (tc: Case) =>
   test({
     name: tc.name,
     act: pipe(
-      [
+      taskEither.right([
         test({
           name: 'foo',
           act: pipe('foo', task.of, task.delay(tc.testTime), task.map(assert.equal('foo'))),
           timeout: timeoutTime,
         }),
-      ],
+      ]),
       runTests({}),
       taskEither.bimap(
         (suiteError) =>
