@@ -1,6 +1,5 @@
-import { readonlyArray } from 'fp-ts';
-
+import { scopeTests } from '../../src';
 import * as AssertionError from './AssertionError';
 import * as SerializationError from './SerializationError';
 
-export const tests = readonlyArray.flatten([AssertionError.tests, SerializationError.tests]);
+export const tests = scopeTests({ AssertionError, SerializationError });

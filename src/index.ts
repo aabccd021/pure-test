@@ -4,4 +4,5 @@ export * from './logErrorDetailsF';
 export * from './logTestsNameAndResult';
 export * from './logTestsNameAndResultF';
 export * from './runTests';
+export * from './scopeTests';
 export * from './type';

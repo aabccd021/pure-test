@@ -17,7 +17,7 @@ type Case = {
 
 const caseToTest = (tc: Case) =>
   test({
-    name: `AssertionError > ${tc.name}`,
+    name: tc.name,
     act: pipe(
       taskEither.right([
         test({

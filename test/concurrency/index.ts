@@ -1,5 +1,4 @@
-import { readonlyArray } from 'fp-ts';
-
+import { scopeTests } from '../../src';
 import * as sequential from './sequential';
 
-export const tests = readonlyArray.flatten([sequential.tests]);
+export const tests = scopeTests({ sequential });
