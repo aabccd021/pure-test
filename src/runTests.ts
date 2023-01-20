@@ -90,7 +90,7 @@ const runWithRetry =
 const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
-    taskEither.map(runAssert),
+    taskEither.chainEitherK(runAssert),
     runWithTimeout({ timeout: assertion.timeout }),
     runWithRetry({ retry: assertion.retry }),
     taskEither.bimap(

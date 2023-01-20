@@ -16,5 +16,6 @@ export const main = pipe(
   readonlyArray.flatten,
   src.runTests({}),
   src.logErrorDetails,
+  src.logTestsNameAndResults,
   srcNode.exit
 );

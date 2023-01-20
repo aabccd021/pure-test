@@ -3,7 +3,7 @@ import { flow, identity, pipe } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
 import * as std from 'fp-ts-std';
-import c from 'picocolors';
+import * as c from 'picocolors';
 import { match } from 'ts-pattern';
 
 import type { Change, TestError, TestFailResult, TestResult } from './type';
@@ -40,28 +40,18 @@ const diffNums = (diff: readonly Change[]) => [
 
 const diffToString = readonlyArray.map(formatChangeStr);
 
-const formatError = (error: TestError): string =>
+const formatError = (error: TestError): readonly string[] =>
   match(error)
     .with({ code: 'AssertionError' }, ({ diff }) =>
-      pipe(
-        [diffNums(diff), diffToString(diff)],
-        readonlyArray.flatten,
-        readonlyArray.intercalate(string.Monoid)('\n')
-      )
+      readonlyArray.flatten([diffNums(diff), diffToString(diff)])
     )
-    .otherwise((err) => JSON.stringify(err, undefined, 2));
+    .otherwise((err) => [JSON.stringify(err, undefined, 2)]);
 
-const indent = flow(
-  string.split('\n'),
-  readonlyArray.map(std.string.prepend('  ')),
-  readonlyArray.intercalate(string.Monoid)('\n')
-);
-
-const formatErrorResult = (errorResult: TestFailResult) => [
+const formatErrorResult = (errorResult: TestFailResult): readonly string[] => [
   `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
   c.red(c.bold(`${errorResult.error.code}:`)),
   '',
-  pipe(errorResult.error, formatError, indent),
+  ...pipe(errorResult.error, formatError, readonlyArray.map(std.string.prepend('  '))),
   '',
 ];
 

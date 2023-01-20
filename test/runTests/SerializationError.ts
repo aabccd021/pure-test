@@ -42,23 +42,26 @@ const cases: readonly Case[] = [
     expected: {},
     errorPath: ['path1'],
   },
+
   {
     name: 'should return left when comparing function inside path on expected',
     actual: {},
     expected: { path1: () => 'foo' },
     errorPath: ['path1'],
   },
+
   {
     name: 'should return left when comparing function on actual',
     actual: () => 'foo',
     expected: {},
-    errorPath: ['path1'],
+    errorPath: [],
   },
+
   {
     name: 'should return left when comparing function on expected',
     actual: {},
     expected: () => 'foo',
-    errorPath: ['path1'],
+    errorPath: [],
   },
 ];
 

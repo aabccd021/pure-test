@@ -18,8 +18,8 @@ type Case = {
   readonly actual: unknown;
   readonly expected: unknown;
   readonly log: readonly string[];
-  readonly numPlus: number;
-  readonly numMinus: number;
+  readonly receivedCount: number;
+  readonly expectedCount: number;
 };
 
 const caseToTest = (tc: Case) =>
@@ -46,8 +46,8 @@ const caseToTest = (tc: Case) =>
           `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
           `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
           ``,
-          `  ${green}- Expected  - ${tc.numMinus}${colorEnd}`,
-          `  ${red}+ Received  + ${tc.numPlus}${colorEnd}`,
+          `  ${green}- Expected  - ${tc.expectedCount}${colorEnd}`,
+          `  ${red}+ Received  + ${tc.receivedCount}${colorEnd}`,
           `  `,
           ...tc.log,
           ``,
@@ -61,17 +61,36 @@ const cases: readonly Case[] = [
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
     actual: { minus: 'minusValue' },
     expected: {},
-    numMinus: 0,
-    numPlus: 1,
+    expectedCount: 0,
+    receivedCount: 1,
     log: [`    {`, `  ${red}+   "minus": "minusValue",${colorEnd}`, `    }`],
+  },
+
+  {
+    name: 'multiple line minus diff is indented correctly',
+    actual: {
+      nested: {
+        minus: 'minusValue',
+      },
+    },
+    expected: {},
+    expectedCount: 0,
+    receivedCount: 3,
+    log: [
+      `    {`,
+      `  ${red}+   "nested": {${colorEnd}`,
+      `  ${red}+     "minus": "minusValue",${colorEnd}`,
+      `  ${red}+   },${colorEnd}`,
+      `    }`,
+    ],
   },
 
   {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
     actual: {},
     expected: { plus: 'plusValue' },
-    numMinus: 1,
-    numPlus: 0,
+    expectedCount: 1,
+    receivedCount: 0,
     log: [`    {`, `  ${green}-   "plus": "plusValue",${colorEnd}`, `    }`],
   },
 
@@ -79,8 +98,8 @@ const cases: readonly Case[] = [
     name: 'can use undefined in actual',
     actual: { minus: 'minusValue' },
     expected: undefined,
-    numMinus: 1,
-    numPlus: 3,
+    expectedCount: 1,
+    receivedCount: 3,
     log: [
       `  ${green}- undefined${colorEnd}`,
       `  ${red}+ {${colorEnd}`,
@@ -93,8 +112,8 @@ const cases: readonly Case[] = [
     name: 'can use undefined in expected',
     actual: undefined,
     expected: { plus: 'plusValue' },
-    numMinus: 3,
-    numPlus: 1,
+    expectedCount: 3,
+    receivedCount: 1,
     log: [
       `  ${green}- {${colorEnd}`,
       `  ${green}-   "plus": "plusValue",${colorEnd}`,
@@ -107,8 +126,8 @@ const cases: readonly Case[] = [
     name: 'can differentiate actual undefined and expected string "undefined"',
     actual: 'undefined',
     expected: undefined,
-    numPlus: 1,
-    numMinus: 1,
+    receivedCount: 1,
+    expectedCount: 1,
     log: [`  ${green}- undefined${colorEnd}`, `  ${red}+ "undefined"${colorEnd}`],
   },
 
@@ -116,8 +135,8 @@ const cases: readonly Case[] = [
     name: 'can differentiate actual string "undefined" and expected undefined',
     actual: undefined,
     expected: 'undefined',
-    numPlus: 1,
-    numMinus: 1,
+    receivedCount: 1,
+    expectedCount: 1,
     log: [`  ${green}- "undefined"${colorEnd}`, `  ${red}+ undefined${colorEnd}`],
   },
 ];
