@@ -1,5 +1,5 @@
-import type { SuiteError } from '@src/index';
-import { assert, runTests, test } from '@src/index';
+import type { SuiteError } from '@src';
+import { assert, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 

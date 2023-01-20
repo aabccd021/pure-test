@@ -1,4 +1,4 @@
-import { scopeTests } from '@src/index';
+import { scopeTests } from '@src';
 
 import * as sequential from './sequential';
 

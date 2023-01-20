@@ -1,4 +1,4 @@
-import * as src from '@src/index';
+import * as src from '@src';
 import * as srcNode from '@src/node';
 import { taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';

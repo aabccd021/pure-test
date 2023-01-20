@@ -19,9 +19,7 @@
   "types": "./cjs/index.d.ts",
   "exports": {
     "./cjs/node": {
-      "require": "./cjs/node.js"
-    },
-    "./esm/node": {
+      "require": "./cjs/node.js",
       "import": "./esm/node.js"
     }
   },

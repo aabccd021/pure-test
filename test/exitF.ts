@@ -1,5 +1,4 @@
-import { exitF } from '@src/exitF';
-import { assert, runTests, test } from '@src/index';
+import { assert, exitF, runTests, test } from '@src';
 import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 

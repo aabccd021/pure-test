@@ -1,4 +1,4 @@
-import { assert, logErrorDetailsF, runTests, test } from '@src/index';
+import { assert, logErrorDetailsF, runTests, test } from '@src';
 import { ioRef, readonlyArray, string, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 

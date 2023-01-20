@@ -1,4 +1,5 @@
 export * as assert from './assert';
+export { exitF } from './exitF';
 export { logErrorDetails } from './logErrorDetails';
 export { logErrorDetailsF } from './logErrorDetailsF';
 export { logTestsNameAndResults } from './logTestsNameAndResults';

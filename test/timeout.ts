@@ -1,5 +1,5 @@
-import type { TestError } from '@src/index';
-import { assert, runTests, test } from '@src/index';
+import type { TestError } from '@src';
+import { assert, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';

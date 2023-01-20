@@ -1,4 +1,4 @@
-import { assert, test } from '@src/index';
+import { assert, test } from '@src';
 import { readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 

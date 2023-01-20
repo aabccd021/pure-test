@@ -1,4 +1,4 @@
-import { scopeTests } from '@src/index';
+import { scopeTests } from '@src';
 
 import * as AssertionError from './AssertionError';
 import * as SerializationError from './SerializationError';
