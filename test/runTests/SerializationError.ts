@@ -1,6 +1,7 @@
 import { either, readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
+import type { SuiteError } from '../../src';
 import { assert, runTests, test } from '../../src';
 
 type Case = {
@@ -22,15 +23,18 @@ const caseToTest = (tc: Case) =>
       ],
       runTests({}),
       assert.taskEitherLeftAnd(
-        assert.equalArrayW([
-          either.left({
-            name: 'foo',
-            error: {
-              code: 'SerializationError' as const,
-              path: tc.errorPath,
-            },
-          }),
-        ])
+        assert.equal<SuiteError>({
+          type: 'TestError',
+          results: [
+            either.left({
+              name: 'foo',
+              error: {
+                code: 'SerializationError' as const,
+                path: tc.errorPath,
+              },
+            }),
+          ],
+        })
       )
     ),
   });

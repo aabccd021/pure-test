@@ -123,4 +123,14 @@ export type TestPassResult = {
 
 export type TestResult = Either<TestFailResult, TestPassResult>;
 
-export type SuiteResult = Either<readonly TestResult[], readonly TestPassResult[]>;
+export type SuiteError =
+  | {
+      readonly type: 'DuplicateTestName';
+      readonly name: string;
+    }
+  | {
+      readonly type: 'TestError';
+      readonly results: readonly TestResult[];
+    };
+
+export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;

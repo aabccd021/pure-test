@@ -1,4 +1,4 @@
-import { either, readonlyArray, string, taskEither } from 'fp-ts';
+import { either, option, readonlyArray, string, taskEither, taskOption } from 'fp-ts';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
@@ -65,9 +65,16 @@ export const logErrorDetailsF = (env: {
     taskEither.swap,
     taskEither.chainFirstIOK(
       flow(
-        readonlyArray.chain(either.match(formatErrorResult, () => [])),
-        readonlyArray.intercalate(string.Monoid)('\n'),
-        env.console.log
+        (suiteError) =>
+          suiteError.type === 'TestError' ? option.some(suiteError.results) : option.none,
+        option.map(
+          flow(
+            readonlyArray.chain(either.match(formatErrorResult, () => [])),
+            readonlyArray.intercalate(string.Monoid)('\n')
+          )
+        ),
+        taskOption.fromOption,
+        taskOption.chainIOK(env.console.log)
       )
     ),
     taskEither.swap

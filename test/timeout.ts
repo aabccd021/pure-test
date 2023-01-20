@@ -1,6 +1,6 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
-import type { Either } from 'fp-ts/Either';
+import { either, option, readonlyArray, task, taskEither, taskOption } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
+import type { Option } from 'fp-ts/Option';
 
 import { assert, runTests, test } from '../src';
 import type { TestError } from '../src/type';
@@ -8,7 +8,7 @@ import type { TestError } from '../src/type';
 type Case = {
   readonly name: string;
   readonly testTime: number;
-  readonly result: Either<TestError, undefined>;
+  readonly testError: Option<TestError>;
 };
 
 const timeoutTime = 500;
@@ -28,15 +28,17 @@ const caseToTest = (tc: Case) =>
       ],
       runTests({}),
       taskEither.match(
-        readonlyArray.map(
-          either.bimap(
-            ({ error }) => error,
-            () => undefined
-          )
-        ),
-        readonlyArray.map(() => either.right(undefined))
+        (suiteError) =>
+          suiteError.type === 'TestError' ? readonlyArray.head(suiteError.results) : option.none,
+        () => option.none
       ),
-      task.map(assert.equal(readonlyArray.of(tc.result)))
+      taskOption.chainOptionK(
+        either.match(
+          ({ error }) => option.some(error),
+          () => option.none
+        )
+      ),
+      task.map(assert.equal(tc.testError))
     ),
   });
 
@@ -44,12 +46,12 @@ const cases: readonly Case[] = [
   {
     name: 'Timed out test should return timed out error',
     testTime: timeoutTestTime,
-    result: either.left({ code: 'timed out' as const }),
+    testError: option.some({ code: 'timed out' as const }),
   },
   {
     name: 'Non timed out test should pass',
     testTime: nonTimeoutTestTime,
-    result: either.right(undefined),
+    testError: option.none,
   },
 ];
 

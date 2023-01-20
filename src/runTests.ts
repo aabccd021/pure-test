@@ -159,30 +159,30 @@ const getTestName = (test: TestOrGroup): string =>
     .with({ type: 'group' }, ({ name }) => name)
     .exhaustive();
 
-const aggregateTestResult2 = (r: readonly TestResult[]): SuiteResult =>
+const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
   pipe(
-    r,
+    testResults,
     readonlyArray.reduce(
       either.right<readonly TestResult[], readonly TestPassResult[]>([]),
       (acc, el) =>
         pipe(
           acc,
           either.mapLeft(readonlyArray.append(el)),
-          either.chain(
-            (accr): SuiteResult =>
-              pipe(
-                el,
-                either.bimap(
-                  (ell): readonly TestResult[] => [
-                    ...pipe(accr, readonlyArray.map(either.right)),
-                    either.left(ell),
-                  ],
-                  (elr): readonly TestPassResult[] => [...accr, elr]
-                )
+          either.chain((accr) =>
+            pipe(
+              el,
+              either.bimap(
+                (ell): readonly TestResult[] => [
+                  ...pipe(accr, readonlyArray.map(either.right)),
+                  either.left(ell),
+                ],
+                (elr): readonly TestPassResult[] => [...accr, elr]
               )
+            )
           )
         )
-    )
+    ),
+    either.mapLeft((results) => ({ type: 'TestError' as const, results }))
   );
 
 export const runTests = (
@@ -195,5 +195,5 @@ export const runTests = (
       afterFail: (test) =>
         either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
     }),
-    task.map(aggregateTestResult2)
+    task.map(aggregateTestResult)
   );

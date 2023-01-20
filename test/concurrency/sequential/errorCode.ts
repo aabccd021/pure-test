@@ -1,4 +1,4 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import type { AssertionError } from '../../../src';
@@ -34,23 +34,35 @@ const caseToTest = (tc: TestCase) =>
           failFast: tc.failFast,
         },
       }),
-      taskEither.mapLeft(
-        readonlyArray.map(either.mapLeft((res) => ({ name: res.name, errorCode: res.error.code })))
+      taskEither.mapLeft((suiteError) =>
+        suiteError.type === 'TestError'
+          ? pipe(
+              suiteError.results,
+              readonlyArray.map(
+                either.mapLeft((res) => ({ name: res.name, errorCode: res.error.code }))
+              ),
+              option.some
+            )
+          : option.none
       ),
       assert.taskEitherLeftAnd(
-        assert.equalArrayW([
-          either.right({
-            name: 'should pass',
-          }),
-          either.left({
-            name: 'should fail',
-            errorCode: 'AssertionError',
-          }),
-          either.left({
-            name: 'should skip',
-            errorCode: tc.errorCodeAfterFailedTest,
-          }),
-        ])
+        assert.equal(
+          option.some(
+            readonlyArray.fromArray([
+              either.right({
+                name: 'should pass',
+              }),
+              either.left({
+                name: 'should fail',
+                errorCode: 'AssertionError',
+              }),
+              either.left({
+                name: 'should skip',
+                errorCode: tc.errorCodeAfterFailedTest,
+              }),
+            ])
+          )
+        )
       )
     ),
   });
