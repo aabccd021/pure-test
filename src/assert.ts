@@ -1,6 +1,7 @@
 import { either, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
+import type { Option } from 'fp-ts/Option';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
@@ -9,6 +10,14 @@ import type { Assert, AssertEqual, EitherLeft } from './type';
 export const equal =
   <T>(expected: T) =>
   (actual: T): AssertEqual => ({
+    type: 'AssertEqual',
+    expected,
+    actual,
+  });
+
+export const equalOption =
+  <T>(expected: Option<T>) =>
+  (actual: Option<T>): AssertEqual => ({
     type: 'AssertEqual',
     expected,
     actual,

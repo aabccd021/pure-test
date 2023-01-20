@@ -1,13 +1,14 @@
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import type { AssertionError } from '../../../src';
+import type { TestError } from '../../../src';
 import { assert, runTests, test } from '../../../src';
 
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorCodeAfterFailedTest: AssertionError['code'];
+  readonly errorCodeAfterFailedTest: TestError['code'];
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -46,22 +47,25 @@ const caseToTest = (tc: TestCase) =>
           : option.none
       ),
       assert.taskEitherLeftAnd(
-        assert.equal(
-          option.some(
-            readonlyArray.fromArray([
-              either.right({
-                name: 'should pass',
-              }),
-              either.left({
-                name: 'should fail',
-                errorCode: 'AssertionError',
-              }),
-              either.left({
-                name: 'should skip',
-                errorCode: tc.errorCodeAfterFailedTest,
-              }),
-            ])
-          )
+        assert.equalOption<
+          readonly Either<
+            { readonly name: string; readonly errorCode: TestError['code'] },
+            { readonly name: string }
+          >[]
+        >(
+          option.some([
+            either.right({
+              name: 'should pass',
+            }),
+            either.left({
+              name: 'should fail',
+              errorCode: 'AssertionError',
+            }),
+            either.left({
+              name: 'should skip',
+              errorCode: tc.errorCodeAfterFailedTest,
+            }),
+          ])
         )
       )
     ),
