@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
         }),
       ]),
       runTests({}),
-      assert.chainTaskEitherLeft(
+      assert.taskEitherLeft(
         assert.equal<SuiteError>({
           type: 'TestError',
           results: [

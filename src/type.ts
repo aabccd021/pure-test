@@ -8,12 +8,21 @@ export type AssertEqual = {
   readonly actual: unknown;
 };
 
-export type EitherLeft = {
-  readonly type: 'EitherLeft';
-  readonly left: unknown;
+export type UnexpectedNone = {
+  readonly type: 'UnexpectedNone';
 };
 
-export type Assert = AssertEqual | EitherLeft;
+export type UnexpectedLeft = {
+  readonly type: 'UnexpectedLeft';
+  readonly value: unknown;
+};
+
+export type UnexpectedRight = {
+  readonly type: 'UnexpectedRight';
+  readonly value: unknown;
+};
+
+export type Assert = AssertEqual | UnexpectedLeft | UnexpectedNone | UnexpectedRight;
 
 export type Concurrency =
   | { readonly type: 'parallel' }
@@ -81,9 +90,6 @@ export type AssertionError =
       readonly expected: unknown;
     }
   | {
-      readonly code: 'EitherLeft';
-    }
-  | {
       readonly code: 'Skipped';
     }
   | {
@@ -92,7 +98,10 @@ export type AssertionError =
   | {
       readonly code: 'unhandled exception';
       readonly exception: unknown;
-    };
+    }
+  | { readonly code: 'UnexpectedLeft'; readonly value: unknown }
+  | { readonly code: 'UnexpectedNone' }
+  | { readonly code: 'UnexpectedRight'; readonly value: unknown };
 
 export type AssertionFailResult = {
   readonly name: string;

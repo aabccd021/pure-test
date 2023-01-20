@@ -48,23 +48,21 @@ const caseToTest = (tc: TestCase) =>
             )
           : option.none
       ),
-      assert.chainTaskEitherLeft(
-        assert.equal(
-          option.some(
-            readonlyArray.fromArray([
-              either.right({
-                name: 'should pass',
-              }),
-              either.left({
-                name: 'should fail',
-                errorCode: 'AssertionError',
-              }),
-              either.left({
-                name: 'should skip',
-                errorCode: tc.errorCodeAfterFailedTest,
-              }),
-            ])
-          )
+      assert.taskEitherLeft(
+        assert.option(
+          assert.equalArray([
+            either.right({
+              name: 'should pass',
+            }),
+            either.left({
+              name: 'should fail',
+              errorCode: 'AssertionError',
+            }),
+            either.left({
+              name: 'should skip',
+              errorCode: tc.errorCodeAfterFailedTest,
+            }),
+          ])
         )
       )
     ),
