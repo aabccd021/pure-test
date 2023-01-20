@@ -42,16 +42,18 @@ const caseToTest = (tc: Case) =>
       task.chainIOK((logRef) => logRef.read),
       task.map(string.split('\n')),
       task.map(
-        assert.equalArray([
-          `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
-          `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
-          ``,
-          `  ${green}- Expected  - ${tc.expectedCount}${colorEnd}`,
-          `  ${red}+ Received  + ${tc.receivedCount}${colorEnd}`,
-          `  `,
-          ...tc.log,
-          ``,
-        ])
+        assert.equal(
+          readonlyArray.fromArray([
+            `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
+            `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
+            ``,
+            `  ${green}- Expected  - ${tc.expectedCount}${colorEnd}`,
+            `  ${red}+ Received  + ${tc.receivedCount}${colorEnd}`,
+            `  `,
+            ...tc.log,
+            ``,
+          ])
+        )
       )
     ),
   });

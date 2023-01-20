@@ -15,9 +15,25 @@ export const equal =
     actual,
   });
 
+export const equalW =
+  (expected: unknown) =>
+  (actual: unknown): AssertEqual => ({
+    type: 'AssertEqual',
+    expected,
+    actual,
+  });
+
 export const equalOption =
   <T>(expected: Option<T>) =>
   (actual: Option<T>): AssertEqual => ({
+    type: 'AssertEqual',
+    expected,
+    actual,
+  });
+
+export const equalEither =
+  <L, R>(expected: Either<L, R>) =>
+  (actual: Either<L, R>): AssertEqual => ({
     type: 'AssertEqual',
     expected,
     actual,
@@ -36,17 +52,22 @@ export const eitherLeft = (left: unknown): EitherLeft => ({
   left,
 });
 
-export const eitherRightAnd =
+export const chainEitherRight =
   <L, R>(toAssert: (r: R) => Assert) =>
   (e: Either<L, R>): Assert =>
     pipe(e, either.match(eitherLeft, toAssert));
 
-export const taskEitherRightAnd =
+export const chainEitherLeft =
+  <L, R>(toAssert: (r: L) => Assert) =>
+  (e: Either<L, R>): Assert =>
+    pipe(e, either.swap, either.match(eitherLeft, toAssert));
+
+export const chainTaskEitherRight =
   <L, R>(toAssert: (r: R) => Assert) =>
   (e: TaskEither<L, R>): Task<Assert> =>
     pipe(e, taskEither.match(eitherLeft, toAssert));
 
-export const taskEitherLeftAnd =
+export const chainTaskEitherLeft =
   <L, R>(toAssert: (l: L) => Assert) =>
   (e: TaskEither<L, R>): Task<Assert> =>
     pipe(e, taskEither.swap, taskEither.match(eitherLeft, toAssert));
