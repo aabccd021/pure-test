@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "rm -rf cjs esm && tsc --declaration --declarationMap --skipLibCheck --module commonjs --outDir cjs && tsc --declaration --declarationMap --skipLibCheck --module esnext --outDir esm",
+    "build": "rm -rf cjs esm && tsc --project tsconfig.dist.json --declaration --declarationMap --skipLibCheck --module commonjs --outDir cjs && tsc --project tsconfig.dist.json --declaration --declarationMap --skipLibCheck --module esnext --outDir esm",
     "test": "exec-main ./test/index",
     "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
     "lint:fix": "pnpm lint --fix"

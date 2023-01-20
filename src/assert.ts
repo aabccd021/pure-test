@@ -6,25 +6,9 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type { Assert, AssertEqual, EitherLeft } from './type';
 
-export const equalW =
-  (expected: unknown) =>
-  (actual: unknown): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
-
 export const equal =
   <T>(expected: T) =>
   (actual: T): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
-
-export const equalArrayW =
-  (expected: readonly unknown[]) =>
-  (actual: readonly unknown[]): AssertEqual => ({
     type: 'AssertEqual',
     expected,
     actual,

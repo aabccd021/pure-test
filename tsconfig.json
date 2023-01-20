@@ -18,6 +18,7 @@
     "target": "esnext"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ]
 }
