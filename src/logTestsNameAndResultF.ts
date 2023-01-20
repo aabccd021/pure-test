@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import * as c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { AssertionResult, TestResult } from './type';
+import type { AssertionResult, TestResult, TestsResult } from './type';
 
 const skipped = (name: string) => `  ${c.dim(c.gray('↓'))} ${name}`;
 
@@ -47,9 +47,11 @@ const testResultToStr = (testResult: TestResult): readonly string[] =>
 
 export const logTestsNameAndResultsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<readonly TestResult[]>) => Task<readonly TestResult[]>) =>
+}): ((res: Task<TestsResult>) => Task<TestsResult>) =>
   task.chainFirstIOK(
     flow(
+      either.map(readonlyArray.map(either.right)),
+      either.toUnion,
       readonlyArray.chain(testResultToStr),
       readonlyArray.intercalate(string.Monoid)('\n'),
       env.console.log

@@ -32,14 +32,14 @@ const caseToTest = (tc: {
 
 const cases = [
   {
-    name: 'Set exit code to 1 on test fail',
+    name: 'Exit with code 1 on test fail',
     actual: 'bar',
     exitCode: 1,
   },
   {
-    name: 'Dont set exit code on test pass',
+    name: 'Exit with code 0 on test pass',
     actual: 'foo',
-    exitCode: undefined,
+    exitCode: 0,
   },
 ];
 

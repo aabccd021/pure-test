@@ -1,6 +1,6 @@
-import { either, readonlyArray, task } from 'fp-ts';
+import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { flow, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 
 import { assert, runTests, test } from '../src';
 import type { TestError } from '../src/type';
@@ -27,17 +27,16 @@ const caseToTest = (tc: Case) =>
         }),
       ],
       runTests({}),
-      task.map(
-        flow(
-          readonlyArray.map(
-            either.bimap(
-              ({ error }) => error,
-              () => undefined
-            )
-          ),
-          assert.equalArray([tc.result])
-        )
-      )
+      taskEither.match(
+        readonlyArray.map(
+          either.bimap(
+            ({ error }) => error,
+            () => undefined
+          )
+        ),
+        readonlyArray.map(() => either.right(undefined))
+      ),
+      task.map(assert.equal(readonlyArray.of(tc.result)))
     ),
   });
 

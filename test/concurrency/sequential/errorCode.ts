@@ -1,4 +1,4 @@
-import { either, readonlyArray, task } from 'fp-ts';
+import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import type { AssertionError } from '../../../src';
@@ -34,10 +34,10 @@ const caseToTest = (tc: TestCase) =>
           failFast: tc.failFast,
         },
       }),
-      task.map(
+      taskEither.mapLeft(
         readonlyArray.map(either.mapLeft((res) => ({ name: res.name, errorCode: res.error.code })))
       ),
-      task.map(
+      assert.taskEitherLeftAnd(
         assert.equalArrayW([
           either.right({
             name: 'should pass',
@@ -47,8 +47,8 @@ const caseToTest = (tc: TestCase) =>
             errorCode: 'AssertionError',
           }),
           either.left({
-            errorCode: tc.errorCodeAfterFailedTest,
             name: 'should skip',
+            errorCode: tc.errorCodeAfterFailedTest,
           }),
         ])
       )

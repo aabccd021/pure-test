@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
         }),
       ],
       runTests({}),
-      task.map(
+      assert.taskEitherLeftAnd(
         assert.equalArrayW([
           either.left({
             name: 'foo',

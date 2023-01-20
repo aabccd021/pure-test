@@ -8,7 +8,12 @@ export type AssertEqual = {
   readonly actual: unknown;
 };
 
-export type Assert = AssertEqual;
+export type EitherLeft = {
+  readonly type: 'EitherLeft';
+  readonly left: unknown;
+};
+
+export type Assert = AssertEqual | EitherLeft;
 
 export type Concurrency =
   | { readonly type: 'parallel' }
@@ -74,6 +79,9 @@ export type AssertionError =
       readonly diff: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
+    }
+  | {
+      readonly code: 'EitherLeft';
     }
   | {
       readonly code: 'Skipped';

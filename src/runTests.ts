@@ -16,7 +16,9 @@ import type {
   Group,
   TestConfig,
   TestOrGroup,
+  TestPassResult,
   TestResult,
+  TestsResult,
 } from './type';
 
 const runSequentialFailFast =
@@ -157,12 +159,41 @@ const getTestName = (test: TestOrGroup): string =>
     .with({ type: 'group' }, ({ name }) => name)
     .exhaustive();
 
+const aggregateTestResult2 = (r: readonly TestResult[]): TestsResult =>
+  pipe(
+    r,
+    readonlyArray.reduce(
+      either.right<readonly TestResult[], readonly TestPassResult[]>([]),
+      (acc, el) =>
+        pipe(
+          acc,
+          either.mapLeft(readonlyArray.append(el)),
+          either.chain(
+            (accr): TestsResult =>
+              pipe(
+                el,
+                either.bimap(
+                  (ell): readonly TestResult[] => [
+                    ...pipe(accr, readonlyArray.map(either.right)),
+                    either.left(ell),
+                  ],
+                  (elr): readonly TestPassResult[] => [...accr, elr]
+                )
+              )
+          )
+        )
+    )
+  );
+
 export const runTests = (
   config: TestConfig
-): ((tests: readonly TestOrGroup[]) => Task<readonly TestResult[]>) =>
-  runWithConcurrency({
-    concurrency: config.concurrency,
-    run: runTest,
-    afterFail: (test) =>
-      either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
-  });
+): ((tests: readonly TestOrGroup[]) => Task<TestsResult>) =>
+  flow(
+    runWithConcurrency({
+      concurrency: config.concurrency,
+      run: runTest,
+      afterFail: (test) =>
+        either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
+    }),
+    task.map(aggregateTestResult2)
+  );
