@@ -47,17 +47,17 @@ export const equalArray =
     actual,
   });
 
-export const unexpectedLeft = (left: unknown): UnexpectedLeft => ({
+const unexpectedLeft = (left: unknown): UnexpectedLeft => ({
   type: 'UnexpectedLeft',
   value: left,
 });
 
-export const unexpectedRight = (left: unknown): UnexpectedLeft => ({
+const unexpectedRight = (left: unknown): UnexpectedLeft => ({
   type: 'UnexpectedLeft',
   value: left,
 });
 
-export const unexpectedNone: UnexpectedNone = {
+const unexpectedNone: UnexpectedNone = {
   type: 'UnexpectedNone',
 };
 
