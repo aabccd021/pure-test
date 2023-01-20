@@ -1,7 +1,6 @@
+import { assert, test } from '@src/index';
 import { readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-
-import { assert, test } from '../src';
 
 type Case = {
   readonly name: string;

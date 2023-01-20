@@ -1,7 +1,6 @@
+import { assert, logErrorDetailsF, runTests, test } from '@src/index';
 import { ioRef, readonlyArray, string, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-
-import { assert, logErrorDetailsF, runTests, test } from '../src';
 
 const green = '\x1b[32m';
 const red = '\x1b[31m';

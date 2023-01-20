@@ -1,8 +1,7 @@
+import { exitF } from '@src/exitF';
+import { assert, runTests, test } from '@src/index';
 import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-
-import { assert, runTests, test } from '../src';
-import { exitF } from '../src/exitF';
 
 const caseToTest = (tc: {
   readonly name: string;

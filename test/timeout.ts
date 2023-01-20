@@ -1,10 +1,9 @@
+import type { TestError } from '@src/index';
+import { assert, runTests, test } from '@src/index';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Option } from 'fp-ts/Option';
-
-import { assert, runTests, test } from '../src';
-import type { TestError } from '../src/type';
 
 type Case = {
   readonly name: string;

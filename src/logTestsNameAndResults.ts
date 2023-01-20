@@ -1,5 +1,5 @@
 import { console } from 'fp-ts';
 
-import { logTestsNameAndResultsF } from './logTestsNameAndResultF';
+import { logTestsNameAndResultsF } from './logTestsNameAndResultsF';
 
 export const logTestsNameAndResults = logTestsNameAndResultsF({ console });

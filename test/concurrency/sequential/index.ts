@@ -1,4 +1,5 @@
-import { scopeTests } from '../../../src';
+import { scopeTests } from '@src/index';
+
 import * as errorCode from './errorCode';
 import * as invoked from './invoked';
 

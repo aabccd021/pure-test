@@ -1,8 +1,7 @@
+import type { TestError } from '@src/index';
+import { assert, runTests, test } from '@src/index';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-
-import type { TestError } from '../../../src';
-import { assert, runTests, test } from '../../../src';
 
 type TestCase = {
   readonly name: string;
