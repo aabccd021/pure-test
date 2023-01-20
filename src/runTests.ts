@@ -29,6 +29,7 @@ const runSequentialFailFast =
         (acc, el) =>
           pipe(
             acc,
+            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el))),
             taskEither.chain((accr) =>
               pipe(
                 el,
@@ -38,8 +39,7 @@ const runSequentialFailFast =
                   (elr): readonly Either<L, R>[] => [...accr, either.right(elr)]
                 )
               )
-            ),
-            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el)))
+            )
           )
       ),
       taskEither.toUnion
@@ -115,6 +115,7 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
           (acc, el) =>
             pipe(
               acc,
+              either.mapLeft(readonlyArray.append(el)),
               either.chain((accr) =>
                 pipe(
                   el,
@@ -123,8 +124,7 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
                     (elr): readonly AssertionResult[] => [...accr, either.right(elr)]
                   )
                 )
-              ),
-              either.mapLeft(readonlyArray.append(el))
+              )
             )
         ),
         either.bimap(
