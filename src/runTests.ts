@@ -57,15 +57,19 @@ const runSequential =
       .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(f))
       .exhaustive();
 
-const run = <T, L, R>(
-  concurrency: Concurrency | undefined,
-  f: (t: T) => TaskEither<L, R>,
-  afterFail: (t: T) => Either<L, R>
-): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+const runWithConcurrency = <T, L, R>({
+  concurrency,
+  run,
+  afterFail,
+}: {
+  readonly concurrency: Concurrency | undefined;
+  readonly run: (t: T) => TaskEither<L, R>;
+  readonly afterFail: (t: T) => Either<L, R>;
+}): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
   match(concurrency)
-    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(f))
-    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(f))
-    .with({ type: 'sequential' }, runSequential(f, afterFail))
+    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(run))
+    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(run))
+    .with({ type: 'sequential' }, runSequential(run, afterFail))
     .exhaustive();
 
 const unhandledException = (exception: unknown) => ({
@@ -100,9 +104,12 @@ const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
   );
 
 const runAssertions = (config: Pick<Group, 'concurrency'>) =>
-  run(config.concurrency, runAssertion, (assertion) =>
-    either.left({ name: assertion.name, error: { code: 'Skipped' as const } })
-  );
+  runWithConcurrency({
+    concurrency: config.concurrency,
+    run: runAssertion,
+    afterFail: (assertion) =>
+      either.left({ name: assertion.name, error: { code: 'Skipped' as const } }),
+  });
 
 const runMultipleAssertion = (test: Group): Task<TestResult> =>
   pipe(
@@ -153,6 +160,9 @@ const getTestName = (test: TestOrGroup): string =>
 export const runTests = (
   config: TestConfig
 ): ((tests: readonly TestOrGroup[]) => Task<readonly TestResult[]>) =>
-  run(config.concurrency, runTest, (test) =>
-    either.left({ name: getTestName(test), error: { code: 'Skipped' as const } })
-  );
+  runWithConcurrency({
+    concurrency: config.concurrency,
+    run: runTest,
+    afterFail: (test) =>
+      either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
+  });
