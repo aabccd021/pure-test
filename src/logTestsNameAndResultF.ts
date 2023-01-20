@@ -10,7 +10,8 @@ const testResultToStr = (testResult: TestResult): string =>
   pipe(
     testResult,
     either.match(
-      ({ name }) => `  ${c.red('×')} ${name}`,
+      ({ name, error }) =>
+        error.code === 'Skipped' ? `  ${c.dim(c.gray('↓'))} ${name}` : `  ${c.red('×')} ${name}`,
       ({ name }) => `  ${c.green('✓')} ${name}`
     )
   );

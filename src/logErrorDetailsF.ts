@@ -40,20 +40,23 @@ const diffNums = (diff: readonly Change[]) => [
 
 const diffToString = readonlyArray.map(formatChangeStr);
 
-const formatError = (error: TestError): readonly string[] =>
+const formatError = (error: Exclude<TestError, { readonly code: 'Skipped' }>): readonly string[] =>
   match(error)
     .with({ code: 'AssertionError' }, ({ diff }) =>
       readonlyArray.flatten([diffNums(diff), diffToString(diff)])
     )
     .otherwise((err) => [JSON.stringify(err, undefined, 2)]);
 
-const formatErrorResult = (errorResult: TestFailResult): readonly string[] => [
-  `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
-  c.red(c.bold(`${errorResult.error.code}:`)),
-  '',
-  ...pipe(errorResult.error, formatError, readonlyArray.map(std.string.prepend('  '))),
-  '',
-];
+const formatErrorResult = (errorResult: TestFailResult): readonly string[] =>
+  errorResult.error.code === 'Skipped'
+    ? []
+    : [
+        `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
+        c.red(c.bold(`${errorResult.error.code}:`)),
+        '',
+        ...pipe(errorResult.error, formatError, readonlyArray.map(std.string.prepend('  '))),
+        '',
+      ];
 
 export const logErrorDetailsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };

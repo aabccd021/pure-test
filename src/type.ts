@@ -41,6 +41,11 @@ export type Group = {
   readonly asserts: readonly Assertion[];
 };
 
+export const group = (g: Omit<Group, 'type'>): Group => ({
+  ...g,
+  type: 'group',
+});
+
 export type TestOrGroup = Group | Test;
 
 export type TestConfig = {
