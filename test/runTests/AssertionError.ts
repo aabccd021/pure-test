@@ -122,6 +122,23 @@ const cases: readonly Case[] = [
   },
 
   {
+    name: 'nested array diff has correct comma',
+    actual: [['minusValue']],
+    expected: [],
+    error: {
+      actual: [['minusValue']],
+      expected: [],
+      diff: [
+        { type: '0', value: `[` },
+        { type: '+', value: `  [` },
+        { type: '+', value: `    "minusValue",` },
+        { type: '+', value: `  ],` },
+        { type: '0', value: `]` },
+      ],
+    },
+  },
+
+  {
     name: 'can use undefined in actual',
     actual: { minus: 'minusValue' },
     expected: undefined,

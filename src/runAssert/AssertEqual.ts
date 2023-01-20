@@ -41,8 +41,8 @@ const serializeToLines =
           ),
           either.map(
             flow(
-              readonlyArray.flatten,
-              readonlyArray.map((x) => `  ${x},`),
+              readonlyArray.chain(readonlyNonEmptyArray.modifyLast((x) => `${x},`)),
+              readonlyArray.map((x) => `  ${x}`),
               (xs) => [`[`, ...xs, `]`]
             )
           )
