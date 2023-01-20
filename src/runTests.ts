@@ -168,10 +168,12 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
             pipe(
               el,
               either.bimap(
-                (ell): readonly TestResult[] => [
-                  ...pipe(accr, readonlyArray.map(either.right)),
-                  either.left(ell),
-                ],
+                (ell): readonly TestResult[] =>
+                  pipe(
+                    accr,
+                    readonlyArray.map(either.right),
+                    readonlyArray.append(either.left(ell))
+                  ),
                 (elr): readonly TestPassResult[] => [...accr, elr]
               )
             )
