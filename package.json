@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "rm -rf cjs esm && swc src --out-dir cjs --source-maps --config module.type=commonjs && swc src --out-dir esm --source-maps && tsc --declaration --declarationMap --emitDeclarationOnly --skipLibCheck --module commonjs --outDir cjs",
+    "build": "rm -rf cjs esm && tsc --declaration --declarationMap --skipLibCheck --module commonjs --outDir cjs && tsc --declaration --declarationMap --skipLibCheck --module esnext --outDir esm",
     "test": "exec-main ./test/index",
     "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
     "lint:fix": "pnpm lint --fix"
@@ -50,8 +50,6 @@
     "ts-pattern": "^4.0.6"
   },
   "devDependencies": {
-    "@swc/cli": "^0.1.59",
-    "@swc/core": "^1.3.27",
     "@types/diff": "^5.0.2",
     "@types/node": "^18.11.18",
     "c8": "^7.12.0",

@@ -6,7 +6,7 @@
     "lib": [
       "esnext"
     ],
-    "module": "commonjs",
+    "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
@@ -14,12 +14,10 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "skipLibCheck": true,
     "strict": true,
     "target": "esnext"
   },
   "include": [
-    "src",
-    "test"
+    "src"
   ]
 }
