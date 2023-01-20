@@ -45,7 +45,7 @@ const formatError = (error: Exclude<TestError, { readonly code: 'Skipped' }>): r
     .with({ code: 'AssertionError' }, ({ diff }) =>
       readonlyArray.flatten([diffNums(diff), diffToString(diff)])
     )
-    .otherwise((err) => [JSON.stringify(err, undefined, 2)]);
+    .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
 const formatErrorResult = (errorResult: TestFailResult): readonly string[] =>
   errorResult.error.code === 'Skipped'

@@ -50,6 +50,7 @@ const cases: readonly Case[] = [
 export const tests = [
   group({
     name: 'primitive2',
+    concurrency: { type: 'sequential' },
     asserts: readonlyArray.map(caseToTest)(cases),
   }),
 ];
