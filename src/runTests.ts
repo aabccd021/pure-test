@@ -7,6 +7,7 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
+import { getTestOrGroupName } from './getTestOrGroupName';
 import { runAssert } from './runAssert';
 import type {
   Assertion,
@@ -154,12 +155,6 @@ const runTest = (test: TestOrGroup): Task<TestResult> =>
     .with({ type: 'group' }, runMultipleAssertion)
     .exhaustive();
 
-const getTestName = (test: TestOrGroup): string =>
-  match(test)
-    .with({ type: 'test' }, ({ assert }) => assert.name)
-    .with({ type: 'group' }, ({ name }) => name)
-    .exhaustive();
-
 const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
   pipe(
     testResults,
@@ -195,7 +190,7 @@ export const runTests = (
         concurrency: config.concurrency,
         run: runTest,
         afterFail: (test) =>
-          either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
+          either.left({ name: getTestOrGroupName(test), error: { code: 'Skipped' as const } }),
       }),
       task.map(aggregateTestResult)
     )
