@@ -35,73 +35,9 @@
     ]
   },
   "eslintConfig": {
-    "plugins": [
-      "node"
-    ],
     "extends": [
-      "chimeraant",
-      "plugin:import/recommended",
-      "plugin:import/typescript"
+      "chimeraant"
     ],
-    "settings": {
-      "import/resolver": {
-        "typescript": true,
-        "node": true
-      }
-    },
-    "rules": {
-      "import/consistent-type-specifier-style": "error",
-      "import/extensions": "error",
-      "import/first": "error",
-      "import/imports-first": "error",
-      "import/newline-after-import": "error",
-      "import/no-absolute-path": "error",
-      "import/no-cycle": "error",
-      "import/no-default-export": "error",
-      "import/no-dynamic-require": "error",
-      "import/no-nodejs-modules": "error",
-      "import/no-relative-packages": "error",
-      "import/no-self-import": "error",
-      "import/no-unassigned-import": "error",
-      "import/no-useless-path-segments": "error",
-      "import/unambiguous": "error",
-      "node/callback-return": "error",
-      "node/handle-callback-err": "error",
-      "node/no-callback-literal": "error",
-      "node/no-path-concat": "error",
-      "node/no-sync": "error",
-      "node/no-unpublished-bin": "error",
-      "node/prefer-global/buffer": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/console": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/process": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/text-decoder": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/text-encoder": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/url": [
-        "error",
-        "never"
-      ],
-      "node/prefer-global/url-search-params": [
-        "error",
-        "never"
-      ],
-      "node/prefer-promises/dns": "error",
-      "node/prefer-promises/fs": "error"
-    },
     "overrides": [
       {
         "files": "src/node.ts",
@@ -126,10 +62,7 @@
     "@types/node": "^18.11.18",
     "c8": "^7.12.0",
     "eslint": "^8.30.0",
-    "eslint-config-chimeraant": "^1.2.6",
-    "eslint-import-resolver-typescript": "^3.5.3",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-config-chimeraant": "^1.2.8",
     "exec-main": "^1.0.1",
     "pnpm": "^7.25.0",
     "semantic-release": "^20.0.2",
