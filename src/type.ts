@@ -8,19 +8,11 @@ export type AssertEqual = {
   readonly actual: unknown;
 };
 
-export type UnexpectedNone = {
-  readonly type: 'UnexpectedNone';
-};
+export type UnexpectedNone = { readonly type: 'UnexpectedNone' };
 
-export type UnexpectedLeft = {
-  readonly type: 'UnexpectedLeft';
-  readonly value: unknown;
-};
+export type UnexpectedLeft = { readonly type: 'UnexpectedLeft'; readonly value: unknown };
 
-export type UnexpectedRight = {
-  readonly type: 'UnexpectedRight';
-  readonly value: unknown;
-};
+export type UnexpectedRight = { readonly type: 'UnexpectedRight'; readonly value: unknown };
 
 export type Assert = AssertEqual | UnexpectedLeft | UnexpectedNone | UnexpectedRight;
 
@@ -35,11 +27,7 @@ export type Assertion = {
   readonly retry?: retry.RetryPolicy;
 };
 
-export type Test = {
-  readonly type: 'test';
-  readonly todo?: true;
-  readonly assert: Assertion;
-};
+export type Test = { readonly type: 'test'; readonly todo?: true; readonly assert: Assertion };
 
 export const test = ({ todo, ...assert }: Assertion & { readonly todo?: true }): Test => ({
   type: 'test',
@@ -55,21 +43,13 @@ export type Group = {
   readonly asserts: readonly Assertion[];
 };
 
-export const group = (g: Omit<Group, 'type'>): Group => ({
-  ...g,
-  type: 'group',
-});
+export const group = (g: Omit<Group, 'type'>): Group => ({ ...g, type: 'group' });
 
 export type TestOrGroup = Group | Test;
 
-export type TestConfig = {
-  readonly concurrency?: Concurrency;
-};
+export type TestConfig = { readonly concurrency?: Concurrency };
 
-export type Change = {
-  readonly type: '-' | '+' | '0';
-  readonly value: string;
-};
+export type Change = { readonly type: '-' | '+' | '0'; readonly value: string };
 
 export type DiffLines = (p: {
   readonly expected: string;
@@ -89,57 +69,31 @@ export type AssertionError =
       readonly actual: unknown;
       readonly expected: unknown;
     }
-  | {
-      readonly code: 'Skipped';
-    }
-  | {
-      readonly code: 'timed out';
-    }
-  | {
-      readonly code: 'unhandled exception';
-      readonly exception: unknown;
-    }
+  | { readonly code: 'Skipped' }
+  | { readonly code: 'timed out' }
   | { readonly code: 'UnexpectedLeft'; readonly value: unknown }
   | { readonly code: 'UnexpectedNone' }
-  | { readonly code: 'UnexpectedRight'; readonly value: unknown };
+  | { readonly code: 'UnexpectedRight'; readonly value: unknown }
+  | { readonly code: 'unhandled exception'; readonly exception: unknown };
 
-export type AssertionFailResult = {
-  readonly name: string;
-  readonly error: AssertionError;
-};
+export type AssertionFailResult = { readonly name: string; readonly error: AssertionError };
 
-export type AssertionPassResult = {
-  readonly name: string;
-};
+export type AssertionPassResult = { readonly name: string };
 
 export type AssertionResult = Either<AssertionFailResult, AssertionPassResult>;
 
 export type TestError =
   | AssertionError
-  | {
-      readonly code: 'MultipleAssertionError';
-      readonly results: readonly AssertionResult[];
-    };
+  | { readonly code: 'MultipleAssertionError'; readonly results: readonly AssertionResult[] };
 
-export type TestFailResult = {
-  readonly name: string;
-  readonly error: TestError;
-};
+export type TestFailResult = { readonly name: string; readonly error: TestError };
 
-export type TestPassResult = {
-  readonly name: string;
-};
+export type TestPassResult = { readonly name: string };
 
 export type TestResult = Either<TestFailResult, TestPassResult>;
 
 export type SuiteError =
-  | {
-      readonly type: 'DuplicateTestName';
-      readonly name: string;
-    }
-  | {
-      readonly type: 'TestError';
-      readonly results: readonly TestResult[];
-    };
+  | { readonly type: 'DuplicateTestName'; readonly name: string }
+  | { readonly type: 'TestError'; readonly results: readonly TestResult[] };
 
 export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;

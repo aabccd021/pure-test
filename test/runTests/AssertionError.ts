@@ -19,24 +19,13 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({
-          name: 'foo',
-          act: pipe(tc.actual, assert.equal(tc.expected), task.of),
-        }),
+        test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
         assert.equal<SuiteError>({
           type: 'TestError',
-          results: [
-            either.left({
-              name: 'foo',
-              error: {
-                code: 'AssertionError',
-                ...tc.error,
-              },
-            }),
-          ],
+          results: [either.left({ name: 'foo', error: { code: 'AssertionError', ...tc.error } })],
         })
       )
     ),
@@ -75,18 +64,10 @@ const cases: readonly Case[] = [
 
   {
     name: 'multiple line minus diff is indented correctly',
-    actual: {
-      nested: {
-        minus: 'minusValue',
-      },
-    },
+    actual: { nested: { minus: 'minusValue' } },
     expected: {},
     error: {
-      actual: {
-        nested: {
-          minus: 'minusValue',
-        },
-      },
+      actual: { nested: { minus: 'minusValue' } },
       expected: {},
       diff: [
         { type: '0', value: `{` },
@@ -101,18 +82,10 @@ const cases: readonly Case[] = [
   {
     name: 'multiple line plus diff is indented correctly',
     actual: {},
-    expected: {
-      nested: {
-        plus: 'plusValue',
-      },
-    },
+    expected: { nested: { plus: 'plusValue' } },
     error: {
       actual: {},
-      expected: {
-        nested: {
-          plus: 'plusValue',
-        },
-      },
+      expected: { nested: { plus: 'plusValue' } },
       diff: [
         { type: '0', value: `{` },
         { type: '-', value: `  "nested": {` },

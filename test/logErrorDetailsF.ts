@@ -29,10 +29,7 @@ const caseToTest = (tc: Case) =>
       task.chainFirst((logRef) =>
         pipe(
           taskEither.right([
-            test({
-              name: 'foo',
-              act: pipe(tc.actual, assert.equal(tc.expected), task.of),
-            }),
+            test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
           ]),
           runTests({}),
           logErrorDetailsF({ console: { log: logRef.write } })
@@ -67,11 +64,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'multiple line minus diff is indented correctly',
-    actual: {
-      nested: {
-        minus: 'minusValue',
-      },
-    },
+    actual: { nested: { minus: 'minusValue' } },
     expected: {},
     expectedCount: 0,
     receivedCount: 3,

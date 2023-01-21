@@ -9,57 +9,32 @@ import type { Assert, AssertEqual, UnexpectedLeft, UnexpectedNone } from './type
 
 export const equal =
   <T>(expected: T) =>
-  (actual: T): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
+  (actual: T): AssertEqual => ({ type: 'AssertEqual', expected, actual });
 
 export const equalW =
   (expected: unknown) =>
-  (actual: unknown): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
+  (actual: unknown): AssertEqual => ({ type: 'AssertEqual', expected, actual });
 
 export const equalOption =
   <T>(expected: Option<T>) =>
-  (actual: Option<T>): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
+  (actual: Option<T>): AssertEqual => ({ type: 'AssertEqual', expected, actual });
 
 export const equalEither =
   <L, R>(expected: Either<L, R>) =>
-  (actual: Either<L, R>): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
+  (actual: Either<L, R>): AssertEqual => ({ type: 'AssertEqual', expected, actual });
 
 export const equalArray =
   <T>(expected: readonly T[]) =>
-  (actual: readonly T[]): AssertEqual => ({
-    type: 'AssertEqual',
-    expected,
-    actual,
-  });
+  (actual: readonly T[]): AssertEqual => ({ type: 'AssertEqual', expected, actual });
 
-const unexpectedLeft = (left: unknown): UnexpectedLeft => ({
-  type: 'UnexpectedLeft',
-  value: left,
-});
+const unexpectedLeft = (left: unknown): UnexpectedLeft => ({ type: 'UnexpectedLeft', value: left });
 
 const unexpectedRight = (left: unknown): UnexpectedLeft => ({
   type: 'UnexpectedLeft',
   value: left,
 });
 
-const unexpectedNone: UnexpectedNone = {
-  type: 'UnexpectedNone',
-};
+const unexpectedNone: UnexpectedNone = { type: 'UnexpectedNone' };
 
 export const option =
   <A>(toAssert: (r: A) => Assert) =>

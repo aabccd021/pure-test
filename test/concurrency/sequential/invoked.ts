@@ -16,14 +16,8 @@ const caseToTest = (tc: TestCase) =>
       task.chainFirst((isLastTestExecutedRef) =>
         pipe(
           taskEither.right([
-            test({
-              name: 'should pass',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
-            test({
-              name: 'should fail',
-              act: pipe('foo', assert.equal('bar'), task.of),
-            }),
+            test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: 'should fail', act: pipe('foo', assert.equal('bar'), task.of) }),
             test({
               name: 'should skip',
               act: pipe(
@@ -34,12 +28,7 @@ const caseToTest = (tc: TestCase) =>
               ),
             }),
           ]),
-          runTests({
-            concurrency: {
-              type: 'sequential',
-              failFast: tc.failFast,
-            },
-          })
+          runTests({ concurrency: { type: 'sequential', failFast: tc.failFast } })
         )
       ),
       task.chainIOK((isLastTestExecutedRef) => isLastTestExecutedRef.read),

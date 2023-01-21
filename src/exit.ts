@@ -1,7 +1,3 @@
 import { exitF } from './exitF';
 
-export const exit = exitF({
-  process: {
-    exit: (exitCode) => () => process.exit(exitCode),
-  },
-});
+export const exit = exitF({ process: { exit: (exitCode) => () => process.exit(exitCode) } });

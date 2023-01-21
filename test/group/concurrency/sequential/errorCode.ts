@@ -16,15 +16,9 @@ const caseToTest = (tc: TestCase) =>
       taskEither.right([
         group({
           name: 'sequential group test',
-          concurrency: {
-            type: 'sequential',
-            failFast: tc.failFast,
-          },
+          concurrency: { type: 'sequential', failFast: tc.failFast },
           asserts: [
-            {
-              name: 'should pass',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            },
+            { name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) },
             {
               name: 'should fail',
               act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
@@ -46,17 +40,9 @@ const caseToTest = (tc: TestCase) =>
               error: {
                 code: 'MultipleAssertionError',
                 results: [
-                  either.right({
-                    name: 'should pass',
-                  }),
-                  either.left({
-                    name: 'should fail',
-                    error: { code: 'UnexpectedNone' },
-                  }),
-                  either.left({
-                    name: 'after fail',
-                    error: tc.errorAfterFailedTest,
-                  }),
+                  either.right({ name: 'should pass' }),
+                  either.left({ name: 'should fail', error: { code: 'UnexpectedNone' } }),
+                  either.left({ name: 'after fail', error: tc.errorAfterFailedTest }),
                 ],
               },
             }),

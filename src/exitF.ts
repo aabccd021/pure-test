@@ -8,9 +8,7 @@ import type { SuiteError, TestPassResult } from './type';
 export type Env = { readonly process: Pick<typeof process, 'exit'> };
 
 export const exitF = (env: {
-  readonly process: {
-    readonly exit: (exitCode: number | undefined) => IO<void>;
-  };
+  readonly process: { readonly exit: (exitCode: number | undefined) => IO<void> };
 }): ((
   res: TaskEither<SuiteError, readonly TestPassResult[]>
 ) => TaskEither<SuiteError, readonly TestPassResult[]>) =>

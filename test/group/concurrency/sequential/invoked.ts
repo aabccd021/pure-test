@@ -18,19 +18,10 @@ const caseToTest = (tc: TestCase) =>
           taskEither.right([
             group({
               name: 'sequential group test',
-              concurrency: {
-                type: 'sequential',
-                failFast: tc.failFast,
-              },
+              concurrency: { type: 'sequential', failFast: tc.failFast },
               asserts: [
-                {
-                  name: 'should pass',
-                  act: pipe('foo', assert.equal('foo'), task.of),
-                },
-                {
-                  name: 'should fail',
-                  act: pipe('foo', assert.equal('bar'), task.of),
-                },
+                { name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) },
+                { name: 'should fail', act: pipe('foo', assert.equal('bar'), task.of) },
                 {
                   name: 'should skip',
                   act: pipe(
@@ -43,12 +34,7 @@ const caseToTest = (tc: TestCase) =>
               ],
             }),
           ]),
-          runTests({
-            concurrency: {
-              type: 'sequential',
-              failFast: tc.failFast,
-            },
-          })
+          runTests({ concurrency: { type: 'sequential', failFast: tc.failFast } })
         )
       ),
       task.chainIOK((isLastTestExecutedRef) => isLastTestExecutedRef.read),

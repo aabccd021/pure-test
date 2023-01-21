@@ -3,11 +3,7 @@ import { assert, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-type Case = {
-  readonly name: string;
-  readonly testTime: number;
-  readonly testError: SuiteResult;
-};
+type Case = { readonly name: string; readonly testTime: number; readonly testError: SuiteResult };
 
 const timeoutTime = 500;
 const timeoutTestTime = 1000;

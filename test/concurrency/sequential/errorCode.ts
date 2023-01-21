@@ -14,10 +14,7 @@ const caseToTest = (tc: TestCase) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({
-          name: 'should pass',
-          act: pipe('foo', assert.equal('foo'), task.of),
-        }),
+        test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
         test({
           name: 'should fail',
           act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
@@ -27,27 +24,14 @@ const caseToTest = (tc: TestCase) =>
           act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
         }),
       ]),
-      runTests({
-        concurrency: {
-          type: 'sequential',
-          failFast: tc.failFast,
-        },
-      }),
+      runTests({ concurrency: { type: 'sequential', failFast: tc.failFast } }),
       assert.taskEitherLeft(
         assert.equal<SuiteError>({
           type: 'TestError',
           results: [
-            either.right({
-              name: 'should pass',
-            }),
-            either.left({
-              name: 'should fail',
-              error: { code: 'UnexpectedNone' },
-            }),
-            either.left({
-              name: 'after fail',
-              error: tc.errorAfterFailedTest,
-            }),
+            either.right({ name: 'should pass' }),
+            either.left({ name: 'should fail', error: { code: 'UnexpectedNone' } }),
+            either.left({ name: 'after fail', error: tc.errorAfterFailedTest }),
           ],
         })
       )

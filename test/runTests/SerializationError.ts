@@ -15,10 +15,7 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({
-          name: 'foo',
-          act: pipe(tc.actual, assert.equal(tc.expected), task.of),
-        }),
+        test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
@@ -27,10 +24,7 @@ const caseToTest = (tc: Case) =>
           results: [
             either.left({
               name: 'foo',
-              error: {
-                code: 'SerializationError' as const,
-                path: tc.errorPath,
-              },
+              error: { code: 'SerializationError' as const, path: tc.errorPath },
             }),
           ],
         })
