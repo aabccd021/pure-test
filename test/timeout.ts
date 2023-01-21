@@ -1,14 +1,12 @@
-import type { TestError } from '@src';
+import type { SuiteResult } from '@src';
 import { assert, runTests, test } from '@src';
-import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
-import type { Either } from 'fp-ts/Either';
+import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-import type { Option } from 'fp-ts/Option';
 
 type Case = {
   readonly name: string;
   readonly testTime: number;
-  readonly testError: Either<Option<TestError>, undefined>;
+  readonly testError: SuiteResult;
 };
 
 const timeoutTime = 500;
@@ -21,28 +19,12 @@ const caseToTest = (tc: Case) =>
     act: pipe(
       taskEither.right([
         test({
-          name: 'foo',
+          name: 'foo test',
           act: pipe('foo', task.of, task.delay(tc.testTime), task.map(assert.equal('foo'))),
           timeout: timeoutTime,
         }),
       ]),
       runTests({}),
-      taskEither.bimap(
-        (suiteError) =>
-          suiteError.type === 'TestError'
-            ? pipe(
-                suiteError.results,
-                readonlyArray.head,
-                option.chain(
-                  either.match(
-                    ({ error }) => option.some(error),
-                    () => option.none
-                  )
-                )
-              )
-            : option.none,
-        () => undefined
-      ),
       task.map(assert.equal(tc.testError))
     ),
   });
@@ -51,12 +33,15 @@ const cases: readonly Case[] = [
   {
     name: 'Timed out test should return timed out error',
     testTime: timeoutTestTime,
-    testError: either.left(option.some({ code: 'timed out' as const })),
+    testError: either.left({
+      type: 'TestError',
+      results: [either.left({ name: 'foo test', error: { code: 'timed out' } })],
+    }),
   },
   {
     name: 'Non timed out test should pass',
     testTime: nonTimeoutTestTime,
-    testError: either.right(undefined),
+    testError: either.right([{ name: 'foo test' }]),
   },
 ];
 
