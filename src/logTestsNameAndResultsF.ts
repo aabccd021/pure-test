@@ -2,7 +2,7 @@ import { either, readonlyArray, string, task } from 'fp-ts';
 import { flow, pipe } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
-import * as c from 'picocolors';
+import c from 'picocolors';
 import { match } from 'ts-pattern';
 
 import type { AssertionResult, SuiteResult, TestResult } from './type';
