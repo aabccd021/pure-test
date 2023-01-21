@@ -1,4 +1,4 @@
-import type { TestError } from '@src';
+import type { SuiteError, TestError } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function';
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorCodeAfterFailedTest: TestError['code'];
+  readonly errorAfterFailedTest: TestError;
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -20,11 +20,11 @@ const caseToTest = (tc: TestCase) =>
         }),
         test({
           name: 'should fail',
-          act: pipe('foo', assert.equal('bar'), task.of),
+          act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
         }),
         test({
-          name: 'should skip',
-          act: pipe('foo', assert.equal('bar'), task.of),
+          name: 'after fail',
+          act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
         }),
       ]),
       runTests({
@@ -33,36 +33,23 @@ const caseToTest = (tc: TestCase) =>
           failFast: tc.failFast,
         },
       }),
-      taskEither.mapLeft((suiteError) =>
-        suiteError.type === 'TestError'
-          ? pipe(
-              suiteError.results,
-              readonlyArray.map(
-                either.mapLeft((res) => ({
-                  name: res.name,
-                  errorCode: res.error.code,
-                }))
-              ),
-              option.some
-            )
-          : option.none
-      ),
       assert.taskEitherLeft(
-        assert.option(
-          assert.equalArray([
+        assert.equal<SuiteError>({
+          type: 'TestError',
+          results: [
             either.right({
               name: 'should pass',
             }),
             either.left({
               name: 'should fail',
-              errorCode: 'AssertionError',
+              error: { code: 'UnexpectedNone' },
             }),
             either.left({
-              name: 'should skip',
-              errorCode: tc.errorCodeAfterFailedTest,
+              name: 'after fail',
+              error: tc.errorAfterFailedTest,
             }),
-          ])
-        )
+          ],
+        })
       )
     ),
   });
@@ -71,12 +58,12 @@ const cases: readonly TestCase[] = [
   {
     name: 'fail fast sequential should skip test after failing',
     failFast: undefined,
-    errorCodeAfterFailedTest: 'Skipped',
+    errorAfterFailedTest: { code: 'Skipped' },
   },
   {
     name: 'non fail fast sequential should run all tests',
     failFast: false,
-    errorCodeAfterFailedTest: 'AssertionError',
+    errorAfterFailedTest: { code: 'UnexpectedNone' },
   },
 ];
 

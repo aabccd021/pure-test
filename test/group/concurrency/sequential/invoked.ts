@@ -1,4 +1,4 @@
-import { assert, runTests, test } from '@src';
+import { assert, group, runTests, test } from '@src';
 import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -16,22 +16,31 @@ const caseToTest = (tc: TestCase) =>
       task.chainFirst((isLastTestExecutedRef) =>
         pipe(
           taskEither.right([
-            test({
-              name: 'should pass',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
-            test({
-              name: 'should fail',
-              act: pipe('foo', assert.equal('bar'), task.of),
-            }),
-            test({
-              name: 'should skip',
-              act: pipe(
-                'foo',
-                assert.equal('foo'),
-                task.of,
-                task.chainFirstIOK(() => isLastTestExecutedRef.write(true))
-              ),
+            group({
+              name: 'sequential group test',
+              concurrency: {
+                type: 'sequential',
+                failFast: tc.failFast,
+              },
+              asserts: [
+                {
+                  name: 'should pass',
+                  act: pipe('foo', assert.equal('foo'), task.of),
+                },
+                {
+                  name: 'should fail',
+                  act: pipe('foo', assert.equal('bar'), task.of),
+                },
+                {
+                  name: 'should skip',
+                  act: pipe(
+                    'foo',
+                    assert.equal('foo'),
+                    task.of,
+                    task.chainFirstIOK(() => isLastTestExecutedRef.write(true))
+                  ),
+                },
+              ],
             }),
           ]),
           runTests({

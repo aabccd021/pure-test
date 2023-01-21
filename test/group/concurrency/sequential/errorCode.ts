@@ -1,4 +1,4 @@
-import type { AssertionError, AssertionResult, SuiteError, TestPassResult } from '@src';
+import type { AssertionError, SuiteError } from '@src';
 import { assert, group, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -37,7 +37,7 @@ const caseToTest = (tc: TestCase) =>
         }),
       ]),
       runTests({}),
-      assert.taskEitherLeft<SuiteError, readonly TestPassResult[]>(
+      assert.taskEitherLeft(
         assert.equal<SuiteError>({
           type: 'TestError',
           results: [
@@ -45,7 +45,7 @@ const caseToTest = (tc: TestCase) =>
               name: 'sequential group test',
               error: {
                 code: 'MultipleAssertionError',
-                results: readonlyArray.fromArray<AssertionResult>([
+                results: [
                   either.right({
                     name: 'should pass',
                   }),
@@ -57,7 +57,7 @@ const caseToTest = (tc: TestCase) =>
                     name: 'after fail',
                     error: tc.errorAfterFailedTest,
                   }),
-                ]),
+                ],
               },
             }),
           ],
