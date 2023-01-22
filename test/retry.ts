@@ -47,10 +47,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            changes: [
-              { type: '-', value: '3' },
-              { type: '+', value: '1' },
-            ],
             expected: 3,
             received: 1,
           },
@@ -69,10 +65,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            changes: [
-              { type: '-', value: '3' },
-              { type: '+', value: '1' },
-            ],
             expected: 3,
             received: 1,
           },
@@ -91,10 +83,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            changes: [
-              { type: '-', value: '3' },
-              { type: '+', value: '2' },
-            ],
             expected: 3,
             received: 2,
           },
