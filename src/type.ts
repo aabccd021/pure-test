@@ -68,7 +68,7 @@ export type AssertionError =
 
 export type AssertionFailResult = { readonly name: string; readonly error: AssertionError };
 
-export type AssertionPassResult = { readonly name: string };
+export type AssertionPassResult = { readonly name: string; readonly timeElapsedMs: number };
 
 export type AssertionResult = Either<AssertionFailResult, AssertionPassResult>;
 
@@ -78,7 +78,7 @@ export type TestError =
 
 export type TestFailResult = { readonly name: string; readonly error: TestError };
 
-export type TestPassResult = { readonly name: string };
+export type TestPassResult = { readonly name: string; readonly timeElapsedMs: number };
 
 export type TestResult = Either<TestFailResult, TestPassResult>;
 

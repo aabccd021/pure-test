@@ -1,6 +1,6 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, number, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { flow, pipe } from 'fp-ts/function';
+import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as retry from 'retry-ts';
@@ -12,6 +12,7 @@ import { runAssert } from './runAssert';
 import type {
   Assertion,
   AssertionError,
+  AssertionPassResult,
   AssertionResult,
   Concurrency,
   Group,
@@ -82,9 +83,10 @@ const unhandledException = (exception: unknown) => ({
 });
 
 const runWithTimeout =
-  (assertion: Pick<Assertion, 'timeout'>) => (te: TaskEither<AssertionError, unknown>) =>
+  <T>(assertion: Pick<Assertion, 'timeout'>) =>
+  (te: TaskEither<AssertionError, T>) =>
     task
-      .getRaceMonoid<Either<AssertionError, unknown>>()
+      .getRaceMonoid<Either<AssertionError, T>>()
       .concat(
         te,
         pipe({ code: 'timed out' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
@@ -95,15 +97,31 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
+const measureElapsed =
+  <A>(a: Task<A>): Task<{ readonly timeElapsedMs: number; readonly result: A }> =>
+  async () => {
+    const start = performance.now();
+    const result = await a();
+    const timeElapsedMs = performance.now() - start;
+    return { result, timeElapsedMs };
+  };
+
 const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
-    taskEither.chainEitherK(runAssert),
+    measureElapsed,
+    task.map(({ timeElapsedMs, result }) =>
+      pipe(
+        result,
+        either.chain(runAssert),
+        either.map((newResult) => ({ timeElapsedMs, result: newResult }))
+      )
+    ),
     runWithTimeout({ timeout: assertion.timeout }),
     runWithRetry({ retry: assertion.retry }),
     taskEither.bimap(
       (error) => ({ name: assertion.name, error }),
-      () => ({ name: assertion.name })
+      ({ timeElapsedMs }) => ({ timeElapsedMs, name: assertion.name })
     )
   );
 
@@ -122,7 +140,7 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
     task.map(
       flow(
         readonlyArray.reduce(
-          either.of<readonly AssertionResult[], readonly AssertionResult[]>([]),
+          either.of<readonly AssertionResult[], readonly AssertionPassResult[]>([]),
           (acc, el) =>
             pipe(
               acc,
@@ -131,8 +149,13 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
                 pipe(
                   el,
                   either.bimap(
-                    (ell): readonly AssertionResult[] => [...accr, either.left(ell)],
-                    (elr): readonly AssertionResult[] => [...accr, either.right(elr)]
+                    (ell): readonly AssertionResult[] =>
+                      pipe(
+                        accr,
+                        readonlyArray.map(either.right),
+                        readonlyArray.append(either.left(ell))
+                      ),
+                    (elr): readonly AssertionPassResult[] => readonlyArray.append(elr)(accr)
                   )
                 )
               )
@@ -143,7 +166,11 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
             name: test.name,
             error: { code: 'MultipleAssertionError' as const, results },
           }),
-          () => ({ name: test.name })
+          flow(
+            readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
+            readonlyArray.foldMap(number.MonoidSum)(identity),
+            (timeElapsedMs) => ({ name: test.name, timeElapsedMs })
+          )
         )
       )
     )

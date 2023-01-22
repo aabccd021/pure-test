@@ -1,4 +1,4 @@
-import { either, number, readonlyArray } from 'fp-ts';
+import { either } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { diffResult } from 'src/diffResult';
 import { match } from 'ts-pattern';
@@ -8,9 +8,6 @@ import type { Assert, AssertionError } from './type';
 export const runAssert = (a: Assert.Type): Either<AssertionError, unknown> =>
   match(a)
     .with({ assert: 'Equal' }, diffResult)
-    .with({ assert: 'NumberArraySortedAsc' }, ({ received }) =>
-      diffResult({ received, expected: readonlyArray.sort(number.Ord)(received) })
-    )
     .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
       either.left({ value, code: 'UnexpectedLeft' as const })
     )

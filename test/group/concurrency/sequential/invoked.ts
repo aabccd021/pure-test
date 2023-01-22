@@ -38,7 +38,7 @@ const caseToTest = (tc: TestCase) =>
         )
       ),
       task.chainIOK((isLastTestExecutedRef) => isLastTestExecutedRef.read),
-      task.map(assert.equal(tc.isLastTestExecuted))
+      assert.task(assert.equal(tc.isLastTestExecuted))
     ),
   });
 

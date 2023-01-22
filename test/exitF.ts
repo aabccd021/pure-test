@@ -21,7 +21,7 @@ const caseToTest = (tc: {
         )
       ),
       task.chainIOK((exitCodeRef) => exitCodeRef.read),
-      task.map(assert.equal(tc.exitCode))
+      assert.task(assert.equal(tc.exitCode))
     ),
   });
 

@@ -4,11 +4,12 @@ import { either, io, ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { RetryPolicy } from 'retry-ts';
 import { limitRetries } from 'retry-ts';
+import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly name: string;
   readonly retry?: RetryPolicy;
-  readonly result: SuiteResult;
+  readonly result: DeepPartial<SuiteResult>;
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -31,7 +32,7 @@ const caseToTest = (tc: TestCase) =>
         ])
       ),
       runTests({}),
-      task.map(assert.equal(tc.result))
+      assert.task(assert.partial(tc.result))
     ),
   });
 

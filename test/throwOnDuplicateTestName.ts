@@ -2,12 +2,13 @@ import type { SuiteResult } from '@src';
 import { assert, runTests, test, throwOnDuplicateTestName } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
+import type { DeepPartial } from 'ts-essentials';
 
 type Case = {
   readonly name: string;
   readonly test1Name: string;
   readonly test2Name: string;
-  readonly result: SuiteResult;
+  readonly result: DeepPartial<SuiteResult>;
 };
 
 const caseToTest = (tc: Case) =>
@@ -20,7 +21,7 @@ const caseToTest = (tc: Case) =>
       ]),
       throwOnDuplicateTestName,
       runTests({}),
-      task.map(assert.equal(tc.result))
+      assert.task(assert.partial(tc.result))
     ),
   });
 

@@ -1,9 +1,18 @@
-import { either as E, option as O, taskEither as TE } from 'fp-ts';
+import {
+  either as E,
+  option as O,
+  readonlyArray,
+  readonlyRecord,
+  task as T,
+  taskEither as TE,
+} from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Option } from 'fp-ts/Option';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
+import * as iots from 'io-ts';
+import type { DeepPartial } from 'ts-essentials';
 
 import type { Assert } from './type';
 
@@ -27,10 +36,35 @@ export const equalArray =
   <T>(expected: readonly T[]) =>
   (received: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, received });
 
-export const numberArraySortedAsc = (received: readonly number[]): Assert.NumberArraySortedAsc => ({
-  assert: 'NumberArraySortedAsc',
-  received,
-});
+const pick = (big: unknown, small: unknown): unknown =>
+  Array.isArray(big) && Array.isArray(small)
+    ? pipe(
+        small,
+        readonlyArray.filterMapWithIndex((smallIdx, smallV) =>
+          pipe(
+            big,
+            readonlyArray.lookup(smallIdx),
+            O.map((bigV) => pick(bigV, smallV))
+          )
+        )
+      )
+    : iots.UnknownRecord.is(big) && iots.UnknownRecord.is(small)
+    ? pipe(
+        small,
+        readonlyRecord.filterMapWithIndex((smallIdx, smallV) =>
+          pipe(
+            big,
+            readonlyRecord.lookup(smallIdx),
+            O.map((bigV) => pick(bigV, smallV))
+          )
+        )
+      )
+    : big;
+
+export const partial =
+  <T>(expected: DeepPartial<T>) =>
+  (received: T) =>
+    pipe(pick(received, expected), equalW(expected));
 
 const unexpectedLeft = (left: unknown): Assert.UnexpectedLeft => ({
   assert: 'UnexpectedLeft',
@@ -71,3 +105,5 @@ export const taskEitherLeft =
   <L, R>(toAssert: (l: L) => Assert.Type) =>
   (e: TaskEither<L, R>): Task<Assert.Type> =>
     pipe(e, TE.swap, TE.match(unexpectedRight, toAssert));
+
+export const task = T.map;

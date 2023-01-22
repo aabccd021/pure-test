@@ -2,8 +2,13 @@ import type { SuiteResult } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
+import type { DeepPartial } from 'ts-essentials';
 
-type Case = { readonly name: string; readonly testTime: number; readonly testError: SuiteResult };
+type Case = {
+  readonly name: string;
+  readonly testTime: number;
+  readonly testError: DeepPartial<SuiteResult>;
+};
 
 const timeoutTime = 500;
 const timeoutTestTime = 1000;
@@ -16,12 +21,12 @@ const caseToTest = (tc: Case) =>
       taskEither.right([
         test({
           name: 'foo test',
-          act: pipe('foo', task.of, task.delay(tc.testTime), task.map(assert.equal('foo'))),
+          act: pipe('foo', task.of, task.delay(tc.testTime), assert.task(assert.equal('foo'))),
           timeout: timeoutTime,
         }),
       ]),
       runTests({}),
-      task.map(assert.equal(tc.testError))
+      assert.task(assert.partial(tc.testError))
     ),
   });
 
