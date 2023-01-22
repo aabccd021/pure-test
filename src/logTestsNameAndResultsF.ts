@@ -55,6 +55,7 @@ export const logTestsNameAndResultsF = (env: {
         readonlyArray.map(either.right)
       ),
       readonlyArray.chain(testResultToStr),
+      readonlyArray.append(''),
       readonlyArray.intercalate(string.Monoid)('\n'),
       env.console.log
     )

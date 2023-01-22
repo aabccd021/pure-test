@@ -35,14 +35,12 @@ const testResultsToSummaryStr = (testResults: readonly TestResult[]): Option<str
       )
     ),
     ({ passed, failed, skipped }) => [
+      c.bold(c.inverse(' DONE ')),
+      c.bold(c.green(`   Passed ${passed}`)),
+      c.bold(c.red(`   Failed ${failed}`)),
+      c.bold(`  Skipped ${skipped}`),
       '',
-      c.bold(c.green(`Passed: ${passed}`)),
-      c.bold(c.red(`Failed: ${failed}`)),
-      c.bold(c.dim(c.gray(`Skipped: ${skipped}`))),
-      '',
-      'Done',
     ],
-    readonlyArray.map((x) => `  ${x}`),
     readonlyArray.intercalate(string.Monoid)('\n'),
     option.some
   );
