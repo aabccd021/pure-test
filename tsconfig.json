@@ -16,10 +16,10 @@
     "noUnusedParameters": true,
     "paths": {
       "@src": [
-        "src/index.ts"
+        "src/index/index.ts"
       ],
       "@src/node": [
-        "src/node.ts"
+        "src/node/index.ts"
       ]
     },
     "strict": true,

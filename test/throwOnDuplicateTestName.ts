@@ -1,5 +1,5 @@
 import type { SuiteResult } from '@src';
-import { assert, runTests, test, throwOnDuplicateTestName } from '@src';
+import { assert, preTest, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { DeepPartial } from 'ts-essentials';
@@ -12,14 +12,14 @@ type Case = {
 };
 
 const caseToTest = (tc: Case) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: tc.test1Name, act: pipe('foo', assert.equal('foo'), task.of) }),
-        test({ name: tc.test2Name, act: pipe('foo', assert.equal('foo'), task.of) }),
+        test.single({ name: tc.test1Name, act: pipe('foo', assert.equal('foo'), task.of) }),
+        test.single({ name: tc.test2Name, act: pipe('foo', assert.equal('foo'), task.of) }),
       ]),
-      throwOnDuplicateTestName,
+      preTest.throwOnDuplicateTestName,
       runTests({}),
       assert.task(assert.partial(tc.result))
     ),

@@ -9,16 +9,16 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef(false)),
       task.chainFirst((isLastTestExecutedRef) =>
         pipe(
           taskEither.right([
-            test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test({ name: 'should fail', act: pipe('foo', assert.equal('bar'), task.of) }),
-            test({
+            test.single({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test.single({ name: 'should fail', act: pipe('foo', assert.equal('bar'), task.of) }),
+            test.single({
               name: 'should skip',
               act: pipe(
                 'foo',

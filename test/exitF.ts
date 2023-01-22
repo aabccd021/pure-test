@@ -1,4 +1,4 @@
-import { assert, exitF, runTests, test } from '@src';
+import { assert, postTest, runTests, test } from '@src';
 import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -7,17 +7,17 @@ const caseToTest = (tc: {
   readonly received: string;
   readonly exitCode: number | undefined;
 }) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef<number | undefined>(undefined)),
       task.chainFirst((exitCodeRef) =>
         pipe(
           taskEither.right([
-            test({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
+            test.single({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
           ]),
           runTests({}),
-          exitF({ process: { exit: exitCodeRef.write } })
+          postTest.exitF({ process: { exit: exitCodeRef.write } })
         )
       ),
       task.chainIOK((exitCodeRef) => exitCodeRef.read),

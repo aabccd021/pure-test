@@ -2,7 +2,7 @@ import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
-import type * as Assert from './assertType';
+import type * as Assert from './assert';
 
 export type { Assert };
 
@@ -17,15 +17,13 @@ export type Assertion = {
   readonly retry?: retry.RetryPolicy;
 };
 
-export type Test = { readonly type: 'test'; readonly todo?: true; readonly assert: Assertion };
+export type SingleTest = {
+  readonly type: 'single';
+  readonly todo?: true;
+  readonly assert: Assertion;
+};
 
-export const test = ({ todo, ...assert }: Assertion & { readonly todo?: true }): Test => ({
-  type: 'test',
-  todo,
-  assert,
-});
-
-export type Group = {
+export type GroupTest = {
   readonly type: 'group';
   readonly name: string;
   readonly todo?: true;
@@ -33,9 +31,7 @@ export type Group = {
   readonly asserts: readonly Assertion[];
 };
 
-export const group = (g: Omit<Group, 'type'>): Group => ({ ...g, type: 'group' });
-
-export type TestOrGroup = Group | Test;
+export type Test = GroupTest | SingleTest;
 
 export type TestConfig = { readonly concurrency?: Concurrency };
 

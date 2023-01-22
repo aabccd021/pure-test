@@ -13,13 +13,13 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       taskEither.fromIO(ioRef.newIORef(0)),
       taskEither.chain((runCountRef) =>
         taskEither.right([
-          test({
+          test.single({
             name: 'should pass on 3rd try',
             act: pipe(
               runCountRef.modify((x) => x + 1),
@@ -47,7 +47,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            expected: 3,
             received: 1,
           },
         }),
@@ -65,7 +64,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            expected: 3,
             received: 1,
           },
         }),
@@ -83,7 +81,6 @@ const cases: readonly TestCase[] = [
           name: 'should pass on 3rd try',
           error: {
             code: 'AssertionError',
-            expected: 3,
             received: 2,
           },
         }),

@@ -1,4 +1,4 @@
-import { assert, logErrorDetailsF, runTests, test } from '@src';
+import { assert, postTest, runTests, test } from '@src';
 import { ioRef, readonlyArray, string, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -22,17 +22,20 @@ type Case = {
 };
 
 const caseToTest = (tc: Case) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef<string>('')),
       task.chainFirst((logRef) =>
         pipe(
           taskEither.right([
-            test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
+            test.single({
+              name: 'foo',
+              act: pipe(tc.received, assert.equal(tc.expected), task.of),
+            }),
           ]),
           runTests({}),
-          logErrorDetailsF({ console: { log: logRef.write } })
+          postTest.logErrorDetailsF({ console: { log: logRef.write } })
         )
       ),
       task.chainIOK((logRef) => logRef.read),

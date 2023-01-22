@@ -15,11 +15,11 @@ const timeoutTestTime = 1000;
 const nonTimeoutTestTime = 0;
 
 const caseToTest = (tc: Case) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({
+        test.single({
           name: 'foo test',
           act: pipe('foo', task.of, task.delay(tc.testTime), assert.task(assert.equal('foo'))),
           timeout: timeoutTime,

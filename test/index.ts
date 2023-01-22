@@ -13,7 +13,7 @@ import * as runTests from './runTests';
 import * as throwOnDuplicateTestName from './throwOnDuplicateTestName';
 import * as timeout from './timeout';
 
-const tests = src.scopeTests({
+const tests = src.test.scope({
   concurrency,
   exitF,
   group,
@@ -28,10 +28,10 @@ const tests = src.scopeTests({
 export const main = pipe(
   tests,
   taskEither.right,
-  src.throwOnDuplicateTestName,
+  src.preTest.throwOnDuplicateTestName,
   src.runTests({}),
-  src.logTestsNameAndResults,
-  src.logErrorDetails,
-  src.logSummary,
-  srcNode.exit
+  src.postTest.logTestsNameAndResults,
+  src.postTest.logErrorDetails,
+  src.postTest.logSummary,
+  srcNode.postTest.exit
 );

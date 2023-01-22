@@ -1,5 +1,5 @@
 import process from 'node:process';
 
-import { exitF } from './exitF';
+import { exitF } from 'src/index/postTest';
 
 export const exit = exitF({ process: { exit: (exitCode) => () => process.exit(exitCode) } });

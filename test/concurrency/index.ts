@@ -1,5 +1,5 @@
-import { scopeTests } from '@src';
+import { test } from '@src';
 
 import * as sequential from './sequential';
 
-export const tests = scopeTests({ sequential });
+export const tests = test.scope({ sequential });

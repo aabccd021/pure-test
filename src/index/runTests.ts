@@ -7,19 +7,19 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
-import { getTestOrGroupName } from './getTestOrGroupName';
-import { runAssert } from './runAssert';
+import { getTestName } from './_internal/getTestName';
+import { runAssert } from './_internal/runAssert';
 import type {
   Assertion,
   AssertionError,
   AssertionPassResult,
   AssertionResult,
   Concurrency,
-  Group,
+  GroupTest,
   SuiteError,
   SuiteResult,
+  Test,
   TestConfig,
-  TestOrGroup,
   TestPassResult,
   TestResult,
 } from './type';
@@ -125,7 +125,7 @@ const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
     )
   );
 
-const runAssertions = (config: Pick<Group, 'concurrency'>) =>
+const runAssertions = (config: Pick<GroupTest, 'concurrency'>) =>
   runWithConcurrency({
     concurrency: config.concurrency,
     run: runAssertion,
@@ -150,7 +150,7 @@ const getTimeElapsedByConcurrency = ({
     .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
     .exhaustive();
 
-const runMultipleAssertion = (test: Group): Task<TestResult> =>
+const runMultipleAssertion = (test: GroupTest): Task<TestResult> =>
   pipe(
     test.asserts,
     runAssertions({ concurrency: test.concurrency }),
@@ -193,9 +193,9 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
     )
   );
 
-const runTest = (test: TestOrGroup): Task<TestResult> =>
+const runTest = (test: Test): Task<TestResult> =>
   match(test)
-    .with({ type: 'test' }, ({ assert }) => runAssertion(assert))
+    .with({ type: 'single' }, ({ assert }) => runAssertion(assert))
     .with({ type: 'group' }, runMultipleAssertion)
     .exhaustive();
 
@@ -229,14 +229,14 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<SuiteError, readonly TestOrGroup[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<SuiteError, readonly Test[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({
         concurrency: config.concurrency,
         run: runTest,
         afterFail: (test) =>
-          either.left({ name: getTestOrGroupName(test), error: { code: 'Skipped' as const } }),
+          either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
       }),
       task.map(aggregateTestResult)
     )

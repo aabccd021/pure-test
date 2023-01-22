@@ -1,9 +1,9 @@
 import { either } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { diffResult } from 'src/diffResult';
 import { match } from 'ts-pattern';
 
-import type { Assert, AssertionError } from './type';
+import type { Assert, AssertionError } from '../type';
+import { diffResult } from './diffResult';
 
 export const runAssert = (a: Assert.Type): Either<AssertionError, unknown> =>
   match(a)

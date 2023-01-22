@@ -11,11 +11,11 @@ type Case = {
 };
 
 const caseToTest = (tc: Case) =>
-  test({
+  test.single({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
+        test.single({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(

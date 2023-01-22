@@ -3,7 +3,7 @@ import { flow } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
-import type { SuiteError, TestPassResult } from './type';
+import type { SuiteError, TestPassResult } from '../type';
 
 export type Env = { readonly process: Pick<typeof process, 'exit'> };
 

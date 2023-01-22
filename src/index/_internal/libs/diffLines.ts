@@ -3,7 +3,7 @@ import { readonlyArray, string } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import { match } from 'ts-pattern';
 
-import type { DiffLines } from '../type';
+import type { DiffLines } from '../../type';
 
 const removeLastNewLine = (str: string) =>
   string.endsWith('\n')(str)

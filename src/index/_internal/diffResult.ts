@@ -12,8 +12,8 @@ import { flow, pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import * as iots from 'io-ts';
 
+import type { Change, SerializationError } from '../type';
 import { diffLines } from './libs/diffLines';
-import type { Change, SerializationError } from './type';
 
 const serializeToLines =
   (path: readonly (number | string)[]) =>

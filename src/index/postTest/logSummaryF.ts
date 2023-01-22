@@ -7,7 +7,7 @@ import c from 'picocolors';
 import { modify } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestResult } from './type';
+import type { SuiteResult, TestResult } from '../type';
 
 const testResultsToSummaryStr = (testResults: readonly TestResult[]): Option<string> =>
   pipe(

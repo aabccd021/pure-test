@@ -6,7 +6,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, SuiteError, SuiteResult, TestError, TestFailResult } from './type';
+import type { Change, SuiteError, SuiteResult, TestError, TestFailResult } from '../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
