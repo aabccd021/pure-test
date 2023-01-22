@@ -8,19 +8,21 @@ import * as exitF from './exitF';
 import * as group from './group';
 import * as logErrorDetailsF from './logErrorDetailsF';
 import * as primitive from './primitive';
+import * as retry from './retry';
 import * as runTests from './runTests';
 import * as throwOnDuplicateTestName from './throwOnDuplicateTestName';
 import * as timeout from './timeout';
 
 const tests = src.scopeTests({
-  logErrorDetailsF,
-  exitF,
-  timeout,
-  primitive,
   concurrency,
-  runTests,
+  exitF,
   group,
+  logErrorDetailsF,
+  primitive,
+  retry,
+  runTests,
   throwOnDuplicateTestName,
+  timeout,
 });
 
 export const main = pipe(
