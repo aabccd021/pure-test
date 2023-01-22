@@ -6,7 +6,7 @@ specifiers:
   c8: ^7.12.0
   diff: ^5.1.0
   eslint: ^8.30.0
-  eslint-config-chimeraant: ^1.2.8
+  eslint-config-chimeraant: ^1.2.9
   exec-main: ^1.0.1
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
@@ -36,7 +36,7 @@ devDependencies:
   '@types/node': 18.11.18
   c8: 7.12.0
   eslint: 8.30.0
-  eslint-config-chimeraant: 1.2.8_lzzuuodtsqwxnvqeq4g4likcqa
+  eslint-config-chimeraant: 1.2.9_lzzuuodtsqwxnvqeq4g4likcqa
   exec-main: 1.0.2_ts-node@10.9.1
   pnpm: 7.25.0
   semantic-release: 20.0.2
@@ -1326,8 +1326,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /eslint-config-chimeraant/1.2.8_lzzuuodtsqwxnvqeq4g4likcqa:
-    resolution: {integrity: sha512-srZWGOJJLMRzv8bFR1QXq0r77+oXcDpPJvF7FY2X/EpuNf2Av6qQ0PzQTFlgX6MZs/iqfg0Q+gGE27Gobbj1ug==}
+  /eslint-config-chimeraant/1.2.9_lzzuuodtsqwxnvqeq4g4likcqa:
+    resolution: {integrity: sha512-PXEHlyCDeZDR3BhTPM3Y6J4fJtzZNGSibm5RRzDH7GOCY+5D/BFX7606Ehu9+lgbBu4keVeYCH/F62EMYJpmKg==}
     peerDependencies:
       eslint: ^8.25.0
     dependencies:
