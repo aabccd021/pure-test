@@ -1,6 +1,6 @@
-import { either, number, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, number, option, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { flow, identity, pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as retry from 'retry-ts';
@@ -133,6 +133,23 @@ const runAssertions = (config: Pick<Group, 'concurrency'>) =>
       either.left({ name: assertion.name, error: { code: 'Skipped' as const } }),
   });
 
+const getMaxInNumberArray = flow(
+  readonlyArray.sort(number.Ord),
+  readonlyArray.last,
+  option.getOrElse(() => 0)
+);
+
+const getTimeElapsedByConcurrency = ({
+  concurrency,
+}: {
+  readonly concurrency?: Concurrency;
+}): ((times: readonly number[]) => number) =>
+  match(concurrency)
+    .with(undefined, () => getMaxInNumberArray)
+    .with({ type: 'parallel' }, () => getMaxInNumberArray)
+    .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
+    .exhaustive();
+
 const runMultipleAssertion = (test: Group): Task<TestResult> =>
   pipe(
     test.asserts,
@@ -168,7 +185,7 @@ const runMultipleAssertion = (test: Group): Task<TestResult> =>
           }),
           flow(
             readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
-            readonlyArray.foldMap(number.MonoidSum)(identity),
+            getTimeElapsedByConcurrency({ concurrency: test.concurrency }),
             (timeElapsedMs) => ({ name: test.name, timeElapsedMs })
           )
         )
