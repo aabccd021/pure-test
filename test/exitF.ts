@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/function';
 
 const caseToTest = (tc: {
   readonly name: string;
-  readonly actual: string;
+  readonly received: string;
   readonly exitCode: number | undefined;
 }) =>
   test({
@@ -14,7 +14,7 @@ const caseToTest = (tc: {
       task.chainFirst((exitCodeRef) =>
         pipe(
           taskEither.right([
-            test({ name: 'tesnNme', act: pipe(tc.actual, assert.equal('foo'), task.of) }),
+            test({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
           ]),
           runTests({}),
           exitF({ process: { exit: exitCodeRef.write } })
@@ -26,8 +26,8 @@ const caseToTest = (tc: {
   });
 
 const cases = [
-  { name: 'Exit with code 1 on test fail', actual: 'bar', exitCode: 1 },
-  { name: 'Exit with code 0 on test pass', actual: 'foo', exitCode: 0 },
+  { name: 'Exit with code 1 on test fail', received: 'bar', exitCode: 1 },
+  { name: 'Exit with code 0 on test pass', received: 'foo', exitCode: 0 },
 ];
 
 export const tests = readonlyArray.map(caseToTest)(cases);

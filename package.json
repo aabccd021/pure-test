@@ -2,7 +2,7 @@
   "scripts": {
     "build": "rm -rf cjs esm && echo '{ \"extends\": \"./tsconfig.json\", \"include\": [\"./src\"] }' > tsconfig.dist.json && tsc --project tsconfig.dist.json --declaration --declarationMap --skipLibCheck --module commonjs --outDir cjs && tsc --project tsconfig.dist.json --declaration --declarationMap --skipLibCheck --moduleResolution node --module esnext --outDir esm && rm tsconfig.dist.json",
     "test": "exec-main ./test/index",
-    "lint": "eslint . --max-warnings 0 --ignore-path .gitignore",
+    "lint": "TIMING=1 eslint . --max-warnings 0 --ignore-path .gitignore",
     "lint:full": "pnpm lint --rule 'import/no-cycle: error' --rule 'import/namespace: error' --rule '@typescript-eslint/no-misused-promises: error'",
     "lint:fix": "pnpm lint --fix"
   },

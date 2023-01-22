@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/function';
 
 type Case = {
   readonly name: string;
-  readonly actual: readonly number[];
+  readonly received: readonly number[];
   readonly expected: readonly number[];
   readonly changes: readonly Change[];
 };
@@ -15,7 +15,7 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.actual, assert.numberArraySortedAsc, task.of) }),
+        test({ name: 'foo', act: pipe(tc.received, assert.numberArraySortedAsc, task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
               name: 'foo',
               error: {
                 code: 'AssertionError',
-                actual: tc.actual,
+                received: tc.received,
                 expected: tc.expected,
                 changes: tc.changes,
               },
@@ -40,7 +40,7 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   {
     name: 'non-sorted array has changes',
-    actual: [3, 1, 2],
+    received: [3, 1, 2],
     expected: [1, 2, 3],
     changes: [
       { type: '0', value: `[` },

@@ -66,14 +66,14 @@ const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)(
 );
 
 export const diffResult = ({
-  actual,
+  received,
   expected,
 }: {
-  readonly actual: unknown;
+  readonly received: unknown;
   readonly expected: unknown;
 }) =>
   pipe(
-    { actual, expected },
+    { received, expected },
     readonlyRecord.map(
       flow(serializeToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')))
     ),
@@ -83,7 +83,7 @@ export const diffResult = ({
       either.fromPredicate(hasAnyChange, (changes) => ({
         code: 'AssertionError' as const,
         changes,
-        actual,
+        received,
         expected,
       }))
     )

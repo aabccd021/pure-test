@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/function';
 
 type Case = {
   readonly name: string;
-  readonly actual: unknown;
+  readonly received: unknown;
   readonly expected: unknown;
   readonly errorPath: readonly string[];
 };
@@ -15,7 +15,7 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
+        test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
@@ -34,29 +34,29 @@ const caseToTest = (tc: Case) =>
 
 const cases: readonly Case[] = [
   {
-    name: 'should return left when comparing function inside path on actual',
-    actual: { path1: () => 'foo' },
+    name: 'should return left when comparing function inside path on received',
+    received: { path1: () => 'foo' },
     expected: {},
     errorPath: ['path1'],
   },
 
   {
     name: 'should return left when comparing function inside path on expected',
-    actual: {},
+    received: {},
     expected: { path1: () => 'foo' },
     errorPath: ['path1'],
   },
 
   {
-    name: 'should return left when comparing function on actual',
-    actual: () => 'foo',
+    name: 'should return left when comparing function on received',
+    received: () => 'foo',
     expected: {},
     errorPath: [],
   },
 
   {
     name: 'should return left when comparing function on expected',
-    actual: {},
+    received: {},
     expected: () => 'foo',
     errorPath: [],
   },

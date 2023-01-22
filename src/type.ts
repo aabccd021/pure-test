@@ -43,7 +43,7 @@ export type Change = { readonly type: '-' | '+' | '0'; readonly value: string };
 
 export type DiffLines = (p: {
   readonly expected: string;
-  readonly actual: string;
+  readonly received: string;
 }) => readonly Change[];
 
 export type SerializationError = {
@@ -56,7 +56,7 @@ export type AssertionError =
   | {
       readonly code: 'AssertionError';
       readonly changes: readonly Change[];
-      readonly actual: unknown;
+      readonly received: unknown;
       readonly expected: unknown;
     }
   | { readonly code: 'Skipped' }

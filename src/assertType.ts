@@ -1,12 +1,12 @@
 export type Equal = {
   readonly assert: 'Equal';
   readonly expected: unknown;
-  readonly actual: unknown;
+  readonly received: unknown;
 };
 
 export type NumberArraySortedAsc = {
   readonly assert: 'NumberArraySortedAsc';
-  readonly actual: readonly number[];
+  readonly received: readonly number[];
 };
 
 export type UnexpectedNone = { readonly assert: 'UnexpectedNone' };

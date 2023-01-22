@@ -14,7 +14,7 @@ const invertEnd = '\x1b[27m';
 
 type Case = {
   readonly name: string;
-  readonly actual: unknown;
+  readonly received: unknown;
   readonly expected: unknown;
   readonly log: readonly string[];
   readonly receivedCount: number;
@@ -29,7 +29,7 @@ const caseToTest = (tc: Case) =>
       task.chainFirst((logRef) =>
         pipe(
           taskEither.right([
-            test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
+            test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
           ]),
           runTests({}),
           logErrorDetailsF({ console: { log: logRef.write } })
@@ -55,7 +55,7 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   {
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
-    actual: { minus: 'minusValue' },
+    received: { minus: 'minusValue' },
     expected: {},
     expectedCount: 0,
     receivedCount: 1,
@@ -64,7 +64,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'multiple line minus diff is indented correctly',
-    actual: { nested: { minus: 'minusValue' } },
+    received: { nested: { minus: 'minusValue' } },
     expected: {},
     expectedCount: 0,
     receivedCount: 3,
@@ -79,7 +79,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
-    actual: {},
+    received: {},
     expected: { plus: 'plusValue' },
     expectedCount: 1,
     receivedCount: 0,
@@ -87,8 +87,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can use undefined in actual',
-    actual: { minus: 'minusValue' },
+    name: 'can use undefined in received',
+    received: { minus: 'minusValue' },
     expected: undefined,
     expectedCount: 1,
     receivedCount: 3,
@@ -102,7 +102,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'can use undefined in expected',
-    actual: undefined,
+    received: undefined,
     expected: { plus: 'plusValue' },
     expectedCount: 3,
     receivedCount: 1,
@@ -115,8 +115,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can differentiate actual undefined and expected string "undefined"',
-    actual: 'undefined',
+    name: 'can differentiate received undefined and expected string "undefined"',
+    received: 'undefined',
     expected: undefined,
     receivedCount: 1,
     expectedCount: 1,
@@ -124,8 +124,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can differentiate actual string "undefined" and expected undefined',
-    actual: undefined,
+    name: 'can differentiate received string "undefined" and expected undefined',
+    received: undefined,
     expected: 'undefined',
     receivedCount: 1,
     expectedCount: 1,

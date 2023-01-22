@@ -9,27 +9,27 @@ import type { Assert } from './type';
 
 export const equal =
   <T>(expected: T) =>
-  (actual: T): Assert.Equal => ({ assert: 'Equal', expected, actual });
+  (received: T): Assert.Equal => ({ assert: 'Equal', expected, received });
 
 export const equalW =
   (expected: unknown) =>
-  (actual: unknown): Assert.Equal => ({ assert: 'Equal', expected, actual });
+  (received: unknown): Assert.Equal => ({ assert: 'Equal', expected, received });
 
 export const equalOption =
   <T>(expected: Option<T>) =>
-  (actual: Option<T>): Assert.Equal => ({ assert: 'Equal', expected, actual });
+  (received: Option<T>): Assert.Equal => ({ assert: 'Equal', expected, received });
 
 export const equalEither =
   <L, R>(expected: Either<L, R>) =>
-  (actual: Either<L, R>): Assert.Equal => ({ assert: 'Equal', expected, actual });
+  (received: Either<L, R>): Assert.Equal => ({ assert: 'Equal', expected, received });
 
 export const equalArray =
   <T>(expected: readonly T[]) =>
-  (actual: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, actual });
+  (received: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, received });
 
-export const numberArraySortedAsc = (actual: readonly number[]): Assert.NumberArraySortedAsc => ({
+export const numberArraySortedAsc = (received: readonly number[]): Assert.NumberArraySortedAsc => ({
   assert: 'NumberArraySortedAsc',
-  actual,
+  received,
 });
 
 const unexpectedLeft = (left: unknown): Assert.UnexpectedLeft => ({

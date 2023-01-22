@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/function';
 
 type Case = {
   readonly name: string;
-  readonly actual: unknown;
+  readonly received: unknown;
   readonly expected: unknown;
   readonly changes: readonly Change[];
 };
@@ -15,7 +15,7 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.actual, assert.equal(tc.expected), task.of) }),
+        test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
               name: 'foo',
               error: {
                 code: 'AssertionError',
-                actual: tc.actual,
+                received: tc.received,
                 expected: tc.expected,
                 changes: tc.changes,
               },
@@ -40,7 +40,7 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   {
     name: 'minus diff is logged with minus(-) prefix and red(31) color',
-    actual: { minus: 'minusValue' },
+    received: { minus: 'minusValue' },
     expected: {},
     changes: [
       { type: '0', value: `{` },
@@ -51,7 +51,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'plus diff is logged with plus(+) prefix and green(32) color',
-    actual: {},
+    received: {},
     expected: { plus: 'plusValue' },
     changes: [
       { type: '0', value: `{` },
@@ -62,7 +62,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'multiple line minus diff is indented correctly',
-    actual: { nested: { minus: 'minusValue' } },
+    received: { nested: { minus: 'minusValue' } },
     expected: {},
     changes: [
       { type: '0', value: `{` },
@@ -75,7 +75,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'multiple line plus diff is indented correctly',
-    actual: {},
+    received: {},
     expected: { nested: { plus: 'plusValue' } },
     changes: [
       { type: '0', value: `{` },
@@ -88,7 +88,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'nested array diff has correct comma',
-    actual: [['minusValue']],
+    received: [['minusValue']],
     expected: [],
     changes: [
       { type: '0', value: `[` },
@@ -100,8 +100,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can use undefined in actual',
-    actual: { minus: 'minusValue' },
+    name: 'can use undefined in received',
+    received: { minus: 'minusValue' },
     expected: undefined,
     changes: [
       { type: '-', value: `undefined` },
@@ -113,7 +113,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'can use undefined in expected',
-    actual: undefined,
+    received: undefined,
     expected: { plus: 'plusValue' },
     changes: [
       { type: '-', value: `{` },
@@ -124,8 +124,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can differentiate actual undefined and expected string "undefined"',
-    actual: 'undefined',
+    name: 'can differentiate received undefined and expected string "undefined"',
+    received: 'undefined',
     expected: undefined,
     changes: [
       { type: '-', value: `undefined` },
@@ -134,8 +134,8 @@ const cases: readonly Case[] = [
   },
 
   {
-    name: 'can differentiate actual string "undefined" and expected undefined',
-    actual: undefined,
+    name: 'can differentiate received string "undefined" and expected undefined',
+    received: undefined,
     expected: 'undefined',
     changes: [
       { type: '-', value: `"undefined"` },

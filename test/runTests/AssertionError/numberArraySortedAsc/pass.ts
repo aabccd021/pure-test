@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/function';
 
 type Case = {
   readonly name: string;
-  readonly actual: readonly number[];
+  readonly received: readonly number[];
   readonly expected: readonly number[];
   readonly changes: readonly Change[];
 };
@@ -15,7 +15,7 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.actual, assert.numberArraySortedAsc, task.of) }),
+        test({ name: 'foo', act: pipe(tc.received, assert.numberArraySortedAsc, task.of) }),
       ]),
       runTests({}),
       assert.taskEither(assert.equalArray([{ name: 'foo' }]))
@@ -25,7 +25,7 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   {
     name: 'empty array is equal',
-    actual: [],
+    received: [],
     expected: [],
     changes: [
       { type: '0', value: `[` },
@@ -35,7 +35,7 @@ const cases: readonly Case[] = [
 
   {
     name: 'sorted array has no changes',
-    actual: [1, 2, 3],
+    received: [1, 2, 3],
     expected: [1, 2, 3],
     changes: [
       { type: '0', value: `[` },

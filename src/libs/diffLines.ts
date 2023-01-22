@@ -15,9 +15,9 @@ const removeLastNewLine = (str: string) =>
       )
     : str;
 
-export const diffLines: DiffLines = ({ expected, actual }) =>
+export const diffLines: DiffLines = ({ expected, received }) =>
   pipe(
-    diff.diffLines(expected, actual),
+    diff.diffLines(expected, received),
     readonlyArray.map((change) =>
       match(change)
         .with({ added: true }, ({ value }) => ({ type: '+' as const, value }))
