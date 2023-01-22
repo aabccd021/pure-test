@@ -1,21 +1,38 @@
-import { either, number, option, readonlyArray, task, taskEither } from 'fp-ts';
+import {
+  apply,
+  boolean,
+  either,
+  number,
+  option,
+  readonlyArray,
+  readonlyNonEmptyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
+} from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
+import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
+import * as iots from 'io-ts';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
 import { getTestName } from './_internal/getTestName';
-import { runAssert } from './_internal/runAssert';
+import { diffLines } from './_internal/libs/diffLines';
 import type {
+  Assert,
   Assertion,
   AssertionError,
   AssertionPassResult,
   AssertionResult,
+  Change,
   Concurrency,
   GroupTest,
+  SerializationError,
   SuiteError,
   SuiteResult,
   Test,
@@ -23,6 +40,92 @@ import type {
   TestPassResult,
   TestResult,
 } from './type';
+
+const serializeToLines =
+  (path: readonly (number | string)[]) =>
+  (obj: unknown): Either<SerializationError, ReadonlyNonEmptyArray<string>> =>
+    typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
+      ? either.right([JSON.stringify(obj)])
+      : obj === undefined
+      ? either.right(['undefined'])
+      : Array.isArray(obj)
+      ? pipe(
+          obj,
+          readonlyArray.traverseWithIndex(either.Applicative)((k, v) =>
+            serializeToLines([...path, k])(v)
+          ),
+          either.map(
+            flow(
+              readonlyArray.chain(readonlyNonEmptyArray.modifyLast((x) => `${x},`)),
+              readonlyArray.map((x) => `  ${x}`),
+              (xs) => [`[`, ...xs, `]`]
+            )
+          )
+        )
+      : pipe(
+          obj,
+          iots.UnknownRecord.decode,
+          either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+          either.chain(
+            readonlyRecord.traverseWithIndex(either.Applicative)((k, v) =>
+              serializeToLines([...path, k])(v)
+            )
+          ),
+          either.map(
+            flow(
+              readonlyRecord.foldMapWithIndex(string.Ord)(readonlyArray.getMonoid<string>())(
+                (k, v) =>
+                  pipe(
+                    v,
+                    readonlyNonEmptyArray.modifyHead((x) => `"${k}": ${x}`),
+                    readonlyNonEmptyArray.modifyLast((x) => `${x},`)
+                  )
+              ),
+              readonlyArray.map((x) => `  ${x}`),
+              (xs) => [`{`, ...xs, `}`]
+            )
+          )
+        );
+
+const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)(
+  (change: Change) => change.type === '0'
+);
+
+export const diffResult = ({
+  received,
+  expected,
+}: {
+  readonly received: unknown;
+  readonly expected: unknown;
+}) =>
+  pipe(
+    { received, expected },
+    readonlyRecord.map(
+      flow(serializeToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')))
+    ),
+    apply.sequenceS(either.Apply),
+    either.map(diffLines),
+    either.chainW(
+      either.fromPredicate(hasAnyChange, (changes) => ({
+        code: 'AssertionError' as const,
+        changes,
+        received,
+        expected,
+      }))
+    )
+  );
+
+export const runAssert = (a: Assert.Type): Either<AssertionError, unknown> =>
+  match(a)
+    .with({ assert: 'Equal' }, diffResult)
+    .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
+      either.left({ value, code: 'UnexpectedLeft' as const })
+    )
+    .with({ assert: 'UnexpectedRight' }, ({ value }) =>
+      either.left({ value, code: 'UnexpectedRight' as const })
+    )
+    .with({ assert: 'UnexpectedNone' }, () => either.left({ code: 'UnexpectedNone' as const }))
+    .exhaustive();
 
 const runSequentialFailFast =
   <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
