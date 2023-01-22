@@ -28,8 +28,8 @@ export const main = pipe(
   taskEither.right,
   src.throwOnDuplicateTestName,
   src.runTests({}),
-  src.logErrorDetails,
   src.logTestsNameAndResults,
+  src.logErrorDetails,
   src.logSummary,
   srcNode.exit
 );
