@@ -25,27 +25,27 @@ const getColor = (changeType: Change['type']): ((s: string) => string) =>
 const formatChangeStr = (change: Change) =>
   pipe(change.value, std.string.prepend(`${getPrefix(change.type)} `), getColor(change.type));
 
-const getChangeNum = (diff: readonly Change[], changeType: Change['type']) =>
+const getChangeNum = (changes: readonly Change[], changeType: Change['type']) =>
   pipe(
-    diff,
+    changes,
     readonlyArray.filter((change) => change.type === changeType),
     readonlyArray.size
   );
 
-const diffNums = (diff: readonly Change[]) => [
-  c.green(`- Expected  - ${getChangeNum(diff, '-')}`),
-  c.red(`+ Received  + ${getChangeNum(diff, '+')}`),
+const changesNums = (changes: readonly Change[]) => [
+  c.green(`- Expected  - ${getChangeNum(changes, '-')}`),
+  c.red(`+ Received  + ${getChangeNum(changes, '+')}`),
   '',
 ];
 
-const diffToString = readonlyArray.map(formatChangeStr);
+const changesToString = readonlyArray.map(formatChangeStr);
 
 const formatTestError = (
   error: Exclude<TestError, { readonly code: 'Skipped' }>
 ): readonly string[] =>
   match(error)
-    .with({ code: 'AssertionError' }, ({ diff }) =>
-      readonlyArray.flatten([diffNums(diff), diffToString(diff)])
+    .with({ code: 'AssertionError' }, ({ changes }) =>
+      readonlyArray.flatten([changesNums(changes), changesToString(changes)])
     )
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 

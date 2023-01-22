@@ -5,61 +5,69 @@ import type { Option } from 'fp-ts/Option';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
-import type { Assert, AssertEqual, UnexpectedLeft, UnexpectedNone } from './type';
+import type { Assert } from './type';
 
 export const equal =
   <T>(expected: T) =>
-  (actual: T): AssertEqual => ({ type: 'AssertEqual', expected, actual });
+  (actual: T): Assert.Equal => ({ assert: 'Equal', expected, actual });
 
 export const equalW =
   (expected: unknown) =>
-  (actual: unknown): AssertEqual => ({ type: 'AssertEqual', expected, actual });
+  (actual: unknown): Assert.Equal => ({ assert: 'Equal', expected, actual });
 
 export const equalOption =
   <T>(expected: Option<T>) =>
-  (actual: Option<T>): AssertEqual => ({ type: 'AssertEqual', expected, actual });
+  (actual: Option<T>): Assert.Equal => ({ assert: 'Equal', expected, actual });
 
 export const equalEither =
   <L, R>(expected: Either<L, R>) =>
-  (actual: Either<L, R>): AssertEqual => ({ type: 'AssertEqual', expected, actual });
+  (actual: Either<L, R>): Assert.Equal => ({ assert: 'Equal', expected, actual });
 
 export const equalArray =
   <T>(expected: readonly T[]) =>
-  (actual: readonly T[]): AssertEqual => ({ type: 'AssertEqual', expected, actual });
+  (actual: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, actual });
 
-const unexpectedLeft = (left: unknown): UnexpectedLeft => ({ type: 'UnexpectedLeft', value: left });
+export const numberArraySortedAsc = (actual: readonly number[]): Assert.NumberArraySortedAsc => ({
+  assert: 'NumberArraySortedAsc',
+  actual,
+});
 
-const unexpectedRight = (left: unknown): UnexpectedLeft => ({
-  type: 'UnexpectedLeft',
+const unexpectedLeft = (left: unknown): Assert.UnexpectedLeft => ({
+  assert: 'UnexpectedLeft',
   value: left,
 });
 
-const unexpectedNone: UnexpectedNone = { type: 'UnexpectedNone' };
+const unexpectedRight = (left: unknown): Assert.UnexpectedLeft => ({
+  assert: 'UnexpectedLeft',
+  value: left,
+});
+
+const unexpectedNone: Assert.UnexpectedNone = { assert: 'UnexpectedNone' };
 
 export const option =
-  <A>(toAssert: (r: A) => Assert) =>
-  (e: Option<A>): Assert =>
+  <A>(toAssert: (r: A) => Assert.Type) =>
+  (e: Option<A>): Assert.Type =>
     pipe(
       e,
       O.match(() => unexpectedNone, toAssert)
     );
 
 export const either =
-  <L, R>(toAssert: (r: R) => Assert) =>
-  (e: Either<L, R>): Assert =>
+  <L, R>(toAssert: (r: R) => Assert.Type) =>
+  (e: Either<L, R>): Assert.Type =>
     pipe(e, E.match(unexpectedLeft, toAssert));
 
 export const eitherLeft =
-  <L, R>(toAssert: (r: L) => Assert) =>
-  (e: Either<L, R>): Assert =>
+  <L, R>(toAssert: (r: L) => Assert.Type) =>
+  (e: Either<L, R>): Assert.Type =>
     pipe(e, E.swap, E.match(unexpectedRight, toAssert));
 
 export const taskEither =
-  <L, R>(toAssert: (r: R) => Assert) =>
-  (e: TaskEither<L, R>): Task<Assert> =>
+  <L, R>(toAssert: (r: R) => Assert.Type) =>
+  (e: TaskEither<L, R>): Task<Assert.Type> =>
     pipe(e, TE.match(unexpectedLeft, toAssert));
 
 export const taskEitherLeft =
-  <L, R>(toAssert: (l: L) => Assert) =>
-  (e: TaskEither<L, R>): Task<Assert> =>
+  <L, R>(toAssert: (l: L) => Assert.Type) =>
+  (e: TaskEither<L, R>): Task<Assert.Type> =>
     pipe(e, TE.swap, TE.match(unexpectedRight, toAssert));

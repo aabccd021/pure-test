@@ -8,7 +8,7 @@ type Case = {
   readonly actual: unknown;
   readonly expected: unknown;
   readonly error: {
-    readonly diff: readonly Change[];
+    readonly changes: readonly Change[];
     readonly actual: unknown;
     readonly expected: unknown;
   };
@@ -39,7 +39,7 @@ const cases: readonly Case[] = [
     error: {
       actual: { minus: 'minusValue' },
       expected: {},
-      diff: [
+      changes: [
         { type: '0', value: `{` },
         { type: '+', value: `  "minus": "minusValue",` },
         { type: '0', value: `}` },
@@ -54,7 +54,7 @@ const cases: readonly Case[] = [
     error: {
       actual: {},
       expected: { plus: 'plusValue' },
-      diff: [
+      changes: [
         { type: '0', value: `{` },
         { type: '-', value: `  "plus": "plusValue",` },
         { type: '0', value: `}` },
@@ -69,7 +69,7 @@ const cases: readonly Case[] = [
     error: {
       actual: { nested: { minus: 'minusValue' } },
       expected: {},
-      diff: [
+      changes: [
         { type: '0', value: `{` },
         { type: '+', value: `  "nested": {` },
         { type: '+', value: `    "minus": "minusValue",` },
@@ -86,7 +86,7 @@ const cases: readonly Case[] = [
     error: {
       actual: {},
       expected: { nested: { plus: 'plusValue' } },
-      diff: [
+      changes: [
         { type: '0', value: `{` },
         { type: '-', value: `  "nested": {` },
         { type: '-', value: `    "plus": "plusValue",` },
@@ -103,7 +103,7 @@ const cases: readonly Case[] = [
     error: {
       actual: [['minusValue']],
       expected: [],
-      diff: [
+      changes: [
         { type: '0', value: `[` },
         { type: '+', value: `  [` },
         { type: '+', value: `    "minusValue",` },
@@ -120,7 +120,7 @@ const cases: readonly Case[] = [
     error: {
       actual: { minus: 'minusValue' },
       expected: undefined,
-      diff: [
+      changes: [
         { type: '-', value: `undefined` },
         { type: '+', value: `{` },
         { type: '+', value: `  "minus": "minusValue",` },
@@ -136,7 +136,7 @@ const cases: readonly Case[] = [
     error: {
       actual: undefined,
       expected: { plus: 'plusValue' },
-      diff: [
+      changes: [
         { type: '-', value: `{` },
         { type: '-', value: `  "plus": "plusValue",` },
         { type: '-', value: `}` },
@@ -152,7 +152,7 @@ const cases: readonly Case[] = [
     error: {
       actual: 'undefined',
       expected: undefined,
-      diff: [
+      changes: [
         { type: '-', value: `undefined` },
         { type: '+', value: `"undefined"` },
       ],
@@ -166,7 +166,7 @@ const cases: readonly Case[] = [
     error: {
       expected: 'undefined',
       actual: undefined,
-      diff: [
+      changes: [
         { type: '-', value: `"undefined"` },
         { type: '+', value: `undefined` },
       ],

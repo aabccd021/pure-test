@@ -12,19 +12,8 @@ import { flow, pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import * as iots from 'io-ts';
 
-import { diffLines } from '../libs/diffLines';
-import type { AssertEqual, AssertionError, Change, SerializationError } from '../type';
-
-const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)((diff: Change) => diff.type === '0');
-
-const assertionFailed =
-  (result: { readonly expected: unknown; readonly actual: unknown }) =>
-  (diff: readonly Change[]) => ({
-    code: 'AssertionError' as const,
-    diff,
-    actual: result.actual,
-    expected: result.expected,
-  });
+import { diffLines } from './libs/diffLines';
+import type { Change, SerializationError } from './type';
 
 const serializeToLines =
   (path: readonly (number | string)[]) =>
@@ -72,16 +61,30 @@ const serializeToLines =
           )
         );
 
-const serialize = flow(
-  serializeToLines([]),
-  either.map(readonlyArray.intercalate(string.Monoid)('\n'))
+const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)(
+  (change: Change) => change.type === '0'
 );
 
-export const runAssertion = (result: AssertEqual): Either<AssertionError, unknown> =>
+export const diffResult = ({
+  actual,
+  expected,
+}: {
+  readonly actual: unknown;
+  readonly expected: unknown;
+}) =>
   pipe(
-    result,
-    readonlyRecord.map(serialize),
+    { actual, expected },
+    readonlyRecord.map(
+      flow(serializeToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')))
+    ),
     apply.sequenceS(either.Apply),
     either.map(diffLines),
-    either.chainW(either.fromPredicate(hasAnyChange, assertionFailed(result)))
+    either.chainW(
+      either.fromPredicate(hasAnyChange, (changes) => ({
+        code: 'AssertionError' as const,
+        changes,
+        actual,
+        expected,
+      }))
+    )
   );

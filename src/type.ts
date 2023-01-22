@@ -2,19 +2,9 @@ import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
-export type AssertEqual = {
-  readonly type: 'AssertEqual';
-  readonly expected: unknown;
-  readonly actual: unknown;
-};
+import type * as Assert from './assertType';
 
-export type UnexpectedNone = { readonly type: 'UnexpectedNone' };
-
-export type UnexpectedLeft = { readonly type: 'UnexpectedLeft'; readonly value: unknown };
-
-export type UnexpectedRight = { readonly type: 'UnexpectedRight'; readonly value: unknown };
-
-export type Assert = AssertEqual | UnexpectedLeft | UnexpectedNone | UnexpectedRight;
+export type { Assert };
 
 export type Concurrency =
   | { readonly type: 'parallel' }
@@ -22,7 +12,7 @@ export type Concurrency =
 
 export type Assertion = {
   readonly name: string;
-  readonly act: Task<Assert>;
+  readonly act: Task<Assert.Type>;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
@@ -65,7 +55,7 @@ export type AssertionError =
   | SerializationError
   | {
       readonly code: 'AssertionError';
-      readonly diff: readonly Change[];
+      readonly changes: readonly Change[];
       readonly actual: unknown;
       readonly expected: unknown;
     }
