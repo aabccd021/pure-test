@@ -30,5 +30,6 @@ export const main = pipe(
   src.runTests({}),
   src.logErrorDetails,
   src.logTestsNameAndResults,
+  src.logSummary,
   srcNode.exit
 );
