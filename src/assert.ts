@@ -1,5 +1,6 @@
 import {
   either as E,
+  number,
   option as O,
   readonlyArray,
   readonlyRecord,
@@ -35,6 +36,12 @@ export const equalEither =
 export const equalArray =
   <T>(expected: readonly T[]) =>
   (received: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, received });
+
+export const numberArrayIsSortedAsc = (received: readonly number[]): Assert.Equal => ({
+  assert: 'Equal',
+  expected: readonlyArray.sort(number.Ord)(received),
+  received,
+});
 
 const pick = (big: unknown, small: unknown): unknown =>
   Array.isArray(big) && Array.isArray(small)

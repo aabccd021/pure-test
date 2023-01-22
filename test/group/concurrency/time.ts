@@ -1,6 +1,6 @@
 import type { Concurrency } from '@src';
 import { assert, group, runTests, test } from '@src';
-import { number, option, readonlyArray, task, taskEither } from 'fp-ts';
+import { option, readonlyArray, task, taskEither } from 'fp-ts';
 import { flow, pipe } from 'fp-ts/function';
 
 type TestCase = {
@@ -47,17 +47,11 @@ const caseToTest = (tc: TestCase) =>
         )
       ),
       assert.task((totalTimeElapsedMs) =>
-        assert.equalArray([
+        assert.numberArrayIsSortedAsc([
           tc.expectedTotalElapsedTimeMs,
           totalTimeElapsedMs,
           tc.expectedTotalElapsedTimeMs + 100,
-        ])(
-          readonlyArray.sort(number.Ord)([
-            tc.expectedTotalElapsedTimeMs,
-            totalTimeElapsedMs,
-            tc.expectedTotalElapsedTimeMs + 100,
-          ])
-        )
+        ])
       )
     ),
   });
