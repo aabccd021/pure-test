@@ -9,6 +9,7 @@ import * as group from './group';
 import * as logErrorDetailsF from './logErrorDetailsF';
 import * as primitive from './primitive';
 import * as runTests from './runTests';
+import * as throwOnDuplicateTestName from './throwOnDuplicateTestName';
 import * as timeout from './timeout';
 
 const tests = src.scopeTests({
@@ -19,6 +20,7 @@ const tests = src.scopeTests({
   concurrency,
   runTests,
   group,
+  throwOnDuplicateTestName,
 });
 
 export const main = pipe(
