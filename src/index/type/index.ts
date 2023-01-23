@@ -80,6 +80,12 @@ export type TestResult = Either<TestFailResult, TestPassResult>;
 
 export type SuiteError =
   | { readonly type: 'DuplicateTestName'; readonly name: string }
+  | { readonly type: 'ShardingError'; readonly message: string }
   | { readonly type: 'TestError'; readonly results: readonly TestResult[] };
 
 export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;
+
+export type ShardingStrategy = (p: {
+  readonly shardCount: number;
+  readonly tests: readonly Test[];
+}) => readonly (readonly Test[])[];

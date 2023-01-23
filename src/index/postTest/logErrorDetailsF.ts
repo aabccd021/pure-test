@@ -60,14 +60,17 @@ const formatErrorResult = (errorResult: TestFailResult): readonly string[] =>
         '',
       ];
 
+const errorHeader = c.red(c.bold(c.inverse(' ERROR ')));
+
 const suiteErrorToLines = (suiteError: SuiteError): readonly string[] =>
   match(suiteError)
     .with({ type: 'TestError' }, ({ results }) =>
       pipe(results, readonlyArray.chain(either.match(formatErrorResult, () => [])))
     )
     .with({ type: 'DuplicateTestName' }, ({ name }) => [
-      `${c.red(c.bold(c.inverse(' ERROR ')))} Duplicate test name found: ${name}`,
+      `${errorHeader} Duplicate test name found: ${name}`,
     ])
+    .with({ type: 'ShardingError' }, ({ message }) => [`${errorHeader} Sharding error: ${message}`])
     .exhaustive();
 
 export const logErrorDetailsF = (env: {

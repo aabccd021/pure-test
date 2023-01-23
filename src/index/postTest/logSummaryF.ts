@@ -53,9 +53,8 @@ export const logSummaryF = (env: {
       either.match(
         (suiteError) =>
           match(suiteError)
-            .with({ type: 'DuplicateTestName' }, () => option.none)
             .with({ type: 'TestError' }, ({ results }) => testResultsToSummaryStr(results))
-            .exhaustive(),
+            .otherwise(() => option.none),
         flow(readonlyArray.map(either.right), testResultsToSummaryStr)
       ),
       ioOption.fromOption,
