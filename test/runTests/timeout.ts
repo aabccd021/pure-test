@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
         }),
       ]),
       runTests({}),
-      assert.task(assert.partial(tc.testError))
+      assert.task(assert.equalDeepPartial(tc.testError))
     ),
   });
 

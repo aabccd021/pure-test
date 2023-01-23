@@ -1,13 +1,14 @@
-import { assert, test } from '@src';
-import { readonlyArray, task } from 'fp-ts';
+import type { TestPassResult } from '@src';
+import { assert, runTests, test } from '@src';
+import { readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
-import { match } from 'ts-pattern';
+import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly name: string;
   readonly scope1Name: string;
   readonly scope2Name: string;
-  readonly testNames: readonly string[];
+  readonly result: readonly DeepPartial<TestPassResult>[];
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -28,14 +29,9 @@ const caseToTest = (tc: TestCase) =>
           ],
         },
       }),
-      readonlyArray.map((t) =>
-        match(t)
-          .with({ type: 'single' }, ({ assert: { name } }) => name)
-          .with({ type: 'group' }, ({ name }) => name)
-          .exhaustive()
-      ),
-      assert.equalArray(tc.testNames),
-      task.of
+      taskEither.right,
+      runTests({}),
+      assert.taskEither(assert.equalDeepPartial(tc.result))
     ),
   });
 
@@ -44,13 +40,23 @@ const cases: readonly TestCase[] = [
     name: 'foo bar',
     scope1Name: 'foo',
     scope2Name: 'bar',
-    testNames: ['foo > one', 'foo > two', 'bar > three', 'bar > four'],
+    result: [
+      { name: 'foo > one' },
+      { name: 'foo > two' },
+      { name: 'bar > three' },
+      { name: 'bar > four' },
+    ],
   },
   {
     name: 'hoge baz',
     scope1Name: 'hoge',
     scope2Name: 'baz',
-    testNames: ['hoge > one', 'hoge > two', 'baz > three', 'baz > four'],
+    result: [
+      { name: 'hoge > one' },
+      { name: 'hoge > two' },
+      { name: 'baz > three' },
+      { name: 'baz > four' },
+    ],
   },
 ];
 

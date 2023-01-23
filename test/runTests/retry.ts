@@ -32,7 +32,7 @@ const caseToTest = (tc: TestCase) =>
         ])
       ),
       runTests({}),
-      assert.task(assert.partial(tc.result))
+      assert.task(assert.equalDeepPartial(tc.result))
     ),
   });
 

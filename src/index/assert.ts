@@ -46,12 +46,13 @@ export const numberArrayIsSortedAsc = (received: readonly number[]): Assert.Equa
 const pick = (big: unknown, small: unknown): unknown =>
   Array.isArray(big) && Array.isArray(small)
     ? pipe(
-        small,
-        readonlyArray.filterMapWithIndex((smallIdx, smallV) =>
+        big,
+        readonlyArray.mapWithIndex((bigIdx, bigV) =>
           pipe(
-            big,
-            readonlyArray.lookup(smallIdx),
-            O.map((bigV) => pick(bigV, smallV))
+            small,
+            readonlyArray.lookup(bigIdx),
+            O.getOrElseW(() => undefined),
+            (smallV) => pick(bigV, smallV)
           )
         )
       )
@@ -68,7 +69,7 @@ const pick = (big: unknown, small: unknown): unknown =>
       )
     : big;
 
-export const partial =
+export const equalDeepPartial =
   <T>(expected: DeepPartial<T>) =>
   (received: T) =>
     pipe(pick(received, expected), equalW(expected));

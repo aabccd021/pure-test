@@ -7,9 +7,10 @@ import * as assert from './assert';
 import * as postTest from './postTest';
 import * as preTest from './preTest';
 import * as runTests from './runTests';
+import * as sharding from './sharding';
 import * as test from './test';
 
-const tests = src.test.scope({ assert, postTest, preTest, runTests, test });
+const tests = src.test.scope({ assert, postTest, preTest, runTests, test, sharding });
 
 export const main = pipe(
   tests,

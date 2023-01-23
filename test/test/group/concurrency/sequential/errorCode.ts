@@ -32,7 +32,7 @@ const caseToTest = (tc: TestCase) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.partial<SuiteError>({
+        assert.equalDeepPartial<SuiteError>({
           type: 'TestError',
           results: [
             either.left({
