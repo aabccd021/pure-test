@@ -15,10 +15,7 @@ export const single = ({ todo, ...assert }: Assertion & { readonly todo?: true }
 
 export const group = (g: Omit<GroupTest, 'type'>): GroupTest => ({ ...g, type: 'group' });
 
-const keepOrd: Ord<string> = {
-  compare: () => 1,
-  equals: string.Eq.equals,
-};
+const keepOrd: Ord<string> = { compare: () => 1, equals: string.Eq.equals };
 
 export const scope: (
   ts: ReadonlyRecord<string, { readonly tests: readonly Test[] }>

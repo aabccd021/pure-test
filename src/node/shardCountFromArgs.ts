@@ -5,13 +5,7 @@ import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 
 export const shardCountFromArgs = pipe(
-  util.parseArgs({
-    options: {
-      shardCount: {
-        type: 'string',
-      },
-    },
-  }),
+  util.parseArgs({ options: { shardCount: { type: 'string' } } }),
   ({ values: { shardCount } }) => shardCount,
   either.fromNullable('shardCount is unspecified in command line args'),
   either.chain((shardCountStr) =>

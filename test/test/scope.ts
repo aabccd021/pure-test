@@ -17,26 +17,14 @@ const caseToTest = (tc: TestCase) =>
       test.scope({
         [tc.scope1Name]: {
           tests: [
-            test.single({
-              name: 'one',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
-            test.single({
-              name: 'two',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
+            test.single({ name: 'one', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test.single({ name: 'two', act: pipe('foo', assert.equal('foo'), task.of) }),
           ],
         },
         [tc.scope2Name]: {
           tests: [
-            test.single({
-              name: 'three',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
-            test.single({
-              name: 'four',
-              act: pipe('foo', assert.equal('foo'), task.of),
-            }),
+            test.single({ name: 'three', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test.single({ name: 'four', act: pipe('foo', assert.equal('foo'), task.of) }),
           ],
         },
       }),

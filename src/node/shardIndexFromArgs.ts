@@ -5,13 +5,7 @@ import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 
 export const shardIndexFromArgs = pipe(
-  util.parseArgs({
-    options: {
-      shardIndex: {
-        type: 'string',
-      },
-    },
-  }),
+  util.parseArgs({ options: { shardIndex: { type: 'string' } } }),
   ({ values: { shardIndex } }) => shardIndex,
   either.fromNullable('shardIndex is unspecified in command line args'),
   either.chain((shardIndexStr) =>
