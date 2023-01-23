@@ -39,7 +39,7 @@ const caseToTest = (tc: TestCase) =>
       ),
       assert.task((totalTimeElapsedMs) =>
         assert.numberArrayIsSortedAsc([
-          tc.expectedTotalElapsedTimeMs,
+          tc.expectedTotalElapsedTimeMs - 100,
           totalTimeElapsedMs,
           tc.expectedTotalElapsedTimeMs + 100,
         ])

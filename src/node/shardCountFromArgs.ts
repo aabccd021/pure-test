@@ -1,10 +1,11 @@
 import * as util from 'node:util';
 
-import { either } from 'fp-ts';
+import { either, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
+import type { GetShardCount } from 'src/index';
 
-export const shardCountFromArgs = pipe(
+export const shardCountFromArgs: GetShardCount = pipe(
   util.parseArgs({ options: { shardCount: { type: 'string' } } }),
   ({ values: { shardCount } }) => shardCount,
   either.fromNullable('shardCount is unspecified in command line args'),
@@ -14,5 +15,6 @@ export const shardCountFromArgs = pipe(
       std.number.fromString,
       either.fromOption(() => `shardCount is not a number: "${shardCountStr}"`)
     )
-  )
+  ),
+  task.of
 );

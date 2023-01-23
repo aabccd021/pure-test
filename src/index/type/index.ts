@@ -1,5 +1,6 @@
 import type { Either } from 'fp-ts/Either';
 import type { Task } from 'fp-ts/Task';
+import type { TaskEither } from 'fp-ts/TaskEither';
 import type * as retry from 'retry-ts';
 
 import type * as Assert from './assert';
@@ -88,4 +89,7 @@ export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
   readonly tests: readonly Test[];
-}) => readonly (readonly Test[])[];
+}) => TaskEither<string, readonly (readonly Test[])[]>;
+
+export type GetShardIndex = TaskEither<string, number>;
+export type GetShardCount = TaskEither<string, number>;
