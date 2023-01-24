@@ -1,4 +1,4 @@
-import type { RightOf, TestResult } from '@src';
+import type { RightOf, TestUnitResult } from '@src';
 import { assert, runTests, scope, test } from '@src';
 import { readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -8,7 +8,7 @@ type TestCase = {
   readonly name: string;
   readonly scope1Name: string;
   readonly scope2Name: string;
-  readonly result: readonly DeepPartial<RightOf<TestResult>>[];
+  readonly result: readonly DeepPartial<RightOf<TestUnitResult>>[];
 };
 
 const caseToTest = (tc: TestCase) =>

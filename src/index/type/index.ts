@@ -17,7 +17,7 @@ export type AssertionResult = Either<
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 
-export type TestResult = Either<
+export type TestUnitResult = Either<
   { readonly name: string; readonly error: TestUnitError.Type },
   { readonly name: string; readonly timeElapsedMs: number }
 >;
@@ -25,8 +25,8 @@ export type TestResult = Either<
 export type SuiteResult = Either<
   | { readonly type: 'DuplicateTestName'; readonly name: string }
   | { readonly type: 'ShardingError'; readonly value: ShardingError.Type }
-  | { readonly type: 'TestError'; readonly results: readonly TestResult[] },
-  readonly RightOf<TestResult>[]
+  | { readonly type: 'TestError'; readonly results: readonly TestUnitResult[] },
+  readonly RightOf<TestUnitResult>[]
 >;
 
 export type Concurrency =

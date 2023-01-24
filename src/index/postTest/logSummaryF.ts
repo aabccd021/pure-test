@@ -7,9 +7,9 @@ import c from 'picocolors';
 import { modify } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestResult } from '../type';
+import type { SuiteResult, TestUnitResult } from '../type';
 
-const testResultsToSummaryStr = (testResults: readonly TestResult[]): Option<string> =>
+const testResultsToSummaryStr = (testResults: readonly TestUnitResult[]): Option<string> =>
   pipe(
     testResults,
     readonlyArray.reduce({ passed: 0, failed: 0, skipped: 0 }, (summaryAcc, testResult) =>

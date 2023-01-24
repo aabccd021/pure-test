@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { AssertionResult, SuiteResult, TestResult } from '../type';
+import type { AssertionResult, SuiteResult, TestUnitResult } from '../type';
 
 const skipped = (name: string) => `  ${c.dim(c.gray('↓'))} ${name}`;
 
@@ -25,7 +25,7 @@ const assertionResultToStr = (assertionResult: AssertionResult): readonly string
     )
   );
 
-const testResultToStr = (testResult: TestResult): readonly string[] =>
+const testResultToStr = (testResult: TestUnitResult): readonly string[] =>
   pipe(
     testResult,
     either.match(
