@@ -41,10 +41,10 @@ const cases: readonly TestCase[] = [
     scope1Name: 'foo',
     scope2Name: 'bar',
     result: [
-      { name: 'foo > one' },
-      { name: 'foo > two' },
-      { name: 'bar > three' },
-      { name: 'bar > four' },
+      { result: { name: 'foo > one' } },
+      { result: { name: 'foo > two' } },
+      { result: { name: 'bar > three' } },
+      { result: { name: 'bar > four' } },
     ],
   },
   {
@@ -52,10 +52,10 @@ const cases: readonly TestCase[] = [
     scope1Name: 'hoge',
     scope2Name: 'baz',
     result: [
-      { name: 'hoge > one' },
-      { name: 'hoge > two' },
-      { name: 'baz > three' },
-      { name: 'baz > four' },
+      { result: { name: 'hoge > one' } },
+      { result: { name: 'hoge > two' } },
+      { result: { name: 'baz > three' } },
+      { result: { name: 'baz > four' } },
     ],
   },
 ];

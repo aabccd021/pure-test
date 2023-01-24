@@ -82,13 +82,13 @@ const cases: readonly TestCase[] = [
   {
     name: 'test should pass when limit retry 2',
     retry: limitRetries(2),
-    result: either.right([{ name: 'should pass on 3rd try' }]),
+    result: either.right([{ result: { name: 'should pass on 3rd try' } }]),
   },
 
   {
     name: 'test should pass when limit retry 3',
     retry: limitRetries(3),
-    result: either.right([{ name: 'should pass on 3rd try' }]),
+    result: either.right([{ result: { name: 'should pass on 3rd try' } }]),
   },
 ];
 

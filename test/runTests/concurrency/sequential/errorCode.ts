@@ -29,7 +29,7 @@ const caseToTest = (tc: TestCase) =>
         assert.equalDeepPartial<LeftOf<SuiteResult>>({
           type: 'TestRunError',
           results: [
-            either.right({ name: 'should pass' }),
+            either.right({ result: { name: 'should pass' } }),
             either.left({
               name: 'should fail',
               error: { code: 'TestError', value: { code: 'UnexpectedNone' } },

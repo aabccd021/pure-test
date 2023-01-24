@@ -2,8 +2,6 @@ import {
   apply,
   boolean,
   either,
-  number,
-  option,
   readonlyArray,
   readonlyNonEmptyArray,
   readonlyRecord,
@@ -223,23 +221,6 @@ const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({ concurrency: config.concurrency, run: runTest });
 
-const getMaxInNumberArray = flow(
-  readonlyArray.sort(number.Ord),
-  readonlyArray.last,
-  option.getOrElse(() => 0)
-);
-
-const getTimeElapsedByConcurrency = ({
-  concurrency,
-}: {
-  readonly concurrency?: Concurrency;
-}): ((times: readonly number[]) => number) =>
-  match(concurrency)
-    .with(undefined, () => getMaxInNumberArray)
-    .with({ type: 'parallel' }, () => getMaxInNumberArray)
-    .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
-    .exhaustive();
-
 const eitherArrayIsAllRight = <L, R>(
   arr: readonly Either<L, R>[]
 ): Either<readonly Either<L, R>[], readonly R[]> =>
@@ -260,11 +241,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
         eitherArrayIsAllRight,
         either.bimap(
           (results) => ({ name: test.name, error: { code: 'GroupError' as const, results } }),
-          flow(
-            readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
-            getTimeElapsedByConcurrency({ concurrency: test.concurrency }),
-            (timeElapsedMs) => ({ name: test.name, timeElapsedMs })
-          )
+          (results) => ({ unit: 'group', results })
         )
       )
     )
@@ -276,7 +253,10 @@ const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
       { type: 'test' },
       flow(
         runTest,
-        taskEither.mapLeft(modifyW('error', (value) => ({ code: 'TestError' as const, value })))
+        taskEither.bimap(
+          modifyW('error', (value) => ({ code: 'TestError' as const, value })),
+          (result) => ({ unit: 'test' as const, result })
+        )
       )
     )
     .with({ type: 'group' }, runGroup)

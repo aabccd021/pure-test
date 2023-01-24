@@ -32,7 +32,16 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
           )
           .with({ code: 'TestError' }, () => [failed(name)])
           .exhaustive(),
-      ({ name }) => [passed(name)]
+      (result) =>
+        match(result)
+          .with({ unit: 'group' }, ({ results }) =>
+            pipe(
+              results,
+              readonlyArray.map(({ name }) => passed(name))
+            )
+          )
+          .with({ unit: 'test' }, ({ result: { name } }) => [passed(name)])
+          .exhaustive()
     )
   );
 

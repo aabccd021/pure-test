@@ -19,7 +19,8 @@ export type TestResult = Either<
 
 export type TestUnitResult = Either<
   { readonly name: string; readonly error: TestUnitError.Union },
-  { readonly name: string; readonly timeElapsedMs: number }
+  | { readonly unit: 'group'; readonly results: readonly RightOf<TestResult>[] }
+  | { readonly unit: 'test'; readonly result: RightOf<TestResult> }
 >;
 
 export type SuiteResult = Either<

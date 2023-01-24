@@ -37,7 +37,7 @@ const cases: readonly Case[] = [
     name: 'does not throws on unique test names',
     test1Name: 'foo test',
     test2Name: 'bar test',
-    result: either.right([{ name: 'foo test' }, { name: 'bar test' }]),
+    result: either.right([{ result: { name: 'foo test' } }, { result: { name: 'bar test' } }]),
   },
 ];
 
