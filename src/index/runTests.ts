@@ -12,6 +12,7 @@ import {
 import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
+import type { ReadonlyRecord } from 'fp-ts/ReadonlyRecord';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
@@ -35,7 +36,45 @@ import type {
   TestUnitSuccessResult,
 } from './type';
 
-const serializeToLines =
+const indent = (line: string): string => `  ${line}`;
+
+const arrayToLines = (
+  arr: readonly ReadonlyNonEmptyArray<string>[]
+): ReadonlyNonEmptyArray<string> =>
+  pipe(
+    arr,
+    readonlyArray.chain(readonlyNonEmptyArray.modifyLast((last) => `${last},`)),
+    readonlyArray.map(indent),
+    (lines) => [`[`, ...lines, `]`]
+  );
+
+const recordEntryToLines = (
+  key: string,
+  value: ReadonlyNonEmptyArray<string>
+): ReadonlyNonEmptyArray<string> =>
+  pipe(
+    value,
+    readonlyNonEmptyArray.modifyHead((head) => `"${key}": ${head}`),
+    readonlyNonEmptyArray.modifyLast((last) => `${last},`)
+  );
+
+const recordFoldMapSortByKey = readonlyRecord.foldMapWithIndex(string.Ord);
+
+const recordToLines = (
+  record: ReadonlyRecord<string, ReadonlyNonEmptyArray<string>>
+): ReadonlyNonEmptyArray<string> =>
+  pipe(
+    record,
+    recordFoldMapSortByKey(readonlyArray.getMonoid<string>())(recordEntryToLines),
+    readonlyArray.map(indent),
+    (lines) => [`{`, ...lines, `}`]
+  );
+
+const traverseEitherArrayWithIndex = readonlyArray.traverseWithIndex(either.Applicative);
+
+const traverseEitherRecordWithIndex = readonlyRecord.traverseWithIndex(either.Applicative);
+
+const unknownToLines =
   (path: readonly (number | string)[]) =>
   (obj: unknown): Either<TestError.SerializationError, ReadonlyNonEmptyArray<string>> =>
     typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
@@ -45,72 +84,46 @@ const serializeToLines =
       : Array.isArray(obj)
       ? pipe(
           obj,
-          readonlyArray.traverseWithIndex(either.Applicative)((k, v) =>
-            serializeToLines([...path, k])(v)
-          ),
-          either.map(
-            flow(
-              readonlyArray.chain(readonlyNonEmptyArray.modifyLast((x) => `${x},`)),
-              readonlyArray.map((x) => `  ${x}`),
-              (xs) => [`[`, ...xs, `]`]
-            )
-          )
+          traverseEitherArrayWithIndex((index, value) => unknownToLines([...path, index])(value)),
+          either.map(arrayToLines)
         )
       : pipe(
           obj,
           iots.UnknownRecord.decode,
           either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
           either.chain(
-            readonlyRecord.traverseWithIndex(either.Applicative)((k, v) =>
-              serializeToLines([...path, k])(v)
-            )
+            traverseEitherRecordWithIndex((index, value) => unknownToLines([...path, index])(value))
           ),
-          either.map(
-            flow(
-              readonlyRecord.foldMapWithIndex(string.Ord)(readonlyArray.getMonoid<string>())(
-                (k, v) =>
-                  pipe(
-                    v,
-                    readonlyNonEmptyArray.modifyHead((x) => `"${k}": ${x}`),
-                    readonlyNonEmptyArray.modifyLast((x) => `${x},`)
-                  )
-              ),
-              readonlyArray.map((x) => `  ${x}`),
-              (xs) => [`{`, ...xs, `}`]
-            )
-          )
+          either.map(recordToLines)
         );
 
-const hasAnyChange = readonlyArray.foldMap(boolean.MonoidAll)(
+const hasNoChange = readonlyArray.foldMap(boolean.MonoidAll)(
   (change: Change) => change.type === '0'
 );
 
-export const diffResult = ({
-  received,
-  expected,
-}: {
-  readonly received: unknown;
-  readonly expected: unknown;
-}) =>
+const assertionError =
+  ({ received, expected }: { readonly received: unknown; readonly expected: unknown }) =>
+  (changes: readonly Change[]) => ({
+    code: 'AssertionError' as const,
+    changes,
+    received,
+    expected,
+  });
+
+const serialize = (value: unknown): Either<TestError.SerializationError, string> =>
+  pipe(value, unknownToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')));
+
+export const diffResult = (result: { readonly received: unknown; readonly expected: unknown }) =>
   pipe(
-    { received, expected },
-    readonlyRecord.map(
-      flow(serializeToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')))
-    ),
+    result,
+    readonlyRecord.map(serialize),
     apply.sequenceS(either.Apply),
     either.map(diffLines),
-    either.chainW(
-      either.fromPredicate(hasAnyChange, (changes) => ({
-        code: 'AssertionError' as const,
-        changes,
-        received,
-        expected,
-      }))
-    )
+    either.chainW(either.fromPredicate(hasNoChange, assertionError(result)))
   );
 
-export const runAssert = (a: Assert.Union): Either<TestError.Union, unknown> =>
-  match(a).with({ assert: 'Equal' }, diffResult).exhaustive();
+export const runAssert = (assert: Assert.Union): Either<TestError.Union, unknown> =>
+  match(assert).with({ assert: 'Equal' }, diffResult).exhaustive();
 
 const runSequentialFailFast =
   <T, L, R>(f: (t: T) => TaskEither<L, R>) =>
@@ -266,12 +279,10 @@ const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
     .with({ type: 'group' }, runGroup)
     .exhaustive();
 
-const aggregateTestResult = (testResults: readonly TestUnitResult[]): SuiteResult =>
-  pipe(
-    testResults,
-    eitherArrayIsAllRight,
-    either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
-  );
+const aggregateTestResult: (testUnitResult: readonly TestUnitResult[]) => SuiteResult = flow(
+  eitherArrayIsAllRight,
+  either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
+);
 
 export const runTests = (
   config: TestConfig
