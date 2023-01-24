@@ -42,6 +42,7 @@ const caseToTest = (tc: Case) =>
       task.map(string.split('\n')),
       assert.task(
         assert.equalArray([
+          `${red}${bold}${invert} ERROR ${invertEnd}${boldEnd}${colorEnd} TestError`,
           `${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
           `${red}${bold}AssertionError:${boldEnd}${colorEnd}`,
           ``,
