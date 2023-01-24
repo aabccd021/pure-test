@@ -277,7 +277,7 @@ const runGroup = (test: TestUnit.Group): Task<TestResult.Type> =>
         either.bimap(
           (results) => ({
             name: test.name,
-            error: { code: 'MultipleAssertionError' as const, results },
+            error: { code: 'GroupError' as const, results },
           }),
           flow(
             readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),

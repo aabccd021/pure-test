@@ -33,7 +33,7 @@ export type DiffLines = (p: {
 
 export type TestError =
   | AssertionError.Type
-  | { readonly code: 'MultipleAssertionError'; readonly results: readonly AssertionResult.Type[] };
+  | { readonly code: 'GroupError'; readonly results: readonly AssertionResult.Type[] };
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;

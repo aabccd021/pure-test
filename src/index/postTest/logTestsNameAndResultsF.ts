@@ -32,7 +32,7 @@ const testResultToStr = (testResult: TestResult.Type): readonly string[] =>
       ({ name, error }) =>
         match(error)
           .with({ code: 'Skipped' }, () => [skipped(name)])
-          .with({ code: 'MultipleAssertionError' }, ({ results }) =>
+          .with({ code: 'GroupError' }, ({ results }) =>
             pipe(
               results,
               readonlyArray.chain(assertionResultToStr),

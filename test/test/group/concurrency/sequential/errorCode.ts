@@ -38,7 +38,7 @@ const caseToTest = (tc: TestCase) =>
             either.left({
               name: 'sequential group test',
               error: {
-                code: 'MultipleAssertionError',
+                code: 'GroupError',
                 results: [
                   either.right({ name: 'should pass' }),
                   either.left({ name: 'should fail', error: { code: 'UnexpectedNone' } }),
