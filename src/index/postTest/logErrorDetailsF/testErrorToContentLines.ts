@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestError, TestResult } from '../../type';
+import type { Change, TestResult, TestUnitError } from '../../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -39,7 +39,7 @@ const changesNums = (changes: readonly Change[]) => [
 const changesToString = readonlyArray.map(formatChangeStr);
 
 const formatTestError = (
-  error: Exclude<TestError, { readonly code: 'Skipped' }>
+  error: Exclude<TestUnitError.Type, { readonly code: 'Skipped' }>
 ): readonly string[] =>
   match(error)
     .with({ code: 'AssertionError' }, ({ changes }) =>

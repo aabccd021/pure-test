@@ -1,4 +1,4 @@
-import type { SuiteResult, TestError } from '@src';
+import type { SuiteResult, TestUnitError } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function';
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorAfterFailedTest: TestError;
+  readonly errorAfterFailedTest: TestUnitError.Type;
 };
 
 const caseToTest = (tc: TestCase) =>

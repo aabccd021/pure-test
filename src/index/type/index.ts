@@ -7,6 +7,7 @@ import type * as ShardingError from './shardingError';
 import type * as SuiteResult from './suiteResult';
 import type * as TestResult from './testResult';
 import type * as TestUnit from './testUnit';
+import type * as TestUnitError from './testUnitError';
 
 export type {
   Assert,
@@ -16,6 +17,7 @@ export type {
   SuiteResult,
   TestResult,
   TestUnit,
+  TestUnitError,
 };
 
 export type Concurrency =
@@ -30,10 +32,6 @@ export type DiffLines = (p: {
   readonly expected: string;
   readonly received: string;
 }) => readonly Change[];
-
-export type TestError =
-  | AssertionError.Type
-  | { readonly code: 'GroupError'; readonly results: readonly AssertionResult.Type[] };
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
