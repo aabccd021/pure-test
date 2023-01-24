@@ -56,7 +56,6 @@ export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: T
 
 const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
   match(testUnitError.error)
-    .with({ code: 'Skipped' }, () => [])
     .with({ code: 'GroupError' }, ({ results }) =>
       pipe(
         results,

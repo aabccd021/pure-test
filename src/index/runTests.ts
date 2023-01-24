@@ -124,7 +124,7 @@ export const runAssert = (a: Assert.Union): Either<TestError.Union, unknown> =>
     .exhaustive();
 
 const runSequentialFailFast =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  <T, L, R>(f: (t: T) => TaskEither<L, R>) =>
   (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
     pipe(
       ts,
@@ -133,7 +133,6 @@ const runSequentialFailFast =
         (acc, el) =>
           pipe(
             acc,
-            taskEither.mapLeft(readonlyArray.append<Either<L, R>>(afterFail(el))),
             taskEither.chain((accr) =>
               pipe(
                 el,
@@ -150,30 +149,28 @@ const runSequentialFailFast =
     );
 
 const runSequential =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>, afterFail: (t: T) => Either<L, R>) =>
+  <T, L, R>(f: (t: T) => TaskEither<L, R>) =>
   ({
     failFast,
   }: {
     readonly failFast?: false;
   }): ((tests: readonly T[]) => Task<readonly Either<L, R>[]>) =>
     match(failFast)
-      .with(undefined, () => runSequentialFailFast(f, afterFail))
+      .with(undefined, () => runSequentialFailFast(f))
       .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(f))
       .exhaustive();
 
 const runWithConcurrency = <T, L, R>({
   concurrency,
   run,
-  afterFail,
 }: {
   readonly concurrency: Concurrency | undefined;
   readonly run: (t: T) => TaskEither<L, R>;
-  readonly afterFail: (t: T) => Either<L, R>;
 }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
   match(concurrency)
     .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(run))
     .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(run))
-    .with({ type: 'sequential' }, runSequential(run, afterFail))
+    .with({ type: 'sequential' }, runSequential(run))
     .exhaustive();
 
 const unhandledException = (exception: unknown) => ({
@@ -228,8 +225,6 @@ const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({
     concurrency: config.concurrency,
     run: runTest,
-    afterFail: (assertion) =>
-      either.left({ name: assertion.name, error: { code: 'Skipped' as const } }),
   });
 
 const getMaxInNumberArray = flow(
@@ -337,7 +332,6 @@ export const runTests = (
       runWithConcurrency({
         concurrency: config.concurrency,
         run: runTestUnit,
-        afterFail: ({ name }) => either.left({ name, error: { code: 'Skipped' as const } }),
       }),
       task.map(aggregateTestResult)
     )

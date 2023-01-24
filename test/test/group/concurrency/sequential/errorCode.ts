@@ -1,4 +1,4 @@
-import type { LeftOf, SuiteResult, TestError } from '@src';
+import type { LeftOf, SuiteResult, TestResult } from '@src';
 import { assert, group, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function';
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorAfterFailedTest: TestError.Union;
+  readonly errorAfterFailedTest: readonly TestResult[];
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -42,7 +42,7 @@ const caseToTest = (tc: TestCase) =>
                 results: [
                   either.right({ name: 'should pass' }),
                   either.left({ name: 'should fail', error: { code: 'UnexpectedNone' } }),
-                  either.left({ name: 'after fail', error: tc.errorAfterFailedTest }),
+                  ...tc.errorAfterFailedTest,
                 ],
               },
             }),
@@ -56,12 +56,12 @@ const cases: readonly TestCase[] = [
   {
     name: 'fail fast sequential should skip test after failing',
     failFast: undefined,
-    errorAfterFailedTest: { code: 'Skipped' },
+    errorAfterFailedTest: [],
   },
   {
     name: 'non fail fast sequential should run all tests',
     failFast: false,
-    errorAfterFailedTest: { code: 'UnexpectedNone' },
+    errorAfterFailedTest: [either.left({ name: 'after fail', error: { code: 'UnexpectedNone' } })],
   },
 ];
 

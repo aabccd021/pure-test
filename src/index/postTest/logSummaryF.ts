@@ -12,20 +12,15 @@ import type { SuiteResult, TestUnitResult } from '../type';
 const testResultsToSummaryStr = (testResults: readonly TestUnitResult[]): Option<string> =>
   pipe(
     testResults,
-    readonlyArray.reduce({ passed: 0, failed: 0, skipped: 0 }, (summaryAcc, testResult) =>
+    readonlyArray.reduce({ passed: 0, failed: 0 }, (summaryAcc, testResult) =>
       pipe(
         testResult,
         either.match(
-          (failResult) =>
-            failResult.error.code === 'Skipped'
-              ? pipe(
-                  summaryAcc,
-                  modify('skipped', (x) => x + 1)
-                )
-              : pipe(
-                  summaryAcc,
-                  modify('failed', (x) => x + 1)
-                ),
+          () =>
+            pipe(
+              summaryAcc,
+              modify('failed', (x) => x + 1)
+            ),
           () =>
             pipe(
               summaryAcc,
@@ -34,11 +29,10 @@ const testResultsToSummaryStr = (testResults: readonly TestUnitResult[]): Option
         )
       )
     ),
-    ({ passed, failed, skipped }) => [
+    ({ passed, failed }) => [
       c.bold(c.inverse(' DONE ')),
       c.bold(c.green(`   Passed ${passed}`)),
       c.bold(c.red(`   Failed ${failed}`)),
-      c.bold(`  Skipped ${skipped}`),
       '',
     ],
     readonlyArray.intercalate(string.Monoid)('\n'),

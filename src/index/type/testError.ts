@@ -13,7 +13,6 @@ export type Union =
       readonly received: unknown;
       readonly expected: unknown;
     }
-  | { readonly code: 'Skipped' }
   | { readonly code: 'TimedOut' }
   | { readonly code: 'UnexpectedLeft'; readonly value: unknown }
   | { readonly code: 'UnexpectedNone' }

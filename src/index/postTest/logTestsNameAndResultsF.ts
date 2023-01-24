@@ -5,42 +5,33 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestResult, TestUnitResult } from '../type';
-
-const skipped = (name: string) => `  ${c.dim(c.gray('↓'))} ${name}`;
+import type { SuiteResult, TestUnitResult } from '../type';
 
 const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
 const passed = (name: string) => `  ${c.green('✓')} ${name}`;
 
-const testResultToStr = (assertionResult: TestResult): readonly string[] =>
+const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] =>
   pipe(
-    assertionResult,
+    testUnitResult,
     either.match(
       ({ name, error }) =>
         match(error)
-          .with({ code: 'Skipped' }, () => [skipped(name)])
-          .otherwise(() => [failed(name)]),
-      ({ name }) => [passed(name)]
-    )
-  );
-
-const testUnitResultToStr = (testResult: TestUnitResult): readonly string[] =>
-  pipe(
-    testResult,
-    either.match(
-      ({ name, error }) =>
-        match(error)
-          .with({ code: 'Skipped' }, () => [skipped(name)])
           .with({ code: 'GroupError' }, ({ results }) =>
             pipe(
               results,
-              readonlyArray.chain(testResultToStr),
+              readonlyArray.chain(
+                either.match(
+                  (testResult) => [failed(testResult.name)],
+                  (testResult) => [passed(testResult.name)]
+                )
+              ),
               readonlyArray.map((x) => `  ${x}`),
               readonlyArray.prepend(failed(name))
             )
           )
-          .otherwise(() => [failed(name)]),
+          .with({ code: 'TestError' }, () => [failed(name)])
+          .exhaustive(),
       ({ name }) => [passed(name)]
     )
   );
