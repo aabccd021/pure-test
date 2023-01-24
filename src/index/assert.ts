@@ -1,15 +1,9 @@
-import {
-  either as E,
-  number,
-  option as O,
-  readonlyArray,
-  readonlyRecord,
-  task as T,
-  taskEither as TE,
-} from 'fp-ts';
+import { either as E, number, option as O, readonlyArray, readonlyRecord, task as T } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Option } from 'fp-ts/Option';
+import type { Task } from 'fp-ts/Task';
+import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
 import type { DeepPartial } from 'ts-essentials';
 
@@ -74,19 +68,38 @@ export const equalDeepPartial =
 
 const unexpectedNone: Assert.UnexpectedNone = { assert: 'UnexpectedNone' };
 
-export const option = <A>(toAssert: (r: A) => Assert.Union) =>
-  O.match(() => unexpectedNone, toAssert);
+export const option =
+  <A>(toAssert: (r: A) => Assert.Union) =>
+  (e: Option<A>): Assert.Union =>
+    pipe(
+      e,
+      O.match(() => unexpectedNone, toAssert)
+    );
 
-export const either = <R>(toAssert: (r: R) => Assert.Union) =>
-  E.matchW(equalW({ _tag: 'Right' }), toAssert);
+export const either =
+  <L, R>(toAssert: (r: R) => Assert.Union) =>
+  (e: Either<L, R>): Assert.Union =>
+    E.isRight(e) ? toAssert(e.right) : equal({ _tag: 'Right' })(e);
 
-export const eitherLeft = <L>(toAssert: (r: L) => Assert.Union) =>
-  E.match(toAssert, equalW({ _tag: 'Left' }));
+export const eitherLeft =
+  <L, R>(toAssert: (r: L) => Assert.Union) =>
+  (e: Either<L, R>): Assert.Union =>
+    E.isLeft(e) ? toAssert(e.left) : equal({ _tag: 'Left' })(e);
 
-export const taskEither = <R>(toAssert: (r: R) => Assert.Union) =>
-  TE.match(equalW({ _tag: 'Right' }), toAssert);
+export const taskEither =
+  <L, R>(toAssert: (r: R) => Assert.Union) =>
+  (te: TaskEither<L, R>): Task<Assert.Union> =>
+    pipe(
+      te,
+      T.map((e) => (E.isRight(e) ? toAssert(e.right) : equal({ _tag: 'Right' })(e)))
+    );
 
-export const taskEitherLeft = <L>(toAssert: (l: L) => Assert.Union) =>
-  TE.match(toAssert, equalW({ _tag: 'Left' }));
+export const taskEitherLeft =
+  <L, R>(toAssert: (l: L) => Assert.Union) =>
+  (te: TaskEither<L, R>): Task<Assert.Union> =>
+    pipe(
+      te,
+      T.map((e) => (E.isLeft(e) ? toAssert(e.left) : equal({ _tag: 'Left' })(e)))
+    );
 
 export const task = T.map;
