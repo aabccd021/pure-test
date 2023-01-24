@@ -2,18 +2,18 @@ import type { Either, Left, Right } from 'fp-ts/Either';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type * as Assert from './assert';
-import type * as AssertionError from './assertionError';
 import type * as ShardingError from './shardingError';
+import type * as TestError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
 
-export type { Assert, AssertionError, ShardingError, TestUnit, TestUnitError };
+export type { Assert, ShardingError, TestError, TestUnit, TestUnitError };
 
 export type RightOf<E> = E extends Right<infer R> ? R : never;
 export type LeftOf<E> = E extends Left<infer L> ? L : never;
 
-export type AssertionResult = Either<
-  { readonly name: string; readonly error: AssertionError.Type },
+export type TestResult = Either<
+  { readonly name: string; readonly error: TestError.Type },
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 

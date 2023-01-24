@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, LeftOf, TestUnitError, TestUnitResult } from '../../type';
+import type { Change, LeftOf, TestError, TestUnitResult } from '../../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -38,25 +38,34 @@ const changesNums = (changes: readonly Change[]) => [
 
 const changesToString = readonlyArray.map(formatChangeStr);
 
-const formatTestError = (
-  error: Exclude<TestUnitError.Type, { readonly code: 'Skipped' }>
-): readonly string[] =>
+export const formatTestError = (error: TestError.Type): readonly string[] =>
   match(error)
     .with({ code: 'AssertionError' }, ({ changes }) =>
       readonlyArray.flatten([changesNums(changes), changesToString(changes)])
     )
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
-const formatErrorResult = (errorResult: LeftOf<TestUnitResult>): readonly string[] =>
-  errorResult.error.code === 'Skipped'
-    ? []
-    : [
-        `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
-        c.red(c.bold(`${errorResult.error.code}:`)),
-        '',
-        ...formatTestError(errorResult.error),
-        '',
-      ];
+export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: TestError.Type) =>
+  pipe(
+    value,
+    formatTestError,
+    readonlyArray.prepend(''),
+    readonlyArray.prepend(c.red(c.bold(`${testUnitError.error.code}`))),
+    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitError.name}`)
+  );
+
+const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
+  match(testUnitError.error)
+    .with({ code: 'Skipped' }, () => [])
+    .with({ code: 'Group' }, ({ results }) =>
+      pipe(
+        results,
+        readonlyArray.lefts,
+        readonlyArray.chain(({ error }) => testErrorToLines(testUnitError, error))
+      )
+    )
+    .with({ code: 'Test' }, ({ value }) => testErrorToLines(testUnitError, value))
+    .exhaustive();
 
 export const testErrorToContentLines = (results: readonly TestUnitResult[]): readonly string[] =>
   pipe(results, readonlyArray.chain(either.match(formatErrorResult, () => [])));

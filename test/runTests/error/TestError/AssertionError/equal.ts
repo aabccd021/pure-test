@@ -25,10 +25,13 @@ const caseToTest = (tc: Case) =>
             either.left({
               name: 'foo',
               error: {
-                code: 'AssertionError',
-                received: tc.received,
-                expected: tc.expected,
-                changes: tc.changes,
+                code: 'Test',
+                value: {
+                  code: 'AssertionError',
+                  received: tc.received,
+                  expected: tc.expected,
+                  changes: tc.changes,
+                },
               },
             }),
           ],

@@ -1,7 +1,8 @@
-import type { AssertionResult } from '@src';
+import type { TestResult } from '@src';
 
-import type { AssertionError } from '.';
+import type { TestError } from '.';
 
 export type Type =
-  | AssertionError.Type
-  | { readonly code: 'GroupError'; readonly results: readonly AssertionResult[] };
+  | { readonly code: 'Group'; readonly results: readonly TestResult[] }
+  | { readonly code: 'Skipped' }
+  | { readonly code: 'Test'; readonly value: TestError.Type };

@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { AssertionResult, SuiteResult, TestUnitResult } from '../type';
+import type { SuiteResult, TestResult, TestUnitResult } from '../type';
 
 const skipped = (name: string) => `  ${c.dim(c.gray('↓'))} ${name}`;
 
@@ -13,7 +13,7 @@ const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
 const passed = (name: string) => `  ${c.green('✓')} ${name}`;
 
-const assertionResultToStr = (assertionResult: AssertionResult): readonly string[] =>
+const testResultToStr = (assertionResult: TestResult): readonly string[] =>
   pipe(
     assertionResult,
     either.match(
@@ -25,17 +25,17 @@ const assertionResultToStr = (assertionResult: AssertionResult): readonly string
     )
   );
 
-const testResultToStr = (testResult: TestUnitResult): readonly string[] =>
+const testUnitResultToStr = (testResult: TestUnitResult): readonly string[] =>
   pipe(
     testResult,
     either.match(
       ({ name, error }) =>
         match(error)
           .with({ code: 'Skipped' }, () => [skipped(name)])
-          .with({ code: 'GroupError' }, ({ results }) =>
+          .with({ code: 'Group' }, ({ results }) =>
             pipe(
               results,
-              readonlyArray.chain(assertionResultToStr),
+              readonlyArray.chain(testResultToStr),
               readonlyArray.map((x) => `  ${x}`),
               readonlyArray.prepend(failed(name))
             )
@@ -54,7 +54,7 @@ export const logTestsNameAndResultsF = (env: {
         (suiteError) => (suiteError.type === 'TestError' ? suiteError.results : []),
         readonlyArray.map(either.right)
       ),
-      readonlyArray.chain(testResultToStr),
+      readonlyArray.chain(testUnitResultToStr),
       readonlyArray.append(''),
       readonlyArray.intercalate(string.Monoid)('\n'),
       env.console.log

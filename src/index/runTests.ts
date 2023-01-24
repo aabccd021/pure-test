@@ -19,26 +19,27 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
+import { modifyW } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
 import { diffLines } from './_internal/libs/diffLines';
 import type {
   Assert,
-  AssertionError,
-  AssertionResult,
   Change,
   Concurrency,
   LeftOf,
   RightOf,
   SuiteResult,
   TestConfig,
+  TestError,
+  TestResult,
   TestUnit,
   TestUnitResult,
 } from './type';
 
 const serializeToLines =
   (path: readonly (number | string)[]) =>
-  (obj: unknown): Either<AssertionError.SerializationError, ReadonlyNonEmptyArray<string>> =>
+  (obj: unknown): Either<TestError.SerializationError, ReadonlyNonEmptyArray<string>> =>
     typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
       ? either.right([JSON.stringify(obj)])
       : obj === undefined
@@ -110,7 +111,7 @@ export const diffResult = ({
     )
   );
 
-export const runAssert = (a: Assert.Type): Either<AssertionError.Type, unknown> =>
+export const runAssert = (a: Assert.Type): Either<TestError.Type, unknown> =>
   match(a)
     .with({ assert: 'Equal' }, diffResult)
     .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
@@ -182,9 +183,9 @@ const unhandledException = (exception: unknown) => ({
 
 const runWithTimeout =
   <T>(assertion: Pick<TestUnit.Test, 'timeout'>) =>
-  (te: TaskEither<AssertionError.Type, T>) =>
+  (te: TaskEither<TestError.Type, T>) =>
     task
-      .getRaceMonoid<Either<AssertionError.Type, T>>()
+      .getRaceMonoid<Either<TestError.Type, T>>()
       .concat(
         te,
         pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
@@ -204,7 +205,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runTest = (assertion: TestUnit.Test): Task<AssertionResult> =>
+const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -255,7 +256,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
     task.map(
       flow(
         readonlyArray.reduce(
-          either.of<readonly AssertionResult[], readonly RightOf<AssertionResult>[]>([]),
+          either.of<readonly TestResult[], readonly RightOf<TestResult>[]>([]),
           (acc, el) =>
             pipe(
               acc,
@@ -264,13 +265,13 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
                 pipe(
                   el,
                   either.bimap(
-                    (ell): readonly AssertionResult[] =>
+                    (ell): readonly TestResult[] =>
                       pipe(
                         accr,
                         readonlyArray.map(either.right),
                         readonlyArray.append(either.left(ell))
                       ),
-                    (elr): readonly RightOf<AssertionResult>[] => readonlyArray.append(elr)(accr)
+                    (elr): readonly RightOf<TestResult>[] => readonlyArray.append(elr)(accr)
                   )
                 )
               )
@@ -279,7 +280,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
         either.bimap(
           (results) => ({
             name: test.name,
-            error: { code: 'GroupError' as const, results },
+            error: { code: 'Group' as const, results },
           }),
           flow(
             readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
@@ -292,7 +293,16 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
   );
 
 const runTestUnit = (test: TestUnit.Type): Task<TestUnitResult> =>
-  match(test).with({ type: 'test' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
+  match(test)
+    .with(
+      { type: 'test' },
+      flow(
+        runTest,
+        taskEither.mapLeft(modifyW('error', (value) => ({ code: 'Test' as const, value })))
+      )
+    )
+    .with({ type: 'group' }, runGroup)
+    .exhaustive();
 
 const aggregateTestResult = (testResults: readonly TestUnitResult[]): SuiteResult =>
   pipe(

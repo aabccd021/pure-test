@@ -21,7 +21,8 @@ const suiteErrorToLines = (suiteError: LeftOf<SuiteResult>): readonly string[] =
     suiteError,
     suiteErrorToContentLines,
     readonlyArray.map((line) => `  ${line}`),
-    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' ERROR ')))} ${suiteError.type}`)
+    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' ERROR ')))} ${suiteError.type}`),
+    readonlyArray.append(``)
   );
 
 export const logErrorDetailsF = (env: {
