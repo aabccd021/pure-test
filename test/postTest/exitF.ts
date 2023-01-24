@@ -7,14 +7,14 @@ const caseToTest = (tc: {
   readonly received: string;
   readonly exitCode: number | undefined;
 }) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef<number | undefined>(undefined)),
       task.chainFirst((exitCodeRef) =>
         pipe(
           taskEither.right([
-            test.single({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
+            test({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
           ]),
           runTests({}),
           postTest.exitF({ process: { exit: exitCodeRef.write } })

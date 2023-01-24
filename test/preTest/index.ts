@@ -1,5 +1,5 @@
-import { test } from '@src';
+import { scope } from '@src';
 
 import * as throwOnDuplicateTestName from './throwOnDuplicateTestName';
 
-export const tests = test.scope({ throwOnDuplicateTestName });
+export const tests = scope({ throwOnDuplicateTestName });

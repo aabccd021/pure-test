@@ -11,23 +11,23 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: `shardCount: ${tc.shardCount}`,
     act: pipe(
       readonlyNonEmptyArray.range(1, tc.shardCount),
       readonlyNonEmptyArray.traverse(taskEither.ApplicativePar)((shardIndex) =>
         pipe(
           taskEither.right([
-            test.single({ name: '01', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '02', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '03', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '04', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '05', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '06', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '07', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '08', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '09', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: '10', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '01', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '02', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '03', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '04', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '05', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '06', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '07', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '08', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '09', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: '10', act: pipe('foo', assert.equal('foo'), task.of) }),
           ]),
           preTest.shardTests({
             index: taskEither.of(shardIndex),

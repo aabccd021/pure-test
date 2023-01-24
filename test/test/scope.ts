@@ -1,5 +1,5 @@
 import type { TestPassResult } from '@src';
-import { assert, runTests, test } from '@src';
+import { assert, runTests, scope, test } from '@src';
 import { readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { DeepPartial } from 'ts-essentials';
@@ -12,20 +12,20 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
-      test.scope({
+      scope({
         [tc.scope1Name]: {
           tests: [
-            test.single({ name: 'one', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: 'two', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: 'one', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: 'two', act: pipe('foo', assert.equal('foo'), task.of) }),
           ],
         },
         [tc.scope2Name]: {
           tests: [
-            test.single({ name: 'three', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({ name: 'four', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: 'three', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({ name: 'four', act: pipe('foo', assert.equal('foo'), task.of) }),
           ],
         },
       }),

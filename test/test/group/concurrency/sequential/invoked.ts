@@ -1,4 +1,4 @@
-import { assert, runTests, test } from '@src';
+import { assert, group, runTests, test } from '@src';
 import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -9,26 +9,26 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef(false)),
       task.chainFirst((isLastTestExecutedRef) =>
         pipe(
           taskEither.right([
-            test.group({
+            group({
               name: 'sequential group test',
               concurrency: { type: 'sequential', failFast: tc.failFast },
               asserts: [
-                test.single({
+                test({
                   name: 'should pass',
                   act: pipe('foo', assert.equal('foo'), task.of),
                 }),
-                test.single({
+                test({
                   name: 'should fail',
                   act: pipe('foo', assert.equal('bar'), task.of),
                 }),
-                test.single({
+                test({
                   name: 'should skip',
                   act: pipe(
                     'foo',

@@ -1,5 +1,6 @@
-import type { ShardingError } from '@src';
 import { match } from 'ts-pattern';
+
+import type { ShardingError } from '../../type';
 
 export const shardingErrorToContentLines = (error: ShardingError.Type): readonly string[] =>
   match(error)

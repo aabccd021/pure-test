@@ -1,6 +1,6 @@
-import { test } from '@src';
+import { scope } from '@src';
 
 import * as errorCode from './errorCode';
 import * as invoked from './invoked';
 
-export const tests = test.scope({ errorCode, invoked });
+export const tests = scope({ errorCode, invoked });

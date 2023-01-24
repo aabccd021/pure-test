@@ -1,5 +1,5 @@
 import type { Concurrency } from '@src';
-import { assert, runTests, test } from '@src';
+import { assert, group, runTests, test } from '@src';
 import { option, readonlyArray, task, taskEither } from 'fp-ts';
 import { flow, pipe } from 'fp-ts/function';
 
@@ -10,23 +10,23 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test.group({
+        group({
           name: 'sequential group concurrency time test',
           concurrency: tc.concurrency,
           asserts: [
-            test.single({
+            test({
               name: 'delay 1s',
               act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
             }),
-            test.single({
+            test({
               name: 'delay 1s',
               act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
             }),
-            test.single({
+            test({
               name: 'delay 1s',
               act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
             }),

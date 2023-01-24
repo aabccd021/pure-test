@@ -22,14 +22,14 @@ type Case = {
 };
 
 const caseToTest = (tc: Case) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       task.fromIO(ioRef.newIORef<string>('')),
       task.chainFirst((logRef) =>
         pipe(
           taskEither.right([
-            test.single({
+            test({
               name: 'foo',
               act: pipe(tc.received, assert.equal(tc.expected), task.of),
             }),

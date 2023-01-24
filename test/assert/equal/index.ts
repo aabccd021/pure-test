@@ -1,5 +1,5 @@
-import { test } from '@src';
+import { scope } from '@src';
 
 import * as pass from './pass';
 
-export const tests = test.scope({ pass });
+export const tests = scope({ pass });

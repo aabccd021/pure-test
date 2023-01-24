@@ -12,12 +12,12 @@ type Case = {
 };
 
 const caseToTest = (tc: Case) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test.single({ name: tc.test1Name, act: pipe('foo', assert.equal('foo'), task.of) }),
-        test.single({ name: tc.test2Name, act: pipe('foo', assert.equal('foo'), task.of) }),
+        test({ name: tc.test1Name, act: pipe('foo', assert.equal('foo'), task.of) }),
+        test({ name: tc.test2Name, act: pipe('foo', assert.equal('foo'), task.of) }),
       ]),
       preTest.throwOnDuplicateTestName,
       runTests({}),

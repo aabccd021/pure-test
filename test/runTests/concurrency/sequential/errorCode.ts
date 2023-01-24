@@ -10,16 +10,16 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test.single({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
-        test.single({
+        test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
+        test({
           name: 'should fail',
           act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
         }),
-        test.single({
+        test({
           name: 'after fail',
           act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
         }),

@@ -1,5 +1,5 @@
 import type { AssertionError, SuiteError } from '@src';
-import { assert, runTests, test } from '@src';
+import { assert, group, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -10,20 +10,20 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test.group({
+        group({
           name: 'sequential group test',
           concurrency: { type: 'sequential', failFast: tc.failFast },
           asserts: [
-            test.single({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
-            test.single({
+            test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
+            test({
               name: 'should fail',
               act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
             }),
-            test.single({
+            test({
               name: 'after fail',
               act: pipe(option.none, assert.option(assert.equal('foo')), task.of),
             }),

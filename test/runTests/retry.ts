@@ -13,13 +13,13 @@ type TestCase = {
 };
 
 const caseToTest = (tc: TestCase) =>
-  test.single({
+  test({
     name: tc.name,
     act: pipe(
       taskEither.fromIO(ioRef.newIORef(0)),
       taskEither.chain((runCountRef) =>
         taskEither.right([
-          test.single({
+          test({
             name: 'should pass on 3rd try',
             act: pipe(
               runCountRef.modify((x) => x + 1),

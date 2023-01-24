@@ -1,6 +1,6 @@
-import { test } from '@src';
+import { scope } from '@src';
 
 import * as exitF from './exitF';
 import * as logErrorDetailsF from './logErrorDetailsF';
 
-export const tests = test.scope({ exitF, logErrorDetailsF });
+export const tests = scope({ exitF, logErrorDetailsF });

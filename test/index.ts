@@ -10,7 +10,7 @@ import * as runTests from './runTests';
 import * as sharding from './sharding';
 import * as test from './test';
 
-const tests = src.test.scope({ assert, postTest, preTest, runTests, test, sharding });
+const tests = src.scope({ assert, postTest, preTest, runTests, test, sharding });
 
 export const main = pipe(
   tests,
