@@ -47,7 +47,7 @@ const testResultToStr = (testResult: TestResult): readonly string[] =>
 
 export const logTestsNameAndResultsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
+}): ((res: Task<SuiteResult.Type>) => Task<SuiteResult.Type>) =>
   task.chainFirstIOK(
     flow(
       either.match(

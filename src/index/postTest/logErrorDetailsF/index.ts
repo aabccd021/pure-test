@@ -5,18 +5,18 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { SuiteError, SuiteResult } from '../../type';
+import type { SuiteResult } from '../../type';
 import { shardingErrorToContentLines } from './shardingErrorToContentLines';
 import { testErrorToContentLines } from './testErrorToContentLines';
 
-const suiteErrorToContentLines = (suiteError: SuiteError): readonly string[] =>
+const suiteErrorToContentLines = (suiteError: SuiteResult.Left): readonly string[] =>
   match(suiteError)
     .with({ type: 'TestError' }, ({ results }) => testErrorToContentLines(results))
     .with({ type: 'DuplicateTestName' }, ({ name }) => [` Test name: ${name}`])
     .with({ type: 'ShardingError' }, ({ value }) => shardingErrorToContentLines(value))
     .exhaustive();
 
-const suiteErrorToLines = (suiteError: SuiteError): readonly string[] =>
+const suiteErrorToLines = (suiteError: SuiteResult.Left): readonly string[] =>
   pipe(
     suiteError,
     suiteErrorToContentLines,
@@ -26,7 +26,7 @@ const suiteErrorToLines = (suiteError: SuiteError): readonly string[] =>
 
 export const logErrorDetailsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
+}): ((res: Task<SuiteResult.Type>) => Task<SuiteResult.Type>) =>
   flow(
     taskEither.swap,
     taskEither.chainFirstIOK(

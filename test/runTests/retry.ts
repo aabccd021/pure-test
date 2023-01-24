@@ -9,7 +9,7 @@ import type { DeepPartial } from 'ts-essentials';
 type TestCase = {
   readonly name: string;
   readonly retry?: RetryPolicy;
-  readonly result: DeepPartial<SuiteResult>;
+  readonly result: DeepPartial<SuiteResult.Type>;
 };
 
 const caseToTest = (tc: TestCase) =>

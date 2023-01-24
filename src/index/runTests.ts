@@ -29,7 +29,6 @@ import type {
   AssertionResult,
   Change,
   Concurrency,
-  SuiteError,
   SuiteResult,
   TestConfig,
   TestPassResult,
@@ -295,7 +294,7 @@ const runGroup = (test: TestUnit.Group): Task<TestResult> =>
 const runTestUnit = (test: TestUnit.Type): Task<TestResult> =>
   match(test).with({ type: 'test' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
 
-const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
+const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult.Type =>
   pipe(
     testResults,
     readonlyArray.reduce(
@@ -325,7 +324,7 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<SuiteError, readonly TestUnit.Type[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<SuiteResult.Left, readonly TestUnit.Type[]>) => Task<SuiteResult.Type>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({

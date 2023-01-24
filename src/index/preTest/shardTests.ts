@@ -8,7 +8,7 @@ import type {
   GetShardIndex,
   ShardingError,
   ShardingStrategy,
-  SuiteError,
+  SuiteResult,
   TestUnit,
 } from '../type';
 
@@ -50,8 +50,8 @@ export const shardTests = (p: {
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
 }): ((
-  tests: TaskEither<SuiteError, readonly TestUnit.Type[]>
-) => TaskEither<SuiteError, readonly TestUnit.Type[]>) =>
+  tests: TaskEither<SuiteResult.Left, readonly TestUnit.Type[]>
+) => TaskEither<SuiteResult.Left, readonly TestUnit.Type[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,

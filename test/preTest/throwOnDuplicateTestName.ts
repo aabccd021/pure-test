@@ -8,7 +8,7 @@ type Case = {
   readonly name: string;
   readonly test1Name: string;
   readonly test2Name: string;
-  readonly result: DeepPartial<SuiteResult>;
+  readonly result: DeepPartial<SuiteResult.Type>;
 };
 
 const caseToTest = (tc: Case) =>
