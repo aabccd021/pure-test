@@ -50,12 +50,12 @@ export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: T
     value,
     formatTestError,
     readonlyArray.prepend(''),
-    readonlyArray.prepend(c.red(c.bold(`${testUnitError.error.code}`))),
+    readonlyArray.prepend(c.red(c.bold(`${testUnitError.code}`))),
     readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitError.name}`)
   );
 
 const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
-  match(testUnitError.error)
+  match(testUnitError)
     .with({ code: 'GroupError' }, ({ results }) =>
       pipe(
         results,

@@ -36,18 +36,13 @@ const cases: readonly Case[] = [
     testTime: timeoutTestTime,
     testError: either.left({
       type: 'TestRunError',
-      results: [
-        either.left({
-          name: 'foo test',
-          error: { code: 'TestError', value: { code: 'TimedOut' } },
-        }),
-      ],
+      results: [either.left({ name: 'foo test', code: 'TestError', value: { code: 'TimedOut' } })],
     }),
   },
   {
     name: 'Non TimedOut test should pass',
     testTime: nonTimeoutTestTime,
-    testError: either.right([{ result: { name: 'foo test' } }]),
+    testError: either.right([{ name: 'foo test' }]),
   },
 ];
 

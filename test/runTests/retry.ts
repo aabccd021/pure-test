@@ -45,7 +45,8 @@ const cases: readonly TestCase[] = [
       results: [
         either.left({
           name: 'should pass on 3rd try',
-          error: { code: 'TestError', value: { code: 'AssertionError', received: 1 } },
+          code: 'TestError',
+          value: { code: 'AssertionError', received: 1 },
         }),
       ],
     }),
@@ -59,7 +60,8 @@ const cases: readonly TestCase[] = [
       results: [
         either.left({
           name: 'should pass on 3rd try',
-          error: { code: 'TestError', value: { code: 'AssertionError', received: 1 } },
+          code: 'TestError',
+          value: { code: 'AssertionError', received: 1 },
         }),
       ],
     }),
@@ -73,7 +75,8 @@ const cases: readonly TestCase[] = [
       results: [
         either.left({
           name: 'should pass on 3rd try',
-          error: { code: 'TestError', value: { code: 'AssertionError', received: 2 } },
+          code: 'TestError',
+          value: { code: 'AssertionError', received: 2 },
         }),
       ],
     }),
@@ -82,13 +85,13 @@ const cases: readonly TestCase[] = [
   {
     name: 'test should pass when limit retry 2',
     retry: limitRetries(2),
-    result: either.right([{ result: { name: 'should pass on 3rd try' } }]),
+    result: either.right([{ name: 'should pass on 3rd try' }]),
   },
 
   {
     name: 'test should pass when limit retry 3',
     retry: limitRetries(3),
-    result: either.right([{ result: { name: 'should pass on 3rd try' } }]),
+    result: either.right([{ name: 'should pass on 3rd try' }]),
   },
 ];
 

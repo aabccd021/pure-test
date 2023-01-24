@@ -17,11 +17,15 @@ export type TestResult = Either<
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 
-export type TestUnitResult = Either<
-  { readonly name: string; readonly error: TestUnitError.Union },
-  | { readonly unit: 'group'; readonly results: readonly RightOf<TestResult>[] }
-  | { readonly unit: 'test'; readonly result: RightOf<TestResult> }
->;
+export type TestUnitSuccessResult =
+  | {
+      readonly unit: 'group';
+      readonly name: string;
+      readonly results: readonly RightOf<TestResult>[];
+    }
+  | { readonly unit: 'test'; readonly name: string; readonly timeElapsedMs: number };
+
+export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccessResult>;
 
 export type SuiteResult = Either<
   | { readonly type: 'DuplicateTestName'; readonly name: string }

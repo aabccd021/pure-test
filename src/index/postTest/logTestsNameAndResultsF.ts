@@ -15,8 +15,8 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
   pipe(
     testUnitResult,
     either.match(
-      ({ name, error }) =>
-        match(error)
+      (testUnitError) =>
+        match(testUnitError)
           .with({ code: 'GroupError' }, ({ results }) =>
             pipe(
               results,
@@ -27,10 +27,10 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
                 )
               ),
               readonlyArray.map((x) => `  ${x}`),
-              readonlyArray.prepend(failed(name))
+              readonlyArray.prepend(failed(testUnitError.name))
             )
           )
-          .with({ code: 'TestError' }, () => [failed(name)])
+          .with({ code: 'TestError' }, () => [failed(testUnitError.name)])
           .exhaustive(),
       (result) =>
         match(result)
@@ -40,7 +40,7 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
               readonlyArray.map(({ name }) => passed(name))
             )
           )
-          .with({ unit: 'test' }, ({ result: { name } }) => [passed(name)])
+          .with({ unit: 'test' }, ({ name }) => [passed(name)])
           .exhaustive()
     )
   );

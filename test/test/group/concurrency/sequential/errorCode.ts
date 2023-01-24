@@ -38,14 +38,12 @@ const caseToTest = (tc: TestCase) =>
           results: [
             either.left({
               name: 'sequential group test',
-              error: {
-                code: 'GroupError',
-                results: [
-                  either.right({ name: 'should pass' }),
-                  either.left({ name: 'should fail' }),
-                  ...tc.errorAfterFailedTest,
-                ],
-              },
+              code: 'GroupError',
+              results: [
+                either.right({ name: 'should pass' }),
+                either.left({ name: 'should fail' }),
+                ...tc.errorAfterFailedTest,
+              ],
             }),
           ],
         })

@@ -17,7 +17,6 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
 import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
-import { modifyW } from 'spectacles-ts';
 import { match } from 'ts-pattern';
 
 import { diffLines } from './_internal/libs/diffLines';
@@ -31,7 +30,9 @@ import type {
   TestError,
   TestResult,
   TestUnit,
+  TestUnitError,
   TestUnitResult,
+  TestUnitSuccessResult,
 } from './type';
 
 const serializeToLines =
@@ -223,16 +224,20 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
+const runGroup = (group: TestUnit.Group): Task<TestUnitResult> =>
   pipe(
-    test.asserts,
-    runGroupTests({ concurrency: test.concurrency }),
+    group.asserts,
+    runGroupTests({ concurrency: group.concurrency }),
     task.map(
       flow(
         eitherArrayIsAllRight,
         either.bimap(
-          (results) => ({ name: test.name, error: { code: 'GroupError' as const, results } }),
-          (results) => ({ unit: 'group', results })
+          (results): TestUnitError.Union => ({
+            name: group.name,
+            code: 'GroupError' as const,
+            results,
+          }),
+          (results) => ({ unit: 'group', name: group.name, results })
         )
       )
     )
@@ -245,8 +250,16 @@ const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
       flow(
         runTest,
         taskEither.bimap(
-          modifyW('error', (value) => ({ code: 'TestError' as const, value })),
-          (result) => ({ unit: 'test' as const, result })
+          ({ name, error }): TestUnitError.Union => ({
+            code: 'TestError' as const,
+            name,
+            value: error,
+          }),
+          ({ name, timeElapsedMs }): TestUnitSuccessResult => ({
+            unit: 'test' as const,
+            name,
+            timeElapsedMs,
+          })
         )
       )
     )

@@ -30,7 +30,7 @@ const caseToTest = (tc: TestCase) =>
         assert.equalDeepPartial<LeftOf<SuiteResult>>({
           type: 'TestRunError',
           results: [
-            either.right({ result: { name: 'should pass' } }),
+            either.right({ name: 'should pass' }),
             either.left({ name: 'should fail' }),
             ...tc.errorAfterFailedTest,
           ],
