@@ -13,7 +13,7 @@ const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
 const passed = (name: string) => `  ${c.green('✓')} ${name}`;
 
-const assertionResultToStr = (assertionResult: AssertionResult.Type): readonly string[] =>
+const assertionResultToStr = (assertionResult: AssertionResult): readonly string[] =>
   pipe(
     assertionResult,
     either.match(
@@ -25,7 +25,7 @@ const assertionResultToStr = (assertionResult: AssertionResult.Type): readonly s
     )
   );
 
-const testResultToStr = (testResult: TestResult.Type): readonly string[] =>
+const testResultToStr = (testResult: TestResult): readonly string[] =>
   pipe(
     testResult,
     either.match(
@@ -47,7 +47,7 @@ const testResultToStr = (testResult: TestResult.Type): readonly string[] =>
 
 export const logTestsNameAndResultsF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<SuiteResult.Type>) => Task<SuiteResult.Type>) =>
+}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
   task.chainFirstIOK(
     flow(
       either.match(

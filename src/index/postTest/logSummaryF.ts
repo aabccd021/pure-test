@@ -9,7 +9,7 @@ import { match } from 'ts-pattern';
 
 import type { SuiteResult, TestResult } from '../type';
 
-const testResultsToSummaryStr = (testResults: readonly TestResult.Type[]): Option<string> =>
+const testResultsToSummaryStr = (testResults: readonly TestResult[]): Option<string> =>
   pipe(
     testResults,
     readonlyArray.reduce({ passed: 0, failed: 0, skipped: 0 }, (summaryAcc, testResult) =>
@@ -47,7 +47,7 @@ const testResultsToSummaryStr = (testResults: readonly TestResult.Type[]): Optio
 
 export const logSummaryF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
-}): ((res: Task<SuiteResult.Type>) => Task<SuiteResult.Type>) =>
+}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
   task.chainFirstIOK(
     flow(
       either.match(

@@ -7,7 +7,7 @@ import type { DeepPartial } from 'ts-essentials';
 type Case = {
   readonly name: string;
   readonly testTime: number;
-  readonly testError: DeepPartial<SuiteResult.Type>;
+  readonly testError: DeepPartial<SuiteResult>;
 };
 
 const timeoutTime = 500;

@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, TestResult, TestUnitError } from '../../type';
+import type { Change, LeftOf, TestResult, TestUnitError } from '../../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -47,7 +47,7 @@ const formatTestError = (
     )
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
-const formatErrorResult = (errorResult: TestResult.Left): readonly string[] =>
+const formatErrorResult = (errorResult: LeftOf<TestResult>): readonly string[] =>
   errorResult.error.code === 'Skipped'
     ? []
     : [
@@ -58,5 +58,5 @@ const formatErrorResult = (errorResult: TestResult.Left): readonly string[] =>
         '',
       ];
 
-export const testErrorToContentLines = (results: readonly TestResult.Type[]): readonly string[] =>
+export const testErrorToContentLines = (results: readonly TestResult[]): readonly string[] =>
   pipe(results, readonlyArray.chain(either.match(formatErrorResult, () => [])));

@@ -1,4 +1,4 @@
-import type { AssertionError, SuiteResult } from '@src';
+import type { AssertionError, LeftOf, SuiteResult } from '@src';
 import { assert, group, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -32,7 +32,7 @@ const caseToTest = (tc: TestCase) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<SuiteResult.Left>({
+        assert.equalDeepPartial<LeftOf<SuiteResult>>({
           type: 'TestError',
           results: [
             either.left({
