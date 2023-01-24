@@ -25,7 +25,7 @@ export type TestUnitResult = Either<
 export type SuiteResult = Either<
   | { readonly type: 'DuplicateTestName'; readonly name: string }
   | { readonly type: 'ShardingError'; readonly value: ShardingError.Type }
-  | { readonly type: 'TestError'; readonly results: readonly TestUnitResult[] },
+  | { readonly type: 'TestRunError'; readonly results: readonly TestUnitResult[] },
   readonly RightOf<TestUnitResult>[]
 >;
 

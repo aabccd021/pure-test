@@ -329,7 +329,7 @@ const aggregateTestResult = (testResults: readonly TestUnitResult[]): SuiteResul
           )
         )
     ),
-    either.mapLeft((results) => ({ type: 'TestError' as const, results }))
+    either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
   );
 
 export const runTests = (

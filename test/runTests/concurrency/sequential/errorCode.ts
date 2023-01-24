@@ -27,7 +27,7 @@ const caseToTest = (tc: TestCase) =>
       runTests({ concurrency: { type: 'sequential', failFast: tc.failFast } }),
       assert.taskEitherLeft(
         assert.equalDeepPartial<LeftOf<SuiteResult>>({
-          type: 'TestError',
+          type: 'TestRunError',
           results: [
             either.right({ name: 'should pass' }),
             either.left({

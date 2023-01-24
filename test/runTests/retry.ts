@@ -41,7 +41,7 @@ const cases: readonly TestCase[] = [
     name: 'test should fail when retry unspecified',
     retry: undefined,
     result: either.left({
-      type: 'TestError',
+      type: 'TestRunError',
       results: [
         either.left({
           name: 'should pass on 3rd try',
@@ -55,7 +55,7 @@ const cases: readonly TestCase[] = [
     name: 'test should fail when limit retry 0',
     retry: limitRetries(0),
     result: either.left({
-      type: 'TestError',
+      type: 'TestRunError',
       results: [
         either.left({
           name: 'should pass on 3rd try',
@@ -69,7 +69,7 @@ const cases: readonly TestCase[] = [
     name: 'test should fail when limit retry 1',
     retry: limitRetries(1),
     result: either.left({
-      type: 'TestError',
+      type: 'TestRunError',
       results: [
         either.left({
           name: 'should pass on 3rd try',

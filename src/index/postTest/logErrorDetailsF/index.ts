@@ -11,7 +11,7 @@ import { testErrorToContentLines } from './testErrorToContentLines';
 
 const suiteErrorToContentLines = (suiteError: LeftOf<SuiteResult>): readonly string[] =>
   match(suiteError)
-    .with({ type: 'TestError' }, ({ results }) => testErrorToContentLines(results))
+    .with({ type: 'TestRunError' }, ({ results }) => testErrorToContentLines(results))
     .with({ type: 'DuplicateTestName' }, ({ name }) => [` Test name: ${name}`])
     .with({ type: 'ShardingError' }, ({ value }) => shardingErrorToContentLines(value))
     .exhaustive();

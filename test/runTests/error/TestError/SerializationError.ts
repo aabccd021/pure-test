@@ -20,7 +20,7 @@ const caseToTest = (tc: Case) =>
       runTests({}),
       assert.taskEitherLeft(
         assert.equal<LeftOf<SuiteResult>>({
-          type: 'TestError',
+          type: 'TestRunError',
           results: [
             either.left({
               name: 'foo',

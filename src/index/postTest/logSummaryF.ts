@@ -53,7 +53,7 @@ export const logSummaryF = (env: {
       either.match(
         (suiteError) =>
           match(suiteError)
-            .with({ type: 'TestError' }, ({ results }) => testResultsToSummaryStr(results))
+            .with({ type: 'TestRunError' }, ({ results }) => testResultsToSummaryStr(results))
             .otherwise(() => option.none),
         flow(readonlyArray.map(either.right), testResultsToSummaryStr)
       ),

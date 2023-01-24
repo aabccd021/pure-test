@@ -51,7 +51,7 @@ export const logTestsNameAndResultsF = (env: {
   task.chainFirstIOK(
     flow(
       either.match(
-        (suiteError) => (suiteError.type === 'TestError' ? suiteError.results : []),
+        (suiteError) => (suiteError.type === 'TestRunError' ? suiteError.results : []),
         readonlyArray.map(either.right)
       ),
       readonlyArray.chain(testUnitResultToStr),
