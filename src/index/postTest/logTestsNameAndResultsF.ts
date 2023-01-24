@@ -25,7 +25,7 @@ const assertionResultToStr = (assertionResult: AssertionResult): readonly string
     )
   );
 
-const testResultToStr = (testResult: TestResult): readonly string[] =>
+const testResultToStr = (testResult: TestResult.Type): readonly string[] =>
   pipe(
     testResult,
     either.match(

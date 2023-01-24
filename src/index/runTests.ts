@@ -31,7 +31,6 @@ import type {
   Concurrency,
   SuiteResult,
   TestConfig,
-  TestPassResult,
   TestResult,
   TestUnit,
 } from './type';
@@ -248,7 +247,7 @@ const getTimeElapsedByConcurrency = ({
     .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
     .exhaustive();
 
-const runGroup = (test: TestUnit.Group): Task<TestResult> =>
+const runGroup = (test: TestUnit.Group): Task<TestResult.Type> =>
   pipe(
     test.asserts,
     runGroupTests({ concurrency: test.concurrency }),
@@ -291,14 +290,14 @@ const runGroup = (test: TestUnit.Group): Task<TestResult> =>
     )
   );
 
-const runTestUnit = (test: TestUnit.Type): Task<TestResult> =>
+const runTestUnit = (test: TestUnit.Type): Task<TestResult.Type> =>
   match(test).with({ type: 'test' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
 
-const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult.Type =>
+const aggregateTestResult = (testResults: readonly TestResult.Type[]): SuiteResult.Type =>
   pipe(
     testResults,
     readonlyArray.reduce(
-      either.right<readonly TestResult[], readonly TestPassResult[]>([]),
+      either.right<readonly TestResult.Type[], readonly TestResult.Right[]>([]),
       (acc, el) =>
         pipe(
           acc,
@@ -307,13 +306,13 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult.Ty
             pipe(
               el,
               either.bimap(
-                (ell): readonly TestResult[] =>
+                (ell): readonly TestResult.Type[] =>
                   pipe(
                     accr,
                     readonlyArray.map(either.right),
                     readonlyArray.append(either.left(ell))
                   ),
-                (elr): readonly TestPassResult[] => [...accr, elr]
+                (elr): readonly TestResult.Right[] => [...accr, elr]
               )
             )
           )

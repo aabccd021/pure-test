@@ -1,4 +1,4 @@
-import type { TestPassResult } from '@src';
+import type { TestResult } from '@src';
 import { assert, preTest, runTests, sharding, test } from '@src';
 import { readonlyArray, readonlyNonEmptyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -7,7 +7,7 @@ import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly shardCount: number;
-  readonly result: ReadonlyNonEmptyArray<readonly DeepPartial<TestPassResult>[]>;
+  readonly result: ReadonlyNonEmptyArray<readonly DeepPartial<TestResult.Right>[]>;
 };
 
 const caseToTest = (tc: TestCase) =>

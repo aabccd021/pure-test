@@ -9,7 +9,7 @@ import { match } from 'ts-pattern';
 
 import type { SuiteResult, TestResult } from '../type';
 
-const testResultsToSummaryStr = (testResults: readonly TestResult[]): Option<string> =>
+const testResultsToSummaryStr = (testResults: readonly TestResult.Type[]): Option<string> =>
   pipe(
     testResults,
     readonlyArray.reduce({ passed: 0, failed: 0, skipped: 0 }, (summaryAcc, testResult) =>
