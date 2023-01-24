@@ -247,28 +247,10 @@ const eitherArrayIsAllRight = <L, R>(
   arr: readonly Either<L, R>[]
 ): Either<readonly Either<L, R>[], readonly R[]> =>
   pipe(
-    arr,
-    readonlyArray.reduce(
-      either.of<readonly Either<L, R>[], readonly R[]>([]),
-      (acc, el: Either<L, R>) =>
-        pipe(
-          acc,
-          either.mapLeft(readonlyArray.append(el)),
-          either.chain((accr) =>
-            pipe(
-              el,
-              either.bimap(
-                (ell): readonly Either<L, R>[] =>
-                  pipe(
-                    accr,
-                    readonlyArray.map(either.right),
-                    readonlyArray.append(either.left(ell))
-                  ),
-                (elr): readonly R[] => readonlyArray.append(elr)(accr)
-              )
-            )
-          )
-        )
+    readonlyArray.rights(arr),
+    either.fromPredicate(
+      (rights) => readonlyArray.size(rights) === readonlyArray.size(arr),
+      () => arr
     )
   );
 
