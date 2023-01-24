@@ -32,15 +32,15 @@ const caseToTest = (tc: Case) =>
 
 const cases: readonly Case[] = [
   {
-    name: 'Timed out test should return timed out error',
+    name: 'TimedOut test should return TimedOut error',
     testTime: timeoutTestTime,
     testError: either.left({
       type: 'TestError',
-      results: [either.left({ name: 'foo test', error: { code: 'timed out' } })],
+      results: [either.left({ name: 'foo test', error: { code: 'TimedOut' } })],
     }),
   },
   {
-    name: 'Non timed out test should pass',
+    name: 'Non TimedOut test should pass',
     testTime: nonTimeoutTestTime,
     testError: either.right([{ name: 'foo test' }]),
   },

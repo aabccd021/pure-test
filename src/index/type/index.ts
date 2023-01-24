@@ -58,11 +58,11 @@ export type AssertionError =
       readonly expected: unknown;
     }
   | { readonly code: 'Skipped' }
-  | { readonly code: 'timed out' }
+  | { readonly code: 'TimedOut' }
   | { readonly code: 'UnexpectedLeft'; readonly value: unknown }
   | { readonly code: 'UnexpectedNone' }
   | { readonly code: 'UnexpectedRight'; readonly value: unknown }
-  | { readonly code: 'unhandled exception'; readonly exception: unknown };
+  | { readonly code: 'UnhandledException'; readonly exception: unknown };
 
 export type AssertionFailResult = { readonly name: string; readonly error: AssertionError };
 

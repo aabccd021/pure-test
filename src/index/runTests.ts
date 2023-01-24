@@ -181,7 +181,7 @@ const runWithConcurrency = <T, L, R>({
     .exhaustive();
 
 const unhandledException = (exception: unknown) => ({
-  code: 'unhandled exception' as const,
+  code: 'UnhandledException' as const,
   exception,
 });
 
@@ -192,7 +192,7 @@ const runWithTimeout =
       .getRaceMonoid<Either<AssertionError, T>>()
       .concat(
         te,
-        pipe({ code: 'timed out' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
+        pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
       );
 
 const runWithRetry =
