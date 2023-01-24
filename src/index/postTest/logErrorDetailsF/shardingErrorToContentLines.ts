@@ -2,7 +2,7 @@ import { match } from 'ts-pattern';
 
 import type { ShardingError } from '../../type';
 
-export const shardingErrorToContentLines = (error: ShardingError.Type): readonly string[] =>
+export const shardingErrorToContentLines = (error: ShardingError.Union): readonly string[] =>
   match(error)
     .with({ type: 'ShardCountIsUnspecified' }, () => [`shard count is unspecified`])
     .with({ type: 'ShardCountIsNotANumber' }, ({ value }) => [

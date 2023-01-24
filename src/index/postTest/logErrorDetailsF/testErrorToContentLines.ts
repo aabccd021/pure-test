@@ -38,14 +38,14 @@ const changesNums = (changes: readonly Change[]) => [
 
 const changesToString = readonlyArray.map(formatChangeStr);
 
-export const formatTestError = (error: TestError.Type): readonly string[] =>
+export const formatTestError = (error: TestError.Union): readonly string[] =>
   match(error)
     .with({ code: 'AssertionError' }, ({ changes }) =>
       readonlyArray.flatten([changesNums(changes), changesToString(changes)])
     )
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
-export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: TestError.Type) =>
+export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: TestError.Union) =>
   pipe(
     value,
     formatTestError,

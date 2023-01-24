@@ -10,4 +10,4 @@ export type UnexpectedLeft = { readonly assert: 'UnexpectedLeft'; readonly value
 
 export type UnexpectedRight = { readonly assert: 'UnexpectedRight'; readonly value: unknown };
 
-export type Type = Equal | UnexpectedLeft | UnexpectedNone | UnexpectedRight;
+export type Union = Equal | UnexpectedLeft | UnexpectedNone | UnexpectedRight;

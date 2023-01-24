@@ -87,31 +87,31 @@ const unexpectedRight = (left: unknown): Assert.UnexpectedLeft => ({
 const unexpectedNone: Assert.UnexpectedNone = { assert: 'UnexpectedNone' };
 
 export const option =
-  <A>(toAssert: (r: A) => Assert.Type) =>
-  (e: Option<A>): Assert.Type =>
+  <A>(toAssert: (r: A) => Assert.Union) =>
+  (e: Option<A>): Assert.Union =>
     pipe(
       e,
       O.match(() => unexpectedNone, toAssert)
     );
 
 export const either =
-  <L, R>(toAssert: (r: R) => Assert.Type) =>
-  (e: Either<L, R>): Assert.Type =>
+  <L, R>(toAssert: (r: R) => Assert.Union) =>
+  (e: Either<L, R>): Assert.Union =>
     pipe(e, E.match(unexpectedLeft, toAssert));
 
 export const eitherLeft =
-  <L, R>(toAssert: (r: L) => Assert.Type) =>
-  (e: Either<L, R>): Assert.Type =>
+  <L, R>(toAssert: (r: L) => Assert.Union) =>
+  (e: Either<L, R>): Assert.Union =>
     pipe(e, E.swap, E.match(unexpectedRight, toAssert));
 
 export const taskEither =
-  <L, R>(toAssert: (r: R) => Assert.Type) =>
-  (e: TaskEither<L, R>): Task<Assert.Type> =>
+  <L, R>(toAssert: (r: R) => Assert.Union) =>
+  (e: TaskEither<L, R>): Task<Assert.Union> =>
     pipe(e, TE.match(unexpectedLeft, toAssert));
 
 export const taskEitherLeft =
-  <L, R>(toAssert: (l: L) => Assert.Type) =>
-  (e: TaskEither<L, R>): Task<Assert.Type> =>
+  <L, R>(toAssert: (l: L) => Assert.Union) =>
+  (e: TaskEither<L, R>): Task<Assert.Union> =>
     pipe(e, TE.swap, TE.match(unexpectedRight, toAssert));
 
 export const task = T.map;

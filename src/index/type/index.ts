@@ -13,18 +13,18 @@ export type RightOf<E> = E extends Right<infer R> ? R : never;
 export type LeftOf<E> = E extends Left<infer L> ? L : never;
 
 export type TestResult = Either<
-  { readonly name: string; readonly error: TestError.Type },
+  { readonly name: string; readonly error: TestError.Union },
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 
 export type TestUnitResult = Either<
-  { readonly name: string; readonly error: TestUnitError.Type },
+  { readonly name: string; readonly error: TestUnitError.Union },
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 
 export type SuiteResult = Either<
   | { readonly type: 'DuplicateTestName'; readonly name: string }
-  | { readonly type: 'ShardingError'; readonly value: ShardingError.Type }
+  | { readonly type: 'ShardingError'; readonly value: ShardingError.Union }
   | { readonly type: 'TestRunError'; readonly results: readonly TestUnitResult[] },
   readonly RightOf<TestUnitResult>[]
 >;
@@ -44,8 +44,8 @@ export type DiffLines = (p: {
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
-  readonly tests: readonly TestUnit.Type[];
-}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit.Type[])[]>;
+  readonly tests: readonly TestUnit.Union[];
+}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit.Union[])[]>;
 
 export type GetShardIndex = TaskEither<ShardingError.GetShardIndexError, number>;
 

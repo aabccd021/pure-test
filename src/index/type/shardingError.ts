@@ -6,15 +6,10 @@ export type ShardIndexOutOfBound = {
 
 export type TestCountChangedAfterSharding = {
   readonly type: 'TestCountChangedAfterSharding';
-  readonly testCount: {
-    readonly beforeSharding: number;
-    readonly afterSharding: number;
-  };
+  readonly testCount: { readonly beforeSharding: number; readonly afterSharding: number };
 };
 
-export type ShardIndexIsUnspecified = {
-  readonly type: 'ShardIndexIsUnspecified';
-};
+export type ShardIndexIsUnspecified = { readonly type: 'ShardIndexIsUnspecified' };
 
 export type ShardIndexIsNotANumber = {
   readonly type: 'ShardIndexIsNotANumber';
@@ -23,9 +18,7 @@ export type ShardIndexIsNotANumber = {
 
 export type GetShardIndexError = ShardIndexIsNotANumber | ShardIndexIsUnspecified;
 
-export type ShardCountIsUnspecified = {
-  readonly type: 'ShardCountIsUnspecified';
-};
+export type ShardCountIsUnspecified = { readonly type: 'ShardCountIsUnspecified' };
 
 export type ShardCountIsNotANumber = {
   readonly type: 'ShardCountIsNotANumber';
@@ -34,11 +27,9 @@ export type ShardCountIsNotANumber = {
 
 export type GetShardCountError = ShardCountIsNotANumber | ShardCountIsUnspecified;
 
-export type ShardingStrategyError = {
-  readonly type: 'ShardingStrategyError';
-};
+export type ShardingStrategyError = { readonly type: 'ShardingStrategyError' };
 
-export type Type =
+export type Union =
   | GetShardCountError
   | GetShardIndexError
   | ShardIndexOutOfBound

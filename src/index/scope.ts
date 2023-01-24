@@ -8,9 +8,9 @@ import { modify } from 'spectacles-ts';
 const keepOrd: Ord<string> = { compare: () => 1, equals: string.Eq.equals };
 
 export const scope: (
-  ts: ReadonlyRecord<string, { readonly tests: readonly TestUnit.Type[] }>
-) => readonly TestUnit.Type[] = readonlyRecord.foldMapWithIndex(keepOrd)(
-  readonlyArray.getMonoid<TestUnit.Type>()
+  ts: ReadonlyRecord<string, { readonly tests: readonly TestUnit.Union[] }>
+) => readonly TestUnit.Union[] = readonlyRecord.foldMapWithIndex(keepOrd)(
+  readonlyArray.getMonoid<TestUnit.Union>()
 )((idx, val) =>
   pipe(
     val.tests,

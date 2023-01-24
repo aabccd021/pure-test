@@ -5,7 +5,7 @@ export type SerializationError = {
   readonly path: readonly (number | string)[];
 };
 
-export type Type =
+export type Union =
   | SerializationError
   | {
       readonly code: 'AssertionError';

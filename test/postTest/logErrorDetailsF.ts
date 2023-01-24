@@ -29,10 +29,7 @@ const caseToTest = (tc: Case) =>
       task.chainFirst((logRef) =>
         pipe(
           taskEither.right([
-            test({
-              name: 'foo',
-              act: pipe(tc.received, assert.equal(tc.expected), task.of),
-            }),
+            test({ name: 'foo', act: pipe(tc.received, assert.equal(tc.expected), task.of) }),
           ]),
           runTests({}),
           postTest.logErrorDetailsF({ console: { log: logRef.write } })

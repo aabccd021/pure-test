@@ -111,7 +111,7 @@ export const diffResult = ({
     )
   );
 
-export const runAssert = (a: Assert.Type): Either<TestError.Type, unknown> =>
+export const runAssert = (a: Assert.Union): Either<TestError.Union, unknown> =>
   match(a)
     .with({ assert: 'Equal' }, diffResult)
     .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
@@ -183,9 +183,9 @@ const unhandledException = (exception: unknown) => ({
 
 const runWithTimeout =
   <T>(assertion: Pick<TestUnit.Test, 'timeout'>) =>
-  (te: TaskEither<TestError.Type, T>) =>
+  (te: TaskEither<TestError.Union, T>) =>
     task
-      .getRaceMonoid<Either<TestError.Type, T>>()
+      .getRaceMonoid<Either<TestError.Union, T>>()
       .concat(
         te,
         pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
@@ -278,10 +278,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
             )
         ),
         either.bimap(
-          (results) => ({
-            name: test.name,
-            error: { code: 'GroupError' as const, results },
-          }),
+          (results) => ({ name: test.name, error: { code: 'GroupError' as const, results } }),
           flow(
             readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
             getTimeElapsedByConcurrency({ concurrency: test.concurrency }),
@@ -292,7 +289,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
     )
   );
 
-const runTestUnit = (test: TestUnit.Type): Task<TestUnitResult> =>
+const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
   match(test)
     .with(
       { type: 'test' },
@@ -334,7 +331,7 @@ const aggregateTestResult = (testResults: readonly TestUnitResult[]): SuiteResul
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Type[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Union[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({

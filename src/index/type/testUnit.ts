@@ -5,7 +5,7 @@ import type * as retry from 'retry-ts';
 export type Test = {
   readonly type: 'test';
   readonly name: string;
-  readonly act: Task<Assert.Type>;
+  readonly act: Task<Assert.Union>;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
@@ -17,4 +17,4 @@ export type Group = {
   readonly asserts: readonly Test[];
 };
 
-export type Type = Group | Test;
+export type Union = Group | Test;
