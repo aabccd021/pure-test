@@ -1,6 +1,6 @@
 import type { TestUnit } from './type';
 
-export const test = (g: Omit<TestUnit.SingleTest, 'type'>): TestUnit.SingleTest => ({
+export const test = (g: Omit<TestUnit.Test, 'type'>): TestUnit.Test => ({
   ...g,
-  type: 'single',
+  type: 'test',
 });

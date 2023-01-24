@@ -182,7 +182,7 @@ const unhandledException = (exception: unknown) => ({
 });
 
 const runWithTimeout =
-  <T>(assertion: Pick<TestUnit.SingleTest, 'timeout'>) =>
+  <T>(assertion: Pick<TestUnit.Test, 'timeout'>) =>
   (te: TaskEither<AssertionError.Type, T>) =>
     task
       .getRaceMonoid<Either<AssertionError.Type, T>>()
@@ -192,7 +192,7 @@ const runWithTimeout =
       );
 
 const runWithRetry =
-  (test: Pick<TestUnit.SingleTest, 'retry'>) =>
+  (test: Pick<TestUnit.Test, 'retry'>) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
@@ -205,7 +205,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runTest = (assertion: TestUnit.SingleTest): Task<AssertionResult> =>
+const runTest = (assertion: TestUnit.Test): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -293,7 +293,7 @@ const runGroup = (test: TestUnit.Group): Task<TestResult> =>
   );
 
 const runTestUnit = (test: TestUnit.Type): Task<TestResult> =>
-  match(test).with({ type: 'single' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
+  match(test).with({ type: 'test' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
 
 const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
   pipe(
