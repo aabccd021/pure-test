@@ -4,14 +4,9 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import type * as retry from 'retry-ts';
 
 import type * as Assert from './assert';
-import type {
-  GetShardCountError,
-  GetShardIndexError,
-  ShardingError,
-  ShardingStrategyError,
-} from './ShardingError';
+import type * as ShardingError from './shardingError';
 
-export type { Assert };
+export type { Assert, ShardingError };
 
 export type Concurrency =
   | { readonly type: 'parallel' }
@@ -86,7 +81,7 @@ export type TestPassResult = { readonly name: string; readonly timeElapsedMs: nu
 export type TestResult = Either<TestFailResult, TestPassResult>;
 
 export type SuiteError =
-  | ShardingError
+  | ShardingError.Type
   | { readonly type: 'DuplicateTestName'; readonly name: string }
   | { readonly type: 'TestError'; readonly results: readonly TestResult[] };
 
@@ -95,10 +90,8 @@ export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
   readonly tests: readonly Test[];
-}) => TaskEither<ShardingStrategyError, readonly (readonly Test[])[]>;
+}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly Test[])[]>;
 
-export type GetShardIndex = TaskEither<GetShardIndexError, number>;
+export type GetShardIndex = TaskEither<ShardingError.GetShardIndexError, number>;
 
-export type GetShardCount = TaskEither<GetShardCountError, number>;
-
-export * from './ShardingError';
+export type GetShardCount = TaskEither<ShardingError.GetShardCountError, number>;

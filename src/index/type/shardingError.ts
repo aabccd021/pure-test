@@ -38,7 +38,7 @@ export type ShardingStrategyError = {
   readonly type: 'ShardingStrategyError';
 };
 
-export type ShardingError = {
+export type Type = {
   readonly type: 'ShardingError';
   readonly value:
     | GetShardCountError
