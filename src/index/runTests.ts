@@ -29,14 +29,14 @@ import type {
   AssertionResult,
   Change,
   Concurrency,
-  GroupTest,
+  Group,
   SingleTest,
   SuiteError,
   SuiteResult,
-  Test,
   TestConfig,
   TestPassResult,
   TestResult,
+  TestUnit,
 } from './type';
 
 const serializeToLines =
@@ -207,7 +207,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runSingleTest = (assertion: SingleTest): Task<AssertionResult> =>
+const runTest = (assertion: SingleTest): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -226,10 +226,10 @@ const runSingleTest = (assertion: SingleTest): Task<AssertionResult> =>
     )
   );
 
-const runGroupTest = (config: Pick<GroupTest, 'concurrency'>) =>
+const runGroupTests = (config: Pick<Group, 'concurrency'>) =>
   runWithConcurrency({
     concurrency: config.concurrency,
-    run: runSingleTest,
+    run: runTest,
     afterFail: (assertion) =>
       either.left({ name: assertion.name, error: { code: 'Skipped' as const } }),
   });
@@ -251,10 +251,10 @@ const getTimeElapsedByConcurrency = ({
     .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
     .exhaustive();
 
-const runMultipleAssertion = (test: GroupTest): Task<TestResult> =>
+const runGroup = (test: Group): Task<TestResult> =>
   pipe(
     test.asserts,
-    runGroupTest({ concurrency: test.concurrency }),
+    runGroupTests({ concurrency: test.concurrency }),
     task.map(
       flow(
         readonlyArray.reduce(
@@ -294,11 +294,8 @@ const runMultipleAssertion = (test: GroupTest): Task<TestResult> =>
     )
   );
 
-const runTest = (test: Test): Task<TestResult> =>
-  match(test)
-    .with({ type: 'single' }, runSingleTest)
-    .with({ type: 'group' }, runMultipleAssertion)
-    .exhaustive();
+const runTestUnit = (test: TestUnit): Task<TestResult> =>
+  match(test).with({ type: 'single' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
 
 const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
   pipe(
@@ -330,12 +327,12 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<SuiteError, readonly Test[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<SuiteError, readonly TestUnit[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({
         concurrency: config.concurrency,
-        run: runTest,
+        run: runTestUnit,
         afterFail: ({ name }) => either.left({ name, error: { code: 'Skipped' as const } }),
       }),
       task.map(aggregateTestResult)

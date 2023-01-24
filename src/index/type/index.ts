@@ -21,14 +21,14 @@ export type SingleTest = {
   readonly retry?: retry.RetryPolicy;
 };
 
-export type GroupTest = {
+export type Group = {
   readonly type: 'group';
   readonly name: string;
   readonly concurrency?: Concurrency;
   readonly asserts: readonly SingleTest[];
 };
 
-export type Test = GroupTest | SingleTest;
+export type TestUnit = Group | SingleTest;
 
 export type TestConfig = { readonly concurrency?: Concurrency };
 
@@ -64,8 +64,8 @@ export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
-  readonly tests: readonly Test[];
-}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly Test[])[]>;
+  readonly tests: readonly TestUnit[];
+}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit[])[]>;
 
 export type GetShardIndex = TaskEither<ShardingError.GetShardIndexError, number>;
 

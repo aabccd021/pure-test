@@ -1,3 +1,3 @@
-import type { GroupTest } from './type';
+import type { Group } from './type';
 
-export const group = (g: Omit<GroupTest, 'type'>): GroupTest => ({ ...g, type: 'group' });
+export const group = (g: Omit<Group, 'type'>): Group => ({ ...g, type: 'group' });

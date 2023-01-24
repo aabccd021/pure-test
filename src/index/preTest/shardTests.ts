@@ -9,14 +9,14 @@ import type {
   ShardingError,
   ShardingStrategy,
   SuiteError,
-  Test,
+  TestUnit,
 } from '../type';
 
 const getShardOnIndex =
   (index: number) =>
   (
-    shards: readonly (readonly Test[])[]
-  ): Either<ShardingError.ShardIndexOutOfBound, readonly Test[]> =>
+    shards: readonly (readonly TestUnit[])[]
+  ): Either<ShardingError.ShardIndexOutOfBound, readonly TestUnit[]> =>
     pipe(
       shards,
       readonlyArray.lookup(index - 1),
@@ -28,9 +28,9 @@ const getShardOnIndex =
     );
 
 const validateTestShards = (tests: {
-  readonly beforeSharding: readonly Test[];
-  readonly afterSharding: readonly (readonly Test[])[];
-}): Either<ShardingError.TestCountChangedAfterSharding, readonly (readonly Test[])[]> =>
+  readonly beforeSharding: readonly TestUnit[];
+  readonly afterSharding: readonly (readonly TestUnit[])[];
+}): Either<ShardingError.TestCountChangedAfterSharding, readonly (readonly TestUnit[])[]> =>
   pipe(
     {
       beforeSharding: readonlyArray.size(tests.beforeSharding),
@@ -49,7 +49,9 @@ export const shardTests = (p: {
   readonly index: GetShardIndex;
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
-}): ((tests: TaskEither<SuiteError, readonly Test[]>) => TaskEither<SuiteError, readonly Test[]>) =>
+}): ((
+  tests: TaskEither<SuiteError, readonly TestUnit[]>
+) => TaskEither<SuiteError, readonly TestUnit[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,
