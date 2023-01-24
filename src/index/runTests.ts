@@ -28,7 +28,6 @@ import type {
   Change,
   Concurrency,
   LeftOf,
-  RightOf,
   SuiteResult,
   TestConfig,
   TestError,
@@ -244,34 +243,42 @@ const getTimeElapsedByConcurrency = ({
     .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
     .exhaustive();
 
+const eitherArrayIsAllRight = <L, R>(
+  arr: readonly Either<L, R>[]
+): Either<readonly Either<L, R>[], readonly R[]> =>
+  pipe(
+    arr,
+    readonlyArray.reduce(
+      either.of<readonly Either<L, R>[], readonly R[]>([]),
+      (acc, el: Either<L, R>) =>
+        pipe(
+          acc,
+          either.mapLeft(readonlyArray.append(el)),
+          either.chain((accr) =>
+            pipe(
+              el,
+              either.bimap(
+                (ell): readonly Either<L, R>[] =>
+                  pipe(
+                    accr,
+                    readonlyArray.map(either.right),
+                    readonlyArray.append(either.left(ell))
+                  ),
+                (elr): readonly R[] => readonlyArray.append(elr)(accr)
+              )
+            )
+          )
+        )
+    )
+  );
+
 const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
   pipe(
     test.asserts,
     runGroupTests({ concurrency: test.concurrency }),
     task.map(
       flow(
-        readonlyArray.reduce(
-          either.of<readonly TestResult[], readonly RightOf<TestResult>[]>([]),
-          (acc, el) =>
-            pipe(
-              acc,
-              either.mapLeft(readonlyArray.append(el)),
-              either.chain((accr) =>
-                pipe(
-                  el,
-                  either.bimap(
-                    (ell): readonly TestResult[] =>
-                      pipe(
-                        accr,
-                        readonlyArray.map(either.right),
-                        readonlyArray.append(either.left(ell))
-                      ),
-                    (elr): readonly RightOf<TestResult>[] => readonlyArray.append(elr)(accr)
-                  )
-                )
-              )
-            )
-        ),
+        eitherArrayIsAllRight,
         either.bimap(
           (results) => ({ name: test.name, error: { code: 'GroupError' as const, results } }),
           flow(
@@ -299,28 +306,7 @@ const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
 const aggregateTestResult = (testResults: readonly TestUnitResult[]): SuiteResult =>
   pipe(
     testResults,
-    readonlyArray.reduce(
-      either.right<readonly TestUnitResult[], readonly RightOf<TestUnitResult>[]>([]),
-      (acc, el) =>
-        pipe(
-          acc,
-          either.mapLeft(readonlyArray.append(el)),
-          either.chain((accr) =>
-            pipe(
-              el,
-              either.bimap(
-                (ell): readonly TestUnitResult[] =>
-                  pipe(
-                    accr,
-                    readonlyArray.map(either.right),
-                    readonlyArray.append(either.left(ell))
-                  ),
-                (elr): readonly RightOf<TestUnitResult>[] => [...accr, elr]
-              )
-            )
-          )
-        )
-    ),
+    eitherArrayIsAllRight,
     either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
   );
 
