@@ -5,16 +5,18 @@ export type SerializationError = {
   readonly path: readonly (number | string)[];
 };
 
-export type Union =
-  | SerializationError
-  | {
-      readonly code: 'AssertionError';
-      readonly changes: readonly Change[];
-      readonly received: unknown;
-      readonly expected: unknown;
-    }
-  | { readonly code: 'TimedOut' }
-  | { readonly code: 'UnexpectedLeft'; readonly value: unknown }
-  | { readonly code: 'UnexpectedNone' }
-  | { readonly code: 'UnexpectedRight'; readonly value: unknown }
-  | { readonly code: 'UnhandledException'; readonly exception: unknown };
+export type AssertionError = {
+  readonly code: 'AssertionError';
+  readonly changes: readonly Change[];
+  readonly received: unknown;
+  readonly expected: unknown;
+};
+
+export type TimedOut = { readonly code: 'TimedOut' };
+
+export type UnhandledException = {
+  readonly code: 'UnhandledException';
+  readonly exception: unknown;
+};
+
+export type Union = AssertionError | SerializationError | TimedOut | UnhandledException;
