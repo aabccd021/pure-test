@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, LeftOf, TestError, TestUnitResult } from '../../type';
+import type { Change, LeftOf, TestError, TestResult, TestUnitResult } from '../../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -54,15 +54,16 @@ export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: T
     readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitError.name}`)
   );
 
+const groupErrorToLines = (testUnitError: LeftOf<TestUnitResult>, results: readonly TestResult[]) =>
+  pipe(
+    results,
+    readonlyArray.lefts,
+    readonlyArray.chain(({ error }) => testErrorToLines(testUnitError, error))
+  );
+
 const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
   match(testUnitError)
-    .with({ code: 'GroupError' }, ({ results }) =>
-      pipe(
-        results,
-        readonlyArray.lefts,
-        readonlyArray.chain(({ error }) => testErrorToLines(testUnitError, error))
-      )
-    )
+    .with({ code: 'GroupError' }, ({ results }) => groupErrorToLines(testUnitError, results))
     .with({ code: 'TestError' }, ({ value }) => testErrorToLines(testUnitError, value))
     .exhaustive();
 
