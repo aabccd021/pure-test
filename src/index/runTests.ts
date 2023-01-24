@@ -32,7 +32,6 @@ import type {
   Change,
   Concurrency,
   GroupTest,
-  SerializationError,
   SuiteError,
   SuiteResult,
   Test,
@@ -43,7 +42,7 @@ import type {
 
 const serializeToLines =
   (path: readonly (number | string)[]) =>
-  (obj: unknown): Either<SerializationError, ReadonlyNonEmptyArray<string>> =>
+  (obj: unknown): Either<AssertionError.SerializationError, ReadonlyNonEmptyArray<string>> =>
     typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
       ? either.right([JSON.stringify(obj)])
       : obj === undefined
@@ -115,7 +114,7 @@ export const diffResult = ({
     )
   );
 
-export const runAssert = (a: Assert.Type): Either<AssertionError, unknown> =>
+export const runAssert = (a: Assert.Type): Either<AssertionError.Type, unknown> =>
   match(a)
     .with({ assert: 'Equal' }, diffResult)
     .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
@@ -187,9 +186,9 @@ const unhandledException = (exception: unknown) => ({
 
 const runWithTimeout =
   <T>(assertion: Pick<Assertion, 'timeout'>) =>
-  (te: TaskEither<AssertionError, T>) =>
+  (te: TaskEither<AssertionError.Type, T>) =>
     task
-      .getRaceMonoid<Either<AssertionError, T>>()
+      .getRaceMonoid<Either<AssertionError.Type, T>>()
       .concat(
         te,
         pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))

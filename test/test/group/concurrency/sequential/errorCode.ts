@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function';
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorAfterFailedTest: AssertionError;
+  readonly errorAfterFailedTest: AssertionError.Type;
 };
 
 const caseToTest = (tc: TestCase) =>
