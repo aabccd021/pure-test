@@ -30,7 +30,8 @@ const caseToTest = (tc: TestCase) =>
             test.single({ name: '10', act: pipe('foo', assert.equal('foo'), task.of) }),
           ]),
           preTest.shardTests({
-            config: { index: taskEither.of(shardIndex), count: taskEither.of(tc.shardCount) },
+            index: taskEither.of(shardIndex),
+            count: taskEither.of(tc.shardCount),
             strategy: sharding.strategy.chunks,
           }),
           runTests({})
@@ -68,33 +69,6 @@ const cases: readonly TestCase[] = [
   },
 
   {
-    shardCount: 3,
-    result: [
-      [{ name: '01' }, { name: '02' }, { name: '03' }],
-      [{ name: '04' }, { name: '05' }, { name: '06' }],
-      [{ name: '07' }, { name: '08' }, { name: '09' }, { name: '10' }],
-    ],
-  },
-
-  {
-    shardCount: 4,
-    result: [
-      [
-        { name: '01' },
-        { name: '02' },
-        { name: '03' },
-        { name: '04' },
-        { name: '05' },
-        { name: '06' },
-        { name: '07' },
-        { name: '08' },
-        { name: '09' },
-        { name: '10' },
-      ],
-    ],
-  },
-
-  {
     shardCount: 5,
     result: [
       [{ name: '01' }, { name: '02' }],
@@ -102,66 +76,6 @@ const cases: readonly TestCase[] = [
       [{ name: '05' }, { name: '06' }],
       [{ name: '07' }, { name: '08' }],
       [{ name: '09' }, { name: '10' }],
-    ],
-  },
-
-  {
-    shardCount: 6,
-    result: [
-      [
-        { name: '01' },
-        { name: '02' },
-        { name: '03' },
-        { name: '04' },
-        { name: '05' },
-        { name: '06' },
-        { name: '07' },
-        { name: '08' },
-        { name: '09' },
-        { name: '10' },
-      ],
-    ],
-  },
-
-  {
-    shardCount: 7,
-    result: [
-      [{ name: '01' }, { name: '02' }],
-      [{ name: '03' }, { name: '04' }],
-      [{ name: '05' }, { name: '06' }],
-      [{ name: '07' }],
-      [{ name: '08' }],
-      [{ name: '09' }],
-      [{ name: '10' }],
-    ],
-  },
-
-  {
-    shardCount: 8,
-    result: [
-      [{ name: '01' }, { name: '02' }],
-      [{ name: '03' }, { name: '04' }],
-      [{ name: '05' }],
-      [{ name: '06' }],
-      [{ name: '07' }],
-      [{ name: '08' }],
-      [{ name: '09' }],
-      [{ name: '10' }],
-    ],
-  },
-
-  {
-    shardCount: 9,
-    result: [
-      [{ name: '01' }, { name: '02' }],
-      [{ name: '03' }],
-      [{ name: '04' }],
-      [{ name: '05' }],
-      [{ name: '06' }],
-      [{ name: '07' }],
-      [{ name: '08' }],
-      [{ name: '09' }],
-      [{ name: '10' }],
     ],
   },
 

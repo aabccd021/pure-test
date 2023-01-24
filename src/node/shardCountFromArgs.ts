@@ -8,12 +8,12 @@ import type { GetShardCount } from 'src/index';
 export const shardCountFromArgs: GetShardCount = pipe(
   util.parseArgs({ options: { shardCount: { type: 'string' } } }),
   ({ values: { shardCount } }) => shardCount,
-  either.fromNullable('shardCount is unspecified in command line args'),
-  either.chain((shardCountStr) =>
+  either.fromNullable({ type: 'ShardCountIsUnspecified' as const }),
+  either.chainW((shardCountStr) =>
     pipe(
       shardCountStr,
       std.number.fromString,
-      either.fromOption(() => `shardCount is not a number: "${shardCountStr}"`)
+      either.fromOption(() => ({ type: 'ShardCountIsNotANumber' as const, value: shardCountStr }))
     )
   ),
   task.of

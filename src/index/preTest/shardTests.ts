@@ -1,28 +1,68 @@
-import { apply, either, readonlyArray, taskEither as TE } from 'fp-ts';
+import { either, readonlyArray, taskEither, taskEither as TE } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
-import type { GetShardCount, GetShardIndex, ShardingStrategy, SuiteError, Test } from '../type';
+import type {
+  GetShardCount,
+  GetShardIndex,
+  ShardIndexOutOfBound,
+  ShardingError,
+  ShardingStrategy,
+  SuiteError,
+  Test,
+  TestCountChangedAfterSharding,
+} from '../type';
+
+const getShardOnIndex =
+  (index: number) =>
+  (shards: readonly (readonly Test[])[]): Either<ShardIndexOutOfBound, readonly Test[]> =>
+    pipe(
+      shards,
+      readonlyArray.lookup(index - 1),
+      either.fromOption(() => ({
+        type: 'ShardIndexOutOfBound',
+        index,
+        shardCount: readonlyArray.size(shards),
+      }))
+    );
+
+const validateTestShards = (tests: {
+  readonly beforeSharding: readonly Test[];
+  readonly afterSharding: readonly (readonly Test[])[];
+}): Either<TestCountChangedAfterSharding, readonly (readonly Test[])[]> =>
+  pipe(
+    {
+      beforeSharding: readonlyArray.size(tests.beforeSharding),
+      afterSharding: pipe(tests.afterSharding, readonlyArray.flatten, readonlyArray.size),
+    },
+    (testCount) =>
+      testCount.afterSharding === testCount.beforeSharding
+        ? either.right(tests.afterSharding)
+        : either.left({
+            type: 'TestCountChangedAfterSharding',
+            testCount,
+          })
+  );
 
 export const shardTests = (p: {
-  readonly config: {
-    readonly index: GetShardIndex;
-    readonly count: GetShardCount;
-  };
+  readonly index: GetShardIndex;
+  readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
-}): ((res: TaskEither<SuiteError, readonly Test[]>) => TaskEither<SuiteError, readonly Test[]>) =>
-  TE.chain((tests) =>
-    pipe(
-      TE.Do,
-      TE.bind('config', () => pipe(p.config, apply.sequenceS(TE.ApplicativePar))),
-      TE.bind('testShards', ({ config }) => p.strategy({ shardCount: config.count, tests })),
-      TE.chainEitherK(({ config, testShards }) =>
-        pipe(
-          testShards,
-          readonlyArray.lookup(config.index - 1),
-          either.fromOption(() => `Shard index is out of bound: ${config.index}`)
-        )
-      ),
-      TE.mapLeft((message): SuiteError => ({ type: 'ShardingError', message }))
-    )
+}): ((tests: TaskEither<SuiteError, readonly Test[]>) => TaskEither<SuiteError, readonly Test[]>) =>
+  taskEither.chainW(
+    (tests): TaskEither<ShardingError, readonly Test[]> =>
+      pipe(
+        TE.Do,
+        TE.bindW('count', () => p.count),
+        TE.bindW('index', () => p.index),
+        TE.bindW('testShards', ({ count }) => p.strategy({ shardCount: count, tests })),
+        TE.chainEitherKW(({ index, testShards }) =>
+          pipe(
+            validateTestShards({ beforeSharding: tests, afterSharding: testShards }),
+            either.chainW(getShardOnIndex(index))
+          )
+        ),
+        TE.mapLeft((value) => ({ type: 'ShardingError' as const, value }))
+      )
   );

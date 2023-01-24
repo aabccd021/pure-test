@@ -8,12 +8,12 @@ import type { GetShardIndex } from 'src/index';
 export const shardIndexFromArgs: GetShardIndex = pipe(
   util.parseArgs({ options: { shardIndex: { type: 'string' } } }),
   ({ values: { shardIndex } }) => shardIndex,
-  either.fromNullable('shardIndex is unspecified in command line args'),
-  either.chain((shardIndexStr) =>
+  either.fromNullable({ type: 'ShardIndexIsUnspecified' as const }),
+  either.chainW((shardIndexStr) =>
     pipe(
       shardIndexStr,
       std.number.fromString,
-      either.fromOption(() => `shardIndex is not a number: "${shardIndexStr}"`)
+      either.fromOption(() => ({ type: 'ShardIndexIsNotANumber' as const, value: shardIndexStr }))
     )
   ),
   task.of

@@ -7,6 +7,7 @@ import c from 'picocolors';
 import { match } from 'ts-pattern';
 
 import type { Change, SuiteError, SuiteResult, TestError, TestFailResult } from '../type';
+import { shardingErrorToLines } from './logTestsNameAndResults/shardingErrorToLines';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -70,7 +71,9 @@ const suiteErrorToLines = (suiteError: SuiteError): readonly string[] =>
     .with({ type: 'DuplicateTestName' }, ({ name }) => [
       `${errorHeader} Duplicate test name found: ${name}`,
     ])
-    .with({ type: 'ShardingError' }, ({ message }) => [`${errorHeader} Sharding error: ${message}`])
+    .with({ type: 'ShardingError' }, ({ value }) =>
+      pipe(value, shardingErrorToLines, readonlyArray.prepend(`${errorHeader} ShardingError`))
+    )
     .exhaustive();
 
 export const logErrorDetailsF = (env: {
