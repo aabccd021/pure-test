@@ -13,25 +13,19 @@ export type Concurrency =
   | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast?: false };
 
-export type Assertion = {
+export type SingleTest = {
+  readonly type: 'single';
   readonly name: string;
   readonly act: Task<Assert.Type>;
   readonly timeout?: number;
   readonly retry?: retry.RetryPolicy;
 };
 
-export type SingleTest = {
-  readonly type: 'single';
-  readonly todo?: true;
-  readonly assert: Assertion;
-};
-
 export type GroupTest = {
   readonly type: 'group';
   readonly name: string;
-  readonly todo?: true;
   readonly concurrency?: Concurrency;
-  readonly asserts: readonly Assertion[];
+  readonly asserts: readonly SingleTest[];
 };
 
 export type Test = GroupTest | SingleTest;

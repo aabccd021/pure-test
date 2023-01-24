@@ -2,7 +2,6 @@ import { either, readonlyArray, string, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
-import { getTestName } from '../_internal/getTestName';
 import type { SuiteError, Test } from '../type';
 
 const getFirstDuplicate = (arr: readonly string[]) =>
@@ -23,7 +22,7 @@ export const throwOnDuplicateTestName: (
 ) => TaskEither<SuiteError, readonly Test[]> = taskEither.chainEitherK((tests) =>
   pipe(
     tests,
-    readonlyArray.map(getTestName),
+    readonlyArray.map(({ name }) => name),
     getFirstDuplicate,
     either.bimap(
       (name): SuiteError => ({ type: 'DuplicateTestName', name }),

@@ -18,9 +18,18 @@ const caseToTest = (tc: TestCase) =>
           name: 'sequential group concurrency time test',
           concurrency: tc.concurrency,
           asserts: [
-            { name: 'delay 1s', act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)) },
-            { name: 'delay 1s', act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)) },
-            { name: 'delay 1s', act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)) },
+            test.single({
+              name: 'delay 1s',
+              act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
+            }),
+            test.single({
+              name: 'delay 1s',
+              act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
+            }),
+            test.single({
+              name: 'delay 1s',
+              act: pipe('foo', assert.equal('foo'), task.of, task.delay(1000)),
+            }),
           ],
         }),
       ]),

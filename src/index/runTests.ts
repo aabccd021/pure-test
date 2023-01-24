@@ -21,17 +21,16 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
-import { getTestName } from './_internal/getTestName';
 import { diffLines } from './_internal/libs/diffLines';
 import type {
   Assert,
-  Assertion,
   AssertionError,
   AssertionPassResult,
   AssertionResult,
   Change,
   Concurrency,
   GroupTest,
+  SingleTest,
   SuiteError,
   SuiteResult,
   Test,
@@ -185,7 +184,7 @@ const unhandledException = (exception: unknown) => ({
 });
 
 const runWithTimeout =
-  <T>(assertion: Pick<Assertion, 'timeout'>) =>
+  <T>(assertion: Pick<SingleTest, 'timeout'>) =>
   (te: TaskEither<AssertionError.Type, T>) =>
     task
       .getRaceMonoid<Either<AssertionError.Type, T>>()
@@ -195,7 +194,7 @@ const runWithTimeout =
       );
 
 const runWithRetry =
-  (test: Pick<Assertion, 'retry'>) =>
+  (test: Pick<SingleTest, 'retry'>) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
@@ -208,7 +207,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
+const runSingleTest = (assertion: SingleTest): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -227,10 +226,10 @@ const runAssertion = (assertion: Assertion): Task<AssertionResult> =>
     )
   );
 
-const runAssertions = (config: Pick<GroupTest, 'concurrency'>) =>
+const runGroupTest = (config: Pick<GroupTest, 'concurrency'>) =>
   runWithConcurrency({
     concurrency: config.concurrency,
-    run: runAssertion,
+    run: runSingleTest,
     afterFail: (assertion) =>
       either.left({ name: assertion.name, error: { code: 'Skipped' as const } }),
   });
@@ -255,7 +254,7 @@ const getTimeElapsedByConcurrency = ({
 const runMultipleAssertion = (test: GroupTest): Task<TestResult> =>
   pipe(
     test.asserts,
-    runAssertions({ concurrency: test.concurrency }),
+    runGroupTest({ concurrency: test.concurrency }),
     task.map(
       flow(
         readonlyArray.reduce(
@@ -297,7 +296,7 @@ const runMultipleAssertion = (test: GroupTest): Task<TestResult> =>
 
 const runTest = (test: Test): Task<TestResult> =>
   match(test)
-    .with({ type: 'single' }, ({ assert }) => runAssertion(assert))
+    .with({ type: 'single' }, runSingleTest)
     .with({ type: 'group' }, runMultipleAssertion)
     .exhaustive();
 
@@ -337,8 +336,7 @@ export const runTests = (
       runWithConcurrency({
         concurrency: config.concurrency,
         run: runTest,
-        afterFail: (test) =>
-          either.left({ name: getTestName(test), error: { code: 'Skipped' as const } }),
+        afterFail: ({ name }) => either.left({ name, error: { code: 'Skipped' as const } }),
       }),
       task.map(aggregateTestResult)
     )

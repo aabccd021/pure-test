@@ -20,9 +20,15 @@ const caseToTest = (tc: TestCase) =>
               name: 'sequential group test',
               concurrency: { type: 'sequential', failFast: tc.failFast },
               asserts: [
-                { name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) },
-                { name: 'should fail', act: pipe('foo', assert.equal('bar'), task.of) },
-                {
+                test.single({
+                  name: 'should pass',
+                  act: pipe('foo', assert.equal('foo'), task.of),
+                }),
+                test.single({
+                  name: 'should fail',
+                  act: pipe('foo', assert.equal('bar'), task.of),
+                }),
+                test.single({
                   name: 'should skip',
                   act: pipe(
                     'foo',
@@ -30,7 +36,7 @@ const caseToTest = (tc: TestCase) =>
                     task.of,
                     task.chainFirstIOK(() => isLastTestExecutedRef.write(true))
                   ),
-                },
+                }),
               ],
             }),
           ]),
