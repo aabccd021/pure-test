@@ -18,8 +18,8 @@ const getFirstDuplicate = (arr: readonly string[]) =>
   );
 
 export const throwOnDuplicateTestName: (
-  res: TaskEither<SuiteError, readonly TestUnit[]>
-) => TaskEither<SuiteError, readonly TestUnit[]> = taskEither.chainEitherK((tests) =>
+  res: TaskEither<SuiteError, readonly TestUnit.Type[]>
+) => TaskEither<SuiteError, readonly TestUnit.Type[]> = taskEither.chainEitherK((tests) =>
   pipe(
     tests,
     readonlyArray.map(({ name }) => name),

@@ -1,34 +1,16 @@
 import type { Either } from 'fp-ts/Either';
-import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
-import type * as retry from 'retry-ts';
 
 import type * as Assert from './assert';
 import type * as AssertionError from './assertionError';
 import type * as ShardingError from './shardingError';
+import type * as TestUnit from './testUnit';
 
-export type { Assert, AssertionError, ShardingError };
+export type { Assert, AssertionError, ShardingError, TestUnit };
 
 export type Concurrency =
   | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast?: false };
-
-export type SingleTest = {
-  readonly type: 'single';
-  readonly name: string;
-  readonly act: Task<Assert.Type>;
-  readonly timeout?: number;
-  readonly retry?: retry.RetryPolicy;
-};
-
-export type Group = {
-  readonly type: 'group';
-  readonly name: string;
-  readonly concurrency?: Concurrency;
-  readonly asserts: readonly SingleTest[];
-};
-
-export type TestUnit = Group | SingleTest;
 
 export type TestConfig = { readonly concurrency?: Concurrency };
 
@@ -64,8 +46,8 @@ export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
-  readonly tests: readonly TestUnit[];
-}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit[])[]>;
+  readonly tests: readonly TestUnit.Type[];
+}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit.Type[])[]>;
 
 export type GetShardIndex = TaskEither<ShardingError.GetShardIndexError, number>;
 

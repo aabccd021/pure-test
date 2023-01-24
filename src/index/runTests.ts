@@ -29,8 +29,6 @@ import type {
   AssertionResult,
   Change,
   Concurrency,
-  Group,
-  SingleTest,
   SuiteError,
   SuiteResult,
   TestConfig,
@@ -184,7 +182,7 @@ const unhandledException = (exception: unknown) => ({
 });
 
 const runWithTimeout =
-  <T>(assertion: Pick<SingleTest, 'timeout'>) =>
+  <T>(assertion: Pick<TestUnit.SingleTest, 'timeout'>) =>
   (te: TaskEither<AssertionError.Type, T>) =>
     task
       .getRaceMonoid<Either<AssertionError.Type, T>>()
@@ -194,7 +192,7 @@ const runWithTimeout =
       );
 
 const runWithRetry =
-  (test: Pick<SingleTest, 'retry'>) =>
+  (test: Pick<TestUnit.SingleTest, 'retry'>) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
@@ -207,7 +205,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runTest = (assertion: SingleTest): Task<AssertionResult> =>
+const runTest = (assertion: TestUnit.SingleTest): Task<AssertionResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -226,7 +224,7 @@ const runTest = (assertion: SingleTest): Task<AssertionResult> =>
     )
   );
 
-const runGroupTests = (config: Pick<Group, 'concurrency'>) =>
+const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({
     concurrency: config.concurrency,
     run: runTest,
@@ -251,7 +249,7 @@ const getTimeElapsedByConcurrency = ({
     .with({ type: 'sequential' }, () => readonlyArray.foldMap(number.MonoidSum)((x: number) => x))
     .exhaustive();
 
-const runGroup = (test: Group): Task<TestResult> =>
+const runGroup = (test: TestUnit.Group): Task<TestResult> =>
   pipe(
     test.asserts,
     runGroupTests({ concurrency: test.concurrency }),
@@ -294,7 +292,7 @@ const runGroup = (test: Group): Task<TestResult> =>
     )
   );
 
-const runTestUnit = (test: TestUnit): Task<TestResult> =>
+const runTestUnit = (test: TestUnit.Type): Task<TestResult> =>
   match(test).with({ type: 'single' }, runTest).with({ type: 'group' }, runGroup).exhaustive();
 
 const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
@@ -327,7 +325,7 @@ const aggregateTestResult = (testResults: readonly TestResult[]): SuiteResult =>
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<SuiteError, readonly TestUnit[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<SuiteError, readonly TestUnit.Type[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({
