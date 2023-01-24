@@ -50,19 +50,18 @@ export const shardTests = (p: {
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
 }): ((tests: TaskEither<SuiteError, readonly Test[]>) => TaskEither<SuiteError, readonly Test[]>) =>
-  taskEither.chainW(
-    (tests): TaskEither<ShardingError.Type, readonly Test[]> =>
-      pipe(
-        TE.Do,
-        TE.bindW('count', () => p.count),
-        TE.bindW('index', () => p.index),
-        TE.bindW('testShards', ({ count }) => p.strategy({ shardCount: count, tests })),
-        TE.chainEitherKW(({ index, testShards }) =>
-          pipe(
-            validateTestShards({ beforeSharding: tests, afterSharding: testShards }),
-            either.chainW(getShardOnIndex(index))
-          )
-        ),
-        TE.mapLeft((value) => ({ type: 'ShardingError' as const, value }))
-      )
+  taskEither.chainW((tests) =>
+    pipe(
+      TE.Do,
+      TE.bindW('count', () => p.count),
+      TE.bindW('index', () => p.index),
+      TE.bindW('testShards', ({ count }) => p.strategy({ shardCount: count, tests })),
+      TE.chainEitherKW(({ index, testShards }) =>
+        pipe(
+          validateTestShards({ beforeSharding: tests, afterSharding: testShards }),
+          either.chainW(getShardOnIndex(index))
+        )
+      ),
+      TE.mapLeft((value) => ({ type: 'ShardingError' as const, value }))
+    )
   );

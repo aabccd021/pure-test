@@ -56,8 +56,8 @@ export type TestPassResult = { readonly name: string; readonly timeElapsedMs: nu
 export type TestResult = Either<TestFailResult, TestPassResult>;
 
 export type SuiteError =
-  | ShardingError.Type
   | { readonly type: 'DuplicateTestName'; readonly name: string }
+  | { readonly type: 'ShardingError'; readonly value: ShardingError.Type }
   | { readonly type: 'TestError'; readonly results: readonly TestResult[] };
 
 export type SuiteResult = Either<SuiteError, readonly TestPassResult[]>;

@@ -38,12 +38,9 @@ export type ShardingStrategyError = {
   readonly type: 'ShardingStrategyError';
 };
 
-export type Type = {
-  readonly type: 'ShardingError';
-  readonly value:
-    | GetShardCountError
-    | GetShardIndexError
-    | ShardIndexOutOfBound
-    | ShardingStrategyError
-    | TestCountChangedAfterSharding;
-};
+export type Type =
+  | GetShardCountError
+  | GetShardIndexError
+  | ShardIndexOutOfBound
+  | ShardingStrategyError
+  | TestCountChangedAfterSharding;
