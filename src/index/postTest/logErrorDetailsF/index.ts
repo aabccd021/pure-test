@@ -20,6 +20,7 @@ const suiteErrorToLines = (suiteError: SuiteError): readonly string[] =>
   pipe(
     suiteError,
     suiteErrorToContentLines,
+    readonlyArray.map((line) => `  ${line}`),
     readonlyArray.prepend(`${c.red(c.bold(c.inverse(' ERROR ')))} ${suiteError.type}`)
   );
 

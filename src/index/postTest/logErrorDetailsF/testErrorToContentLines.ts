@@ -54,7 +54,7 @@ const formatErrorResult = (errorResult: TestFailResult): readonly string[] =>
         `${c.red(c.bold(c.inverse(' FAIL ')))} ${errorResult.name}`,
         c.red(c.bold(`${errorResult.error.code}:`)),
         '',
-        ...pipe(errorResult.error, formatTestError, readonlyArray.map(std.string.prepend('  '))),
+        ...formatTestError(errorResult.error),
         '',
       ];
 
