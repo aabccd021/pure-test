@@ -13,7 +13,7 @@ const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
 const passed = (name: string) => `  ${c.green('✓')} ${name}`;
 
-const assertionResultToStr = (assertionResult: AssertionResult): readonly string[] =>
+const assertionResultToStr = (assertionResult: AssertionResult.Type): readonly string[] =>
   pipe(
     assertionResult,
     either.match(

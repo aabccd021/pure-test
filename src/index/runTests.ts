@@ -25,7 +25,6 @@ import { diffLines } from './_internal/libs/diffLines';
 import type {
   Assert,
   AssertionError,
-  AssertionPassResult,
   AssertionResult,
   Change,
   Concurrency,
@@ -203,7 +202,7 @@ const measureElapsed =
     return { result, timeElapsedMs };
   };
 
-const runTest = (assertion: TestUnit.Test): Task<AssertionResult> =>
+const runTest = (assertion: TestUnit.Test): Task<AssertionResult.Type> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
@@ -254,7 +253,7 @@ const runGroup = (test: TestUnit.Group): Task<TestResult.Type> =>
     task.map(
       flow(
         readonlyArray.reduce(
-          either.of<readonly AssertionResult[], readonly AssertionPassResult[]>([]),
+          either.of<readonly AssertionResult.Type[], readonly AssertionResult.Right[]>([]),
           (acc, el) =>
             pipe(
               acc,
@@ -263,13 +262,13 @@ const runGroup = (test: TestUnit.Group): Task<TestResult.Type> =>
                 pipe(
                   el,
                   either.bimap(
-                    (ell): readonly AssertionResult[] =>
+                    (ell): readonly AssertionResult.Type[] =>
                       pipe(
                         accr,
                         readonlyArray.map(either.right),
                         readonlyArray.append(either.left(ell))
                       ),
-                    (elr): readonly AssertionPassResult[] => readonlyArray.append(elr)(accr)
+                    (elr): readonly AssertionResult.Right[] => readonlyArray.append(elr)(accr)
                   )
                 )
               )

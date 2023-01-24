@@ -1,14 +1,22 @@
-import type { Either } from 'fp-ts/Either';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type * as Assert from './assert';
 import type * as AssertionError from './assertionError';
+import type * as AssertionResult from './assertionResult';
 import type * as ShardingError from './shardingError';
 import type * as SuiteResult from './suiteResult';
 import type * as TestResult from './testResult';
 import type * as TestUnit from './testUnit';
 
-export type { Assert, AssertionError, ShardingError, SuiteResult, TestResult, TestUnit };
+export type {
+  Assert,
+  AssertionError,
+  AssertionResult,
+  ShardingError,
+  SuiteResult,
+  TestResult,
+  TestUnit,
+};
 
 export type Concurrency =
   | { readonly type: 'parallel' }
@@ -23,15 +31,9 @@ export type DiffLines = (p: {
   readonly received: string;
 }) => readonly Change[];
 
-export type AssertionFailResult = { readonly name: string; readonly error: AssertionError.Type };
-
-export type AssertionPassResult = { readonly name: string; readonly timeElapsedMs: number };
-
-export type AssertionResult = Either<AssertionFailResult, AssertionPassResult>;
-
 export type TestError =
   | AssertionError.Type
-  | { readonly code: 'MultipleAssertionError'; readonly results: readonly AssertionResult[] };
+  | { readonly code: 'MultipleAssertionError'; readonly results: readonly AssertionResult.Type[] };
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
