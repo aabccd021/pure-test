@@ -66,15 +66,10 @@ export const equalDeepPartial =
   (received: T) =>
     pipe(pick(received, expected), equalW(expected));
 
-const unexpectedNone: Assert.UnexpectedNone = { assert: 'UnexpectedNone' };
-
 export const option =
   <A>(toAssert: (r: A) => Assert.Union) =>
-  (e: Option<A>): Assert.Union =>
-    pipe(
-      e,
-      O.match(() => unexpectedNone, toAssert)
-    );
+  (o: Option<A>): Assert.Union =>
+    O.isSome(o) ? toAssert(o.value) : equal({ _tag: 'Some' })(o);
 
 export const either =
   <L, R>(toAssert: (r: R) => Assert.Union) =>

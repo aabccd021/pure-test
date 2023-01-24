@@ -109,16 +109,7 @@ export const diffResult = ({
   );
 
 export const runAssert = (a: Assert.Union): Either<TestError.Union, unknown> =>
-  match(a)
-    .with({ assert: 'Equal' }, diffResult)
-    .with({ assert: 'UnexpectedLeft' }, ({ value }) =>
-      either.left({ value, code: 'UnexpectedLeft' as const })
-    )
-    .with({ assert: 'UnexpectedRight' }, ({ value }) =>
-      either.left({ value, code: 'UnexpectedRight' as const })
-    )
-    .with({ assert: 'UnexpectedNone' }, () => either.left({ code: 'UnexpectedNone' as const }))
-    .exhaustive();
+  match(a).with({ assert: 'Equal' }, diffResult).exhaustive();
 
 const runSequentialFailFast =
   <T, L, R>(f: (t: T) => TaskEither<L, R>) =>

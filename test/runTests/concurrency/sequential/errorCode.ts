@@ -2,11 +2,12 @@ import type { LeftOf, SuiteResult, TestUnitResult } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
+import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorAfterFailedTest: readonly TestUnitResult[];
+  readonly errorAfterFailedTest: readonly DeepPartial<TestUnitResult>[];
 };
 
 const caseToTest = (tc: TestCase) =>
@@ -30,10 +31,7 @@ const caseToTest = (tc: TestCase) =>
           type: 'TestRunError',
           results: [
             either.right({ result: { name: 'should pass' } }),
-            either.left({
-              name: 'should fail',
-              error: { code: 'TestError', value: { code: 'UnexpectedNone' } },
-            }),
+            either.left({ name: 'should fail' }),
             ...tc.errorAfterFailedTest,
           ],
         })
@@ -50,12 +48,7 @@ const cases: readonly TestCase[] = [
   {
     name: 'non fail fast sequential should run all tests',
     failFast: false,
-    errorAfterFailedTest: [
-      either.left({
-        name: 'after fail',
-        error: { code: 'TestError', value: { code: 'UnexpectedNone' } },
-      }),
-    ],
+    errorAfterFailedTest: [either.left({ name: 'after fail' })],
   },
 ];
 
