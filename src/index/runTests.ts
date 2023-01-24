@@ -221,10 +221,7 @@ const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
   );
 
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
-  runWithConcurrency({
-    concurrency: config.concurrency,
-    run: runTest,
-  });
+  runWithConcurrency({ concurrency: config.concurrency, run: runTest });
 
 const getMaxInNumberArray = flow(
   readonlyArray.sort(number.Ord),
@@ -297,10 +294,7 @@ export const runTests = (
 ): ((tests: TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Union[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
-      runWithConcurrency({
-        concurrency: config.concurrency,
-        run: runTestUnit,
-      }),
+      runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),
       task.map(aggregateTestResult)
     )
   );
