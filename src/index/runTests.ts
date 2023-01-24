@@ -280,7 +280,7 @@ const runGroup = (test: TestUnit.Group): Task<TestUnitResult> =>
         either.bimap(
           (results) => ({
             name: test.name,
-            error: { code: 'Group' as const, results },
+            error: { code: 'GroupError' as const, results },
           }),
           flow(
             readonlyArray.map(({ timeElapsedMs }) => timeElapsedMs),
@@ -298,7 +298,7 @@ const runTestUnit = (test: TestUnit.Type): Task<TestUnitResult> =>
       { type: 'test' },
       flow(
         runTest,
-        taskEither.mapLeft(modifyW('error', (value) => ({ code: 'Test' as const, value })))
+        taskEither.mapLeft(modifyW('error', (value) => ({ code: 'TestError' as const, value })))
       )
     )
     .with({ type: 'group' }, runGroup)

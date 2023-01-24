@@ -44,7 +44,7 @@ const caseToTest = (tc: Case) =>
         assert.equalArray([
           `${red}${bold}${invert} ERROR ${invertEnd}${boldEnd}${colorEnd} TestRunError`,
           `  ${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
-          `  ${red}${bold}Test${boldEnd}${colorEnd}`,
+          `  ${red}${bold}TestError${boldEnd}${colorEnd}`,
           `  `,
           `  ${green}- Expected  - ${tc.expectedCount}${colorEnd}`,
           `  ${red}+ Received  + ${tc.receivedCount}${colorEnd}`,

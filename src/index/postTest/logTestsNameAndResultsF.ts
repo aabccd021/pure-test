@@ -32,7 +32,7 @@ const testUnitResultToStr = (testResult: TestUnitResult): readonly string[] =>
       ({ name, error }) =>
         match(error)
           .with({ code: 'Skipped' }, () => [skipped(name)])
-          .with({ code: 'Group' }, ({ results }) =>
+          .with({ code: 'GroupError' }, ({ results }) =>
             pipe(
               results,
               readonlyArray.chain(testResultToStr),

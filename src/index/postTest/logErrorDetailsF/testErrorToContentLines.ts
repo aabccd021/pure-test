@@ -57,14 +57,14 @@ export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: T
 const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
   match(testUnitError.error)
     .with({ code: 'Skipped' }, () => [])
-    .with({ code: 'Group' }, ({ results }) =>
+    .with({ code: 'GroupError' }, ({ results }) =>
       pipe(
         results,
         readonlyArray.lefts,
         readonlyArray.chain(({ error }) => testErrorToLines(testUnitError, error))
       )
     )
-    .with({ code: 'Test' }, ({ value }) => testErrorToLines(testUnitError, value))
+    .with({ code: 'TestError' }, ({ value }) => testErrorToLines(testUnitError, value))
     .exhaustive();
 
 export const testErrorToContentLines = (results: readonly TestUnitResult[]): readonly string[] =>

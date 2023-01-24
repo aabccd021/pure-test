@@ -32,7 +32,7 @@ const caseToTest = (tc: TestCase) =>
             either.right({ name: 'should pass' }),
             either.left({
               name: 'should fail',
-              error: { code: 'Test', value: { code: 'UnexpectedNone' } },
+              error: { code: 'TestError', value: { code: 'UnexpectedNone' } },
             }),
             either.left({ name: 'after fail', error: tc.errorAfterFailedTest }),
           ],
@@ -50,7 +50,7 @@ const cases: readonly TestCase[] = [
   {
     name: 'non fail fast sequential should run all tests',
     failFast: false,
-    errorAfterFailedTest: { code: 'Test', value: { code: 'UnexpectedNone' } },
+    errorAfterFailedTest: { code: 'TestError', value: { code: 'UnexpectedNone' } },
   },
 ];
 
