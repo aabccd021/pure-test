@@ -26,7 +26,7 @@ export const throwOnDuplicateTestName: (
       readonlyArray.map(({ name }) => name),
       getFirstDuplicate,
       either.bimap(
-        (name): SuiteError.Union => ({ type: 'DuplicateTestName', name }),
+        (name): SuiteError.Union => ({ code: 'DuplicateTestName', name }),
         () => tests
       )
     )

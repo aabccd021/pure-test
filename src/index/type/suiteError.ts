@@ -1,29 +1,29 @@
 import type { ShardingError as _ShardingError, TestUnitResult } from '.';
 
-export type DuplicateTestName = { readonly type: 'DuplicateTestName'; readonly name: string };
+export type DuplicateTestName = { readonly code: 'DuplicateTestName'; readonly name: string };
 
 export const duplicateTestName = (name: string): DuplicateTestName => ({
-  type: 'DuplicateTestName',
+  code: 'DuplicateTestName',
   name,
 });
 
 export type ShardingError = {
-  readonly type: 'ShardingError';
+  readonly code: 'ShardingError';
   readonly value: _ShardingError.Union;
 };
 
 export const shardingError = (value: _ShardingError.Union): ShardingError => ({
-  type: 'ShardingError',
+  code: 'ShardingError',
   value,
 });
 
 export type TestRunError = {
-  readonly type: 'TestRunError';
+  readonly code: 'TestRunError';
   readonly results: readonly TestUnitResult[];
 };
 
 export const testRunError = (results: readonly TestUnitResult[]): TestRunError => ({
-  type: 'TestRunError',
+  code: 'TestRunError',
   results,
 });
 

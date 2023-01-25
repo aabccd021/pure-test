@@ -37,7 +37,7 @@ const caseToTest = (tc: TestCase) =>
       runTests({}),
       assert.taskEitherLeft(
         assert.equalDeepPartial<SuiteError.Union>({
-          type: 'TestRunError',
+          code: 'TestRunError',
           results: [
             either.left({
               name: 'sequential group test',

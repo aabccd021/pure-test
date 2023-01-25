@@ -35,7 +35,7 @@ const cases: readonly Case[] = [
     name: 'TimedOut test should return TimedOut error',
     testTime: timeoutTestTime,
     testError: either.left({
-      type: 'TestRunError',
+      code: 'TestRunError',
       results: [
         either.left({
           name: 'foo test',

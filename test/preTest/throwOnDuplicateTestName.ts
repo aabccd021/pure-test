@@ -30,7 +30,7 @@ const cases: readonly Case[] = [
     name: 'throws on duplicate test names',
     test1Name: 'foo test',
     test2Name: 'foo test',
-    result: either.left({ type: 'DuplicateTestName', name: 'foo test' }),
+    result: either.left({ code: 'DuplicateTestName', name: 'foo test' }),
   },
 
   {

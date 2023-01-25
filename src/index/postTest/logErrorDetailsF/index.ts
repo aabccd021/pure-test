@@ -11,9 +11,9 @@ import { testErrorToContentLines } from './testErrorToContentLines';
 
 const suiteErrorToContentLines = (suiteError: SuiteError.Union): readonly string[] =>
   match(suiteError)
-    .with({ type: 'TestRunError' }, ({ results }) => testErrorToContentLines(results))
-    .with({ type: 'DuplicateTestName' }, ({ name }) => [` Test name: ${name}`])
-    .with({ type: 'ShardingError' }, ({ value }) => shardingErrorToContentLines(value))
+    .with({ code: 'TestRunError' }, ({ results }) => testErrorToContentLines(results))
+    .with({ code: 'DuplicateTestName' }, ({ name }) => [` Test name: ${name}`])
+    .with({ code: 'ShardingError' }, ({ value }) => shardingErrorToContentLines(value))
     .exhaustive();
 
 const suiteErrorToLines = (suiteError: SuiteError.Union): readonly string[] =>
@@ -21,7 +21,7 @@ const suiteErrorToLines = (suiteError: SuiteError.Union): readonly string[] =>
     suiteError,
     suiteErrorToContentLines,
     readonlyArray.map((line) => `  ${line}`),
-    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' ERROR ')))} ${suiteError.type}`),
+    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' ERROR ')))} ${suiteError.code}`),
     readonlyArray.append(``)
   );
 
