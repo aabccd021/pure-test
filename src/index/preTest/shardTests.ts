@@ -45,13 +45,13 @@ const validateTestShards = (tests: {
         : either.left(shardingError.testCountChangedAfterSharding(testCount))
   );
 
-export const shardTests = (p: {
+export const shardTests = <L>(p: {
   readonly index: GetShardIndex;
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
 }): ((
-  tests: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>
-) => TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>) =>
+  tests: TaskEither<L, readonly Named<TestUnit.Union>[]>
+) => TaskEither<L | SuiteError.ShardingError, readonly Named<TestUnit.Union>[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,
