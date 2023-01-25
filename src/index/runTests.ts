@@ -84,10 +84,6 @@ const recordToLines = (
     (lines) => [`{`, ...lines, `}`]
   );
 
-const traverseEitherArrayWithIndex = readonlyArray.traverseWithIndex(either.Applicative);
-
-const traverseEitherRecordWithIndex = readonlyRecord.traverseWithIndex(either.Applicative);
-
 const unknownToLines =
   (path: readonly (number | string)[]) =>
   (obj: unknown): Either<TestError.SerializationError, ReadonlyNonEmptyArray<string>> =>
@@ -98,7 +94,9 @@ const unknownToLines =
       : Array.isArray(obj)
       ? pipe(
           obj,
-          traverseEitherArrayWithIndex((index, value) => unknownToLines([...path, index])(value)),
+          readonlyArray.traverseWithIndex(either.Applicative)((index, value) =>
+            unknownToLines([...path, index])(value)
+          ),
           either.map(arrayToLines)
         )
       : pipe(
@@ -106,7 +104,9 @@ const unknownToLines =
           iots.UnknownRecord.decode,
           either.mapLeft(() => testError.serializationError(path)),
           either.chain(
-            traverseEitherRecordWithIndex((index, value) => unknownToLines([...path, index])(value))
+            readonlyRecord.traverseWithIndex(either.Applicative)((index, value) =>
+              unknownToLines([...path, index])(value)
+            )
           ),
           either.map(recordToLines)
         );
