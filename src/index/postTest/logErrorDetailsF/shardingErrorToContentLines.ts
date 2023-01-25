@@ -4,23 +4,23 @@ import type { ShardingError } from '../../type';
 
 export const shardingErrorToContentLines = (error: ShardingError.Union): readonly string[] =>
   match(error)
-    .with({ type: 'ShardCountIsUnspecified' }, () => [`shard count is unspecified`])
-    .with({ type: 'ShardCountIsNotANumber' }, ({ value }) => [
+    .with({ code: 'ShardCountIsUnspecified' }, () => [`shard count is unspecified`])
+    .with({ code: 'ShardCountIsNotANumber' }, ({ value }) => [
       `shard count is not a number : ${value}`,
     ])
-    .with({ type: 'ShardIndexIsUnspecified' }, () => [`shard index is unspecified`])
-    .with({ type: 'ShardIndexIsNotANumber' }, ({ value }) => [
+    .with({ code: 'ShardIndexIsUnspecified' }, () => [`shard index is unspecified`])
+    .with({ code: 'ShardIndexIsNotANumber' }, ({ value }) => [
       `shard index is not a number : ${value}`,
     ])
-    .with({ type: 'ShardIndexOutOfBound' }, ({ index, shardCount }) => [
+    .with({ code: 'ShardIndexOutOfBound' }, ({ index, shardCount }) => [
       `Shard index is out of bound:`,
       `       index: ${index}`,
       ` shard count: ${shardCount}`,
     ])
-    .with({ type: 'TestCountChangedAfterSharding' }, ({ testCount }) => [
+    .with({ code: 'TestCountChangedAfterSharding' }, ({ testCount }) => [
       `Test count changed after sharding:`,
       ` before: ${testCount.beforeSharding}`,
       `  after: ${testCount.afterSharding}`,
     ])
-    .with({ type: 'ShardingStrategyError' }, () => [`ShardingStrategyError`])
+    .with({ code: 'ShardingStrategyError' }, () => [`ShardingStrategyError`])
     .exhaustive();

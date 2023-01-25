@@ -12,7 +12,7 @@ import type {
   SuiteError,
   TestUnit,
 } from '../type';
-import { suiteError } from '../type';
+import { shardingError, suiteError } from '../type';
 
 const getShardOnIndex =
   (index: number) =>
@@ -22,11 +22,9 @@ const getShardOnIndex =
     pipe(
       shards,
       readonlyArray.lookup(index - 1),
-      either.fromOption(() => ({
-        type: 'ShardIndexOutOfBound',
-        index,
-        shardCount: readonlyArray.size(shards),
-      }))
+      either.fromOption(() =>
+        shardingError.shardIndexOutOfBound({ index, shardCount: readonlyArray.size(shards) })
+      )
     );
 
 const validateTestShards = (tests: {
@@ -44,7 +42,7 @@ const validateTestShards = (tests: {
     (testCount) =>
       testCount.afterSharding === testCount.beforeSharding
         ? either.right(tests.afterSharding)
-        : either.left({ type: 'TestCountChangedAfterSharding', testCount })
+        : either.left(shardingError.testCountChangedAfterSharding(testCount))
   );
 
 export const shardTests = (p: {

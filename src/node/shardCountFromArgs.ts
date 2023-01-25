@@ -5,15 +5,17 @@ import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 import type { GetShardCount } from 'src/index';
 
+import { shardingError } from '../index/type';
+
 export const shardCountFromArgs: GetShardCount = pipe(
   util.parseArgs({ options: { shardCount: { type: 'string' } } }),
   ({ values: { shardCount } }) => shardCount,
-  either.fromNullable({ type: 'ShardCountIsUnspecified' as const }),
+  either.fromNullable(shardingError.shardCountIsUnspecified),
   either.chainW((shardCountStr) =>
     pipe(
       shardCountStr,
       std.number.fromString,
-      either.fromOption(() => ({ type: 'ShardCountIsNotANumber' as const, value: shardCountStr }))
+      either.fromOption(() => shardingError.shardCountIsNotANumber(shardCountStr))
     )
   ),
   task.of

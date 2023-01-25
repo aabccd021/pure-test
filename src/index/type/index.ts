@@ -5,6 +5,7 @@ import type * as Assert from './assert';
 import type { Named } from './named';
 import * as named from './named';
 import type * as ShardingError from './shardingError';
+import * as shardingError from './shardingError';
 import type * as SuiteError from './suiteError';
 import * as suiteError from './suiteError';
 import type * as TestError from './testError';
@@ -26,7 +27,7 @@ export type {
   TestUnitSuccess,
 };
 
-export { named, suiteError, testError, testUnitError, testUnitSuccess };
+export { named, shardingError, suiteError, testError, testUnitError, testUnitSuccess };
 
 export type TestSuccess = { readonly timeElapsedMs: number };
 

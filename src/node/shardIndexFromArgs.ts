@@ -5,15 +5,17 @@ import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 import type { GetShardIndex } from 'src/index';
 
+import { shardingError } from '../index/type';
+
 export const shardIndexFromArgs: GetShardIndex = pipe(
   util.parseArgs({ options: { shardIndex: { type: 'string' } } }),
   ({ values: { shardIndex } }) => shardIndex,
-  either.fromNullable({ type: 'ShardIndexIsUnspecified' as const }),
+  either.fromNullable(shardingError.shardIndexIsUnspecified),
   either.chainW((shardIndexStr) =>
     pipe(
       shardIndexStr,
       std.number.fromString,
-      either.fromOption(() => ({ type: 'ShardIndexIsNotANumber' as const, value: shardIndexStr }))
+      either.fromOption(() => shardingError.ShardIndexIsNotANumber(shardIndexStr))
     )
   ),
   task.of
