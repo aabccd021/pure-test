@@ -260,17 +260,11 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, TestUnitRight
         either.bimap(
           (results: readonly TestResult[]): TestUnitLeft => ({
             name: group.name,
-            value: {
-              code: 'GroupError' as const,
-              results,
-            },
+            value: { code: 'GroupError' as const, results },
           }),
           (results: readonly TestSuccess[]): TestUnitRight => ({
             name: group.name,
-            value: {
-              unit: 'group',
-              results,
-            },
+            value: { unit: 'group', results },
           })
         )
       )
@@ -284,17 +278,11 @@ const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, TestUnitRi
     taskEither.bimap(
       ({ name, value }: TestFail): TestUnitLeft => ({
         name,
-        value: {
-          code: 'TestError' as const,
-          value,
-        },
+        value: { code: 'TestError' as const, value },
       }),
       ({ name, timeElapsedMs }: TestSuccess): TestUnitRight => ({
         name,
-        value: {
-          unit: 'test' as const,
-          timeElapsedMs,
-        },
+        value: { unit: 'test' as const, timeElapsedMs },
       })
     )
   );
