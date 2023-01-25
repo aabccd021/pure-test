@@ -11,7 +11,7 @@ export const test = (param: {
 }): Named<TestUnit.Test> => ({
   name: param.name,
   value: {
-    type: 'test',
+    unit: 'test',
     act: param.act,
     timeout: param.timeout ?? 5000,
     retry: param.retry ?? retry.limitRetries(0),

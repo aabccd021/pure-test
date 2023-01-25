@@ -57,7 +57,7 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
 
 const runGroup = (group: TestUnit.Group) =>
   pipe(
-    group.asserts,
+    group.tests,
     runWithConcurrency({ concurrency: group.concurrency, run: named.mapTaskEither(runTest) }),
     task.map(eitherArrayIsAllRight)
   );
@@ -67,11 +67,11 @@ const runTestUnit = (
 ): TaskEither<TestUnitError.Union, testUnitSuccess.Union> =>
   match(testUnit)
     .with(
-      { type: 'test' },
+      { unit: 'test' },
       flow(runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test))
     )
     .with(
-      { type: 'group' },
+      { unit: 'group' },
       flow(runGroup, taskEither.bimap(testUnitError.groupError, testUnitSuccess.group))
     )
     .exhaustive();

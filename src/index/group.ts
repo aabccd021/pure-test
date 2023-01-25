@@ -9,8 +9,8 @@ export const group = (param: {
 }): Named<TestUnit.Group> => ({
   name: param.name,
   value: {
-    type: 'group',
-    asserts: param.asserts,
+    unit: 'group',
+    tests: param.asserts,
     concurrency: concurrencyDefault(param.concurrency),
   },
 });
