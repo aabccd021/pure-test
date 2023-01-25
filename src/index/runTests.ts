@@ -29,6 +29,7 @@ import type {
   SuiteResult,
   TestConfig,
   TestError,
+  TestFail,
   TestResult,
   TestSuccess,
   TestUnit,
@@ -224,8 +225,8 @@ const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
     runWithTimeout({ timeout: assertion.timeout }),
     runWithRetry({ retry: assertion.retry }),
     taskEither.bimap(
-      (error) => ({ name: assertion.name, error }),
-      ({ timeElapsedMs }) => ({ timeElapsedMs, name: assertion.name })
+      (value: TestError.Union): TestFail => ({ name: assertion.name, value }),
+      ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: assertion.name })
     )
   );
 
@@ -265,31 +266,25 @@ const runGroup = (
     )
   );
 
-const testLeftToTestUnitError = ({
-  name,
-  error,
-}: {
-  readonly name: string;
-  readonly error: TestError.Union;
-}): TestUnitError.TestError => ({
-  code: 'TestError' as const,
-  name,
-  value: error,
-});
-
-const testSuccessToTestUnitSuccess = ({
-  name,
-  timeElapsedMs,
-}: TestSuccess): TestUnitSuccess.Test => ({
-  unit: 'test' as const,
-  name,
-  timeElapsedMs,
-});
-
 const runTestAsUnit = (
   test: TestUnit.Test
 ): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
-  pipe(test, runTest, taskEither.bimap(testLeftToTestUnitError, testSuccessToTestUnitSuccess));
+  pipe(
+    test,
+    runTest,
+    taskEither.bimap(
+      ({ name, value }: TestFail): TestUnitError.TestError => ({
+        code: 'TestError' as const,
+        name,
+        value,
+      }),
+      ({ name, timeElapsedMs }: TestSuccess): TestUnitSuccess.Test => ({
+        unit: 'test' as const,
+        name,
+        timeElapsedMs,
+      })
+    )
+  );
 
 const runTestUnit = (
   testUnit: TestUnit.Union

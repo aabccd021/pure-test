@@ -21,10 +21,9 @@ export type {
 
 export type TestSuccess = { readonly name: string; readonly timeElapsedMs: number };
 
-export type TestResult = Either<
-  { readonly name: string; readonly error: TestError.Union },
-  TestSuccess
->;
+export type TestFail = { readonly name: string; readonly value: TestError.Union };
+
+export type TestResult = Either<TestFail, TestSuccess>;
 
 export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccess.Union>;
 
