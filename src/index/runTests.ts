@@ -133,7 +133,7 @@ export const runAssert = (
   match(assert).with({ assert: 'Equal' }, diffResult).exhaustive();
 
 const runSequentialFailFast =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>) =>
+  <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
   (ts: readonly T[]): Task<readonly Either<L, R>[]> =>
     pipe(
       ts,
@@ -145,7 +145,7 @@ const runSequentialFailFast =
             taskEither.chain((accr) =>
               pipe(
                 el,
-                f,
+                run,
                 taskEither.bimap(
                   (ell): readonly Either<L, R>[] => [...accr, either.left(ell)],
                   (elr): readonly Either<L, R>[] => [...accr, either.right(elr)]
@@ -158,15 +158,15 @@ const runSequentialFailFast =
     );
 
 const runSequential =
-  <T, L, R>(f: (t: T) => TaskEither<L, R>) =>
+  <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
   ({
     failFast,
   }: {
     readonly failFast?: false;
   }): ((tests: readonly T[]) => Task<readonly Either<L, R>[]>) =>
     match(failFast)
-      .with(undefined, () => runSequentialFailFast(f))
-      .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(f))
+      .with(undefined, () => runSequentialFailFast(run))
+      .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(run))
       .exhaustive();
 
 const runWithConcurrency = <T, L, R>({
@@ -188,19 +188,19 @@ const unhandledException = (exception: unknown) => ({
 });
 
 const runWithTimeout =
-  <T>(assertion: Pick<TestUnit.Test, 'timeout'>) =>
-  (te: TaskEither<TestError.Union, T>) =>
+  <L, T>(timeout: TestUnit.Test['timeout']) =>
+  (te: TaskEither<L, T>) =>
     task
-      .getRaceMonoid<Either<TestError.Union, T>>()
+      .getRaceMonoid<Either<L | TestError.TimedOut, T>>()
       .concat(
         te,
-        pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(assertion.timeout ?? 5000))
+        pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(timeout ?? 5000))
       );
 
 const runWithRetry =
-  (test: Pick<TestUnit.Test, 'retry'>) =>
+  (retryConfig: TestUnit.Test['retry']) =>
   <L, R>(te: TaskEither<L, R>) =>
-    retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
+    retrying(retryConfig ?? retry.limitRetries(0), () => te, either.isLeft);
 
 const measureElapsed =
   <L, R>(
@@ -216,9 +216,9 @@ const measureElapsed =
     );
   };
 
-const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
+const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
-    taskEither.tryCatch(assertion.act, unhandledException),
+    taskEither.tryCatch(test.act, unhandledException),
     measureElapsed,
     taskEither.chainEitherKW(({ timeElapsedMs, value }) =>
       pipe(
@@ -227,11 +227,11 @@ const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
         either.map(() => ({ timeElapsedMs }))
       )
     ),
-    runWithTimeout({ timeout: assertion.timeout }),
-    runWithRetry({ retry: assertion.retry }),
+    runWithTimeout(test.timeout),
+    runWithRetry(test.retry),
     taskEither.bimap(
-      (value: TestError.Union): TestFail => ({ name: assertion.name, value }),
-      ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: assertion.name })
+      (value: TestError.Union): TestFail => ({ name: test.name, value }),
+      ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: test.name })
     )
   );
 
@@ -255,17 +255,21 @@ const runGroup = (
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
-    task.map((testResults) =>
+    task.map((testResults: readonly TestResult[]) =>
       pipe(
         testResults,
         eitherArrayIsAllRight,
         either.bimap(
-          (results): TestUnitError.GroupError => ({
+          (results: readonly TestResult[]): TestUnitError.GroupError => ({
             name: group.name,
             code: 'GroupError' as const,
             results,
           }),
-          (results): TestUnitSuccess.Group => ({ unit: 'group', name: group.name, results })
+          (results: readonly TestSuccess[]): TestUnitSuccess.Group => ({
+            unit: 'group',
+            name: group.name,
+            results,
+          })
         )
       )
     )
