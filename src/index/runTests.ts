@@ -32,8 +32,7 @@ import type {
     TestSuccess,
     TestUnit,
     TestUnitLeft,
-    TestUnitResult,
-    TestUnitRight
+    TestUnitResult, TestUnitSuccess
 } from './type';
 import { diffLines } from './_internal/libs/diffLines';
 
@@ -248,7 +247,7 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, TestUnitRight> =>
+const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
@@ -261,7 +260,7 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, TestUnitRight
             name: group.name,
             value: { code: 'GroupError' as const, results },
           }),
-          (results: readonly TestSuccess[]): TestUnitRight => ({
+          (results: readonly TestSuccess[]): Named<TestUnitSuccess.Union> => ({
             name: group.name,
             value: { unit: 'group', results },
           })
@@ -270,7 +269,7 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, TestUnitRight
     )
   );
 
-const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, TestUnitRight> =>
+const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
   pipe(
     test,
     runTest,
@@ -279,14 +278,14 @@ const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, TestUnitRi
         name,
         value: { code: 'TestError' as const, value },
       }),
-      ({ name, timeElapsedMs }: TestSuccess): TestUnitRight => ({
+      ({ name, timeElapsedMs }: TestSuccess): Named<TestUnitSuccess.Union> => ({
         name,
         value: { unit: 'test' as const, timeElapsedMs },
       })
     )
   );
 
-const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitLeft, TestUnitRight> =>
+const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
   match(testUnit)
     .with({ type: 'test' }, runTestAsUnit)
     .with({ type: 'group' }, runGroup)

@@ -23,17 +23,13 @@ export type Named<T> = { readonly name: string; readonly value: T };
 
 export type TestSuccess = { readonly name: string; readonly timeElapsedMs: number };
 
-export type TestFail = { readonly name: string; readonly value: TestError.Union };
-
 export type TestResult = Either<Named<TestError.Union>, TestSuccess>;
-
-export type TestUnitRight = { readonly name: string; readonly value: TestUnitSuccess.Union };
 
 export type TestUnitLeft = { readonly name: string; readonly value: TestUnitError.Union };
 
-export type TestUnitResult = Either<TestUnitLeft, TestUnitRight>;
+export type TestUnitResult = Either<TestUnitLeft, Named<TestUnitSuccess.Union>>;
 
-export type SuiteResult = Either<SuiteError.Union, readonly TestUnitRight[]>;
+export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess.Union>[]>;
 
 export type Concurrency =
   | { readonly type: 'parallel' }

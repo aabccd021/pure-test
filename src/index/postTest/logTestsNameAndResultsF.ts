@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestUnitLeft, TestUnitResult, TestUnitRight } from '../type';
+import type { Named, SuiteResult, TestUnitLeft, TestUnitResult, TestUnitSuccess } from '../type';
 
 const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
@@ -32,7 +32,7 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
           )
           .with({ code: 'TestError' }, (): readonly string[] => [failed(testUnitLeft.name)])
           .exhaustive(),
-      (testUnitRight: TestUnitRight): readonly string[] =>
+      (testUnitRight: Named<TestUnitSuccess.Union>): readonly string[] =>
         match(testUnitRight.value)
           .with({ unit: 'group' }, ({ results }): readonly string[] =>
             pipe(
