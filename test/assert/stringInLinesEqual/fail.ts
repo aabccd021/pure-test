@@ -3,30 +3,33 @@ import { assert, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-type Case = {  readonly name: string;
+type Case = {
+  readonly name: string;
   readonly received: string;
   readonly expected: readonly string[];
   readonly changes: readonly Change[];
 };
 
 const caseToTest = (tc: Case) =>
-  test({    name: tc.name,
+  test({
+    name: tc.name,
     act: pipe(
       taskEither.right([
-        test({          name: 'foo',
+        test({
+          name: 'foo',
           act: pipe(tc.received, assert.stringInLinesEqual(tc.expected), task.of),
         }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<SuiteError.Union>({          type: 'TestRunError',
+        assert.equalDeepPartial<SuiteError.Union>({
+          type: 'TestRunError',
           results: [
-            either.left({              name: 'foo',
-              value: {                code: 'TestError',
-                value: {                  code: 'AssertionError',
-                  expected: tc.expected,
-                  changes: tc.changes,
-                },
+            either.left({
+              name: 'foo',
+              value: {
+                code: 'TestError',
+                value: { code: 'AssertionError', expected: tc.expected, changes: tc.changes },
               },
             }),
           ],
@@ -36,7 +39,8 @@ const caseToTest = (tc: Case) =>
   });
 
 const cases: readonly Case[] = [
-  {    name: 'different string',
+  {
+    name: 'different string',
     received: 'foo',
     expected: ['bar'],
     changes: [
@@ -47,7 +51,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'empty received',
+  {
+    name: 'empty received',
     received: '',
     expected: ['foo'],
     changes: [
@@ -58,7 +63,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'empty expected',
+  {
+    name: 'empty expected',
     received: 'foo',
     expected: [''],
     changes: [
@@ -69,7 +75,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'empty expected string and empty received array',
+  {
+    name: 'empty expected string and empty received array',
     received: '',
     expected: [],
     changes: [
@@ -79,7 +86,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'string ends with newline',
+  {
+    name: 'string ends with newline',
     received: 'foo\n',
     expected: ['foo'],
     changes: [
@@ -90,7 +98,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'string starts with newline',
+  {
+    name: 'string starts with newline',
     received: '\nfoo',
     expected: ['foo'],
     changes: [
@@ -101,7 +110,8 @@ const cases: readonly Case[] = [
     ],
   },
 
-  {    name: 'string with consequtive newline',
+  {
+    name: 'string with consequtive newline',
     received: 'foo\n\nbar',
     expected: ['foo', 'bar'],
     changes: [
