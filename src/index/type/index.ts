@@ -4,6 +4,7 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import type * as Assert from './assert';
 import type * as ShardingError from './shardingError';
 import type * as SuiteError from './suiteError';
+import * as suiteError from './suiteError';
 import type * as TestError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
@@ -21,7 +22,7 @@ export type {
   TestUnitSuccess,
 };
 
-export { testUnitError, testUnitSuccess };
+export { suiteError, testUnitError, testUnitSuccess };
 
 export type Named<T> = { readonly name: string; readonly value: T };
 

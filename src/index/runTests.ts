@@ -1,26 +1,3 @@
-import {
-  apply,
-  boolean,
-  either,
-  readonlyArray,
-  readonlyNonEmptyArray,
-  readonlyRecord,
-  string,
-  task,
-  taskEither,
-} from 'fp-ts';
-import type { Either } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
-import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
-import type { ReadonlyRecord } from 'fp-ts/ReadonlyRecord';
-import type { Task } from 'fp-ts/Task';
-import type { TaskEither } from 'fp-ts/TaskEither';
-import * as iots from 'io-ts';
-import * as retry from 'retry-ts';
-import { retrying } from 'retry-ts/lib/Task';
-import { match } from 'ts-pattern';
-
-import { diffLines } from './_internal/libs/diffLines';
 import type {
   Assert,
   Change,
@@ -35,11 +12,44 @@ import type {
   TestUnit,
   TestUnitError,
   TestUnitResult,
-  TestUnitSuccess,
-} from './type';
-import { named, testUnitError, testUnitSuccess } from './type';
+} from '@src';
+import { named, suiteError, testUnitError, testUnitSuccess } from '@src';
+import {
+  apply,
+  boolean,
+  either,
+  readonlyArray,
+  readonlyNonEmptyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
+} from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
+import { flow, pipe } from 'fp-ts/function';
+import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
+import type { ReadonlyRecord } from 'fp-ts/ReadonlyRecord';
+import type { Task } from 'fp-ts/Task';
+import type { TaskEither } from 'fp-ts/TaskEither';
+import * as iots from 'io-ts';
+import * as retry from 'retry-ts';
+import { retrying } from 'retry-ts/lib/Task';
+import { match } from 'ts-pattern';
+
+import { diffLines } from './_internal/libs/diffLines';
 
 const indent = (line: string): string => `  ${line}`;
+
+const eitherArrayIsAllRight = <L, R>(
+  arr: readonly Either<L, R>[]
+): Either<readonly Either<L, R>[], readonly R[]> =>
+  pipe(
+    readonlyArray.rights(arr),
+    either.fromPredicate(
+      (rights) => readonlyArray.size(rights) === readonlyArray.size(arr),
+      () => arr
+    )
+  );
 
 const arrayToLines = (
   arr: readonly ReadonlyNonEmptyArray<string>[]
@@ -203,31 +213,38 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryConfig ?? retry.limitRetries(0), () => te, either.isLeft);
 
-const measureElapsed =
-  <L, R>(
-    a: TaskEither<L, R>
-  ): TaskEither<L, { readonly timeElapsedMs: number; readonly value: R }> =>
+type WithTimeElapsed<T> = { readonly timeElapsedMs: number; readonly result: T };
+
+const runWithMeasureElapsed =
+  <L, R>(te: TaskEither<L, R>): TaskEither<L, WithTimeElapsed<R>> =>
   async () => {
     const start = performance.now();
-    const result = await a();
+    const resultE = await te();
     const timeElapsedMs = performance.now() - start;
     return pipe(
-      result,
-      either.map((value) => ({ timeElapsedMs, value }))
+      resultE,
+      either.map((result) => ({ timeElapsedMs, result }))
     );
   };
 
+const measureElapsedChainEitherW =
+  <L1, L2, R1, R2>(run: (t: R1) => Either<L2, R2>) =>
+  (te: TaskEither<L1, WithTimeElapsed<R1>>): TaskEither<L1 | L2, WithTimeElapsed<R2>> =>
+    pipe(
+      te,
+      taskEither.chainEitherKW(({ timeElapsedMs, result: oldResult }) =>
+        pipe(
+          oldResult,
+          run,
+          either.map((result) => ({ timeElapsedMs, result }))
+        )
+      )
+    );
+
 const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
-    taskEither.tryCatch(test.act, unhandledException),
-    measureElapsed,
-    taskEither.chainEitherKW(({ timeElapsedMs, value }) =>
-      pipe(
-        value,
-        runAssert,
-        either.map(() => ({ timeElapsedMs }))
-      )
-    ),
+    runWithMeasureElapsed(taskEither.tryCatch(test.act, unhandledException)),
+    measureElapsedChainEitherW(runAssert),
     runWithTimeout(test.timeout),
     runWithRetry(test.retry)
   );
@@ -237,61 +254,42 @@ const runTestNamed = (
 ): TaskEither<Named<TestError.Union>, Named<TestSuccess>> =>
   pipe(test.value, runTest, taskEither.bimap(named(test.name), named(test.name)));
 
-const runTestAsUnit = (
-  test: TestUnit.Test
-): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
-  pipe(test, runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test));
-
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({ concurrency: config.concurrency, run: runTestNamed });
 
-const eitherArrayIsAllRight = <L, R>(
-  arr: readonly Either<L, R>[]
-): Either<readonly Either<L, R>[], readonly R[]> =>
-  pipe(
-    readonlyArray.rights(arr),
-    either.fromPredicate(
-      (rights) => readonlyArray.size(rights) === readonlyArray.size(arr),
-      () => arr
-    )
-  );
-
-const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.Union, TestUnitSuccess.Union> =>
+const runGroup = (group: TestUnit.Group) =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
-    task.map((testResults) =>
-      pipe(
-        testResults,
-        eitherArrayIsAllRight,
-        either.bimap(testUnitError.groupError, testUnitSuccess.group)
-      )
-    )
+    task.map((testResults) => pipe(testResults, eitherArrayIsAllRight))
   );
 
 const runTestUnit = (
-  testUnit: Named<TestUnit.Union>
-): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
-  pipe(
-    match(testUnit.value)
-      .with({ type: 'test' }, runTestAsUnit)
-      .with({ type: 'group' }, runGroup)
-      .exhaustive(),
-    taskEither.bimap(named(testUnit.name), named(testUnit.name))
-  );
+  testUnit: TestUnit.Union
+): TaskEither<TestUnitError.Union, testUnitSuccess.Union> =>
+  match(testUnit)
+    .with(
+      { type: 'test' },
+      flow(runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test))
+    )
+    .with(
+      { type: 'group' },
+      flow(runGroup, taskEither.bimap(testUnitError.groupError, testUnitSuccess.group))
+    )
+    .exhaustive();
+
+const runTestUnitNamed = (testUnit: Named<TestUnit.Union>) =>
+  pipe(testUnit.value, runTestUnit, taskEither.bimap(named(testUnit.name), named(testUnit.name)));
+
 const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
-  pipe(
-    testUnitResults,
-    eitherArrayIsAllRight,
-    either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
-  );
+  pipe(testUnitResults, eitherArrayIsAllRight, either.mapLeft(suiteError.testRunError));
 
 export const runTestUnits =
   (config: TestConfig) =>
   (tests: readonly Named<TestUnit.Union>[]): Task<SuiteResult> =>
     pipe(
       tests,
-      runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),
+      runWithConcurrency({ concurrency: config.concurrency, run: runTestUnitNamed }),
       task.map(testUnitResultsToSuiteResult)
     );
 
