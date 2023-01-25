@@ -2,7 +2,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "esModuleInterop": true,
-    "exactOptionalPropertyTypes": true,
     "isolatedModules": true,
     "lib": [
       "esnext"
