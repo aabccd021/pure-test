@@ -228,15 +228,41 @@ const runTest = (test: Named<TestUnit.Test>): Task<TestResult> =>
       )
     ),
     runWithTimeout(test.value.timeout),
-    runWithRetry(test.value.retry),
+    runWithRetry(test.value.retry)
+  );
+
+const runTestNamed = (
+  test: Named<TestUnit.Test>
+): TaskEither<Named<TestError.Union>, Named<TestSuccess>> =>
+  pipe(
+    test,
+    runTest,
     taskEither.bimap(
       (value: TestError.Union): Named<TestError.Union> => ({ name: test.name, value }),
-      ({ timeElapsedMs }): Named<TestSuccess> => ({ name: test.name, value: { timeElapsedMs } })
+      (value: TestSuccess): Named<TestSuccess> => ({ name: test.name, value })
+    )
+  );
+
+const runTestAsUnit = (
+  test: Named<TestUnit.Test>
+): TaskEither<Named<TestUnitError.TestError>, Named<TestUnitSuccess.Test>> =>
+  pipe(
+    test,
+    runTest,
+    taskEither.bimap(
+      (value: TestError.Union): Named<TestUnitError.TestError> => ({
+        name: test.name,
+        value: { code: 'TestError' as const, value },
+      }),
+      (value): Named<TestUnitSuccess.Test> => ({
+        name: test.name,
+        value: { unit: 'test' as const, value },
+      })
     )
   );
 
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
-  runWithConcurrency({ concurrency: config.concurrency, run: runTest });
+  runWithConcurrency({ concurrency: config.concurrency, run: runTestNamed });
 
 const eitherArrayIsAllRight = <L, R>(
   arr: readonly Either<L, R>[]
@@ -255,39 +281,21 @@ const runGroup = (
   pipe(
     group.value.asserts,
     runGroupTests({ concurrency: group.value.concurrency }),
-    task.map((testResults: readonly TestResult[]) =>
+    task.map((testResults) =>
       pipe(
         testResults,
         eitherArrayIsAllRight,
         either.bimap(
-          (results: readonly TestResult[]): Named<TestUnitError.Union> => ({
+          (results): Named<TestUnitError.GroupError> => ({
             name: group.name,
             value: { code: 'GroupError' as const, results },
           }),
-          (results: readonly Named<TestSuccess>[]): Named<TestUnitSuccess.Union> => ({
+          (results: readonly Named<TestSuccess>[]): Named<TestUnitSuccess.Group> => ({
             name: group.name,
             value: { unit: 'group', results },
           })
         )
       )
-    )
-  );
-
-const runTestAsUnit = (
-  test: Named<TestUnit.Test>
-): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
-  pipe(
-    test,
-    runTest,
-    taskEither.bimap(
-      ({ name, value }: Named<TestError.Union>): Named<TestUnitError.Union> => ({
-        name,
-        value: { code: 'TestError' as const, value },
-      }),
-      ({ name, value: { timeElapsedMs } }: Named<TestSuccess>): Named<TestUnitSuccess.Union> => ({
-        name,
-        value: { unit: 'test' as const, timeElapsedMs },
-      })
     )
   );
 

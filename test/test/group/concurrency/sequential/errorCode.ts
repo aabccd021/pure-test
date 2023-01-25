@@ -1,13 +1,16 @@
-import type { SuiteError, TestResult } from '@src';
+import type { Named, SuiteError, TestError, TestSuccess } from '@src';
 import { assert, group, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
-  readonly errorAfterFailedTest: readonly DeepPartial<TestResult>[];
+  readonly errorAfterFailedTest: readonly DeepPartial<
+    Either<Named<TestError.Union>, Named<TestSuccess>>
+  >[];
 };
 
 const caseToTest = (tc: TestCase) =>

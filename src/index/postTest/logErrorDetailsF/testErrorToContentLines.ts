@@ -1,4 +1,5 @@
 import { either, readonlyArray, string } from 'fp-ts';
+import type { Either } from 'fp-ts/Either';
 import { identity, pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 import c from 'picocolors';
@@ -8,7 +9,7 @@ import type {
   Change,
   Named,
   TestError,
-  TestResult,
+  TestSuccess,
   TestUnitError,
   TestUnitResult,
 } from '../../type';
@@ -66,7 +67,7 @@ export const testErrorToLines = (
 
 const groupErrorToLines = (
   testUnitLeft: Named<TestUnitError.Union>,
-  results: readonly TestResult[]
+  results: readonly Either<Named<TestError.Union>, Named<TestSuccess>>[]
 ): readonly string[] =>
   pipe(
     results,
