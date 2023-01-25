@@ -38,11 +38,13 @@ export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSu
 
 export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess.Union>[]>;
 
-export type Concurrency =
+export type ConcurrencyConfig =
   | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast?: false };
 
-export type TestConfig = { readonly concurrency?: Concurrency };
+export type TestConfig = { readonly concurrency?: ConcurrencyConfig };
+
+export type TestConfigRequired = { readonly concurrency: ConcurrencyConfig };
 
 export type Change = { readonly type: '-' | '+' | '0'; readonly value: string };
 

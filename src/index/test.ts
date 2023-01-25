@@ -1,5 +1,19 @@
-import type { Named, TestUnit } from './type';
+import type { Task } from 'fp-ts/Task';
+import * as retry from 'retry-ts';
 
-export const test = (
-  g: Omit<TestUnit.Test, 'type'> & { readonly name: string }
-): Named<TestUnit.Test> => ({ name: g.name, value: { ...g, type: 'test' } });
+import type { Assert, Named, TestUnit } from './type';
+
+export const test = (param: {
+  readonly name: string;
+  readonly act: Task<Assert.Union>;
+  readonly timeout?: number;
+  readonly retry?: retry.RetryPolicy;
+}): Named<TestUnit.Test> => ({
+  name: param.name,
+  value: {
+    type: 'test',
+    act: param.act,
+    timeout: param.timeout ?? 5000,
+    retry: param.retry ?? retry.limitRetries(0),
+  },
+});

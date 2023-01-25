@@ -1,11 +1,12 @@
 import type {
   Assert,
   Change,
-  Concurrency,
+  ConcurrencyConfig,
   Named,
   SuiteError,
   SuiteResult,
   TestConfig,
+  TestConfigRequired,
   TestError,
   TestResult,
   TestSuccess,
@@ -32,7 +33,6 @@ import type { ReadonlyRecord } from 'fp-ts/ReadonlyRecord';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
-import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
@@ -126,7 +126,7 @@ const assertionError =
 const serialize = (value: unknown): Either<TestError.SerializationError, string> =>
   pipe(value, unknownToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')));
 
-export const diffResult = (result: {
+export const assertEqual = (result: {
   readonly received: unknown;
   readonly expected: unknown;
 }): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
@@ -141,7 +141,7 @@ export const diffResult = (result: {
 export const runAssert = (
   assert: Assert.Union
 ): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
-  match(assert).with({ assert: 'Equal' }, diffResult).exhaustive();
+  match(assert).with({ assert: 'Equal' }, assertEqual).exhaustive();
 
 const runSequentialFailFast =
   <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
@@ -184,11 +184,10 @@ const runWithConcurrency = <T, L, R>({
   concurrency,
   run,
 }: {
-  readonly concurrency: Concurrency | undefined;
+  readonly concurrency: ConcurrencyConfig;
   readonly run: (t: T) => TaskEither<L, R>;
 }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
   match(concurrency)
-    .with(undefined, () => readonlyArray.traverse(task.ApplicativePar)(run))
     .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(run))
     .with({ type: 'sequential' }, runSequential(run))
     .exhaustive();
@@ -203,15 +202,12 @@ const runWithTimeout =
   (te: TaskEither<L, T>) =>
     task
       .getRaceMonoid<Either<L | TestError.TimedOut, T>>()
-      .concat(
-        te,
-        pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(timeout ?? 5000))
-      );
+      .concat(te, pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(timeout)));
 
 const runWithRetry =
   (retryConfig: TestUnit.Test['retry']) =>
   <L, R>(te: TaskEither<L, R>) =>
-    retrying(retryConfig ?? retry.limitRetries(0), () => te, either.isLeft);
+    retrying(retryConfig, () => te, either.isLeft);
 
 type WithTimeElapsed<T> = { readonly timeElapsedMs: number; readonly result: T };
 
@@ -285,7 +281,7 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
   pipe(testUnitResults, eitherArrayIsAllRight, either.mapLeft(suiteError.testRunError));
 
 export const runTestUnits =
-  (config: TestConfig) =>
+  (config: TestConfigRequired) =>
   (tests: readonly Named<TestUnit.Union>[]): Task<SuiteResult> =>
     pipe(
       tests,
@@ -293,7 +289,10 @@ export const runTestUnits =
       task.map(testUnitResultsToSuiteResult)
     );
 
-export const runTests =
-  (config: TestConfig) =>
+export const runTestsWithFilledDefaultConfig =
+  (config: TestConfigRequired) =>
   (testsTE: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>): Task<SuiteResult> =>
     pipe(testsTE, taskEither.chain(runTestUnits(config)));
+
+export const runTests = (config: TestConfig) =>
+  runTestsWithFilledDefaultConfig({ concurrency: config.concurrency ?? { type: 'parallel' } });

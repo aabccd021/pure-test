@@ -1,5 +1,15 @@
-import type { Named, TestUnit } from './type';
+import type { ConcurrencyConfig, Named, TestUnit } from './type';
+import type { Test } from './type/testUnit';
 
-export const group = (
-  g: Omit<TestUnit.Group, 'type'> & { readonly name: string }
-): Named<TestUnit.Group> => ({ name: g.name, value: { ...g, type: 'group' } });
+export const group = (param: {
+  readonly name: string;
+  readonly concurrency?: ConcurrencyConfig;
+  readonly asserts: readonly Named<Test>[];
+}): Named<TestUnit.Group> => ({
+  name: param.name,
+  value: {
+    type: 'group',
+    asserts: param.asserts,
+    concurrency: param.concurrency ?? { type: 'parallel' },
+  },
+});
