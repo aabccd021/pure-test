@@ -25,9 +25,7 @@ export type TestSuccess = { readonly name: string; readonly timeElapsedMs: numbe
 
 export type TestResult = Either<Named<TestError.Union>, TestSuccess>;
 
-export type TestUnitLeft = { readonly name: string; readonly value: TestUnitError.Union };
-
-export type TestUnitResult = Either<TestUnitLeft, Named<TestUnitSuccess.Union>>;
+export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>>;
 
 export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess.Union>[]>;
 

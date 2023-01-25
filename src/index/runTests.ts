@@ -1,13 +1,13 @@
 import {
-    apply,
-    boolean,
-    either,
-    readonlyArray,
-    readonlyNonEmptyArray,
-    readonlyRecord,
-    string,
-    task,
-    taskEither
+  apply,
+  boolean,
+  either,
+  readonlyArray,
+  readonlyNonEmptyArray,
+  readonlyRecord,
+  string,
+  task,
+  taskEither,
 } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
@@ -20,21 +20,23 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
-import type {
-    Assert,
-    Change,
-    Concurrency,
-    Named,
-    SuiteError,
-    SuiteResult,
-    TestConfig,
-    TestError, TestResult,
-    TestSuccess,
-    TestUnit,
-    TestUnitLeft,
-    TestUnitResult, TestUnitSuccess
-} from './type';
 import { diffLines } from './_internal/libs/diffLines';
+import type {
+  Assert,
+  Change,
+  Concurrency,
+  Named,
+  SuiteError,
+  SuiteResult,
+  TestConfig,
+  TestError,
+  TestResult,
+  TestSuccess,
+  TestUnit,
+  TestUnitError,
+  TestUnitResult,
+  TestUnitSuccess,
+} from './type';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -247,7 +249,9 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
+const runGroup = (
+  group: TestUnit.Group
+): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
@@ -256,7 +260,7 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, Named<TestUni
         testResults,
         eitherArrayIsAllRight,
         either.bimap(
-          (results: readonly TestResult[]): TestUnitLeft => ({
+          (results: readonly TestResult[]): Named<TestUnitError.Union> => ({
             name: group.name,
             value: { code: 'GroupError' as const, results },
           }),
@@ -269,12 +273,14 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, Named<TestUni
     )
   );
 
-const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
+const runTestAsUnit = (
+  test: TestUnit.Test
+): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   pipe(
     test,
     runTest,
     taskEither.bimap(
-      ({ name, value }: Named<TestError.Union>): TestUnitLeft => ({
+      ({ name, value }: Named<TestError.Union>): Named<TestUnitError.Union> => ({
         name,
         value: { code: 'TestError' as const, value },
       }),
@@ -285,7 +291,9 @@ const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, Named<Test
     )
   );
 
-const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitLeft, Named<TestUnitSuccess.Union>> =>
+const runTestUnit = (
+  testUnit: TestUnit.Union
+): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   match(testUnit)
     .with({ type: 'test' }, runTestAsUnit)
     .with({ type: 'group' }, runGroup)

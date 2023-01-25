@@ -9,7 +9,7 @@ import type {
   Named,
   TestError,
   TestResult,
-  TestUnitLeft,
+  TestUnitError,
   TestUnitResult,
 } from '../../type';
 
@@ -53,7 +53,7 @@ export const formatTestError = (error: TestError.Union): readonly string[] =>
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
 export const testErrorToLines = (
-  testUnitLeft: TestUnitLeft,
+  testUnitLeft: Named<TestUnitError.Union>,
   value: TestError.Union
 ): readonly string[] =>
   pipe(
@@ -65,7 +65,7 @@ export const testErrorToLines = (
   );
 
 const groupErrorToLines = (
-  testUnitLeft: TestUnitLeft,
+  testUnitLeft: Named<TestUnitError.Union>,
   results: readonly TestResult[]
 ): readonly string[] =>
   pipe(
@@ -76,7 +76,7 @@ const groupErrorToLines = (
     )
   );
 
-const formatErrorResult = (testUnitLeft: TestUnitLeft): readonly string[] =>
+const formatErrorResult = (testUnitLeft: Named<TestUnitError.Union>): readonly string[] =>
   match(testUnitLeft.value)
     .with({ code: 'GroupError' }, (groupError): readonly string[] =>
       groupErrorToLines(testUnitLeft, groupError.results)
