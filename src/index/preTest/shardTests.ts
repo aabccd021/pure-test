@@ -4,13 +4,13 @@ import { pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type {
-    GetShardCount,
-    GetShardIndex,
-    Named,
-    ShardingError,
-    ShardingStrategy,
-    SuiteError,
-    TestUnit
+  GetShardCount,
+  GetShardIndex,
+  Named,
+  ShardingError,
+  ShardingStrategy,
+  SuiteError,
+  TestUnit,
 } from '../type';
 
 const getShardOnIndex =
@@ -31,7 +31,10 @@ const getShardOnIndex =
 const validateTestShards = (tests: {
   readonly beforeSharding: readonly Named<TestUnit.Union>[];
   readonly afterSharding: readonly (readonly Named<TestUnit.Union>[])[];
-}): Either<ShardingError.TestCountChangedAfterSharding, readonly (readonly Named<TestUnit.Union>[])[]> =>
+}): Either<
+  ShardingError.TestCountChangedAfterSharding,
+  readonly (readonly Named<TestUnit.Union>[])[]
+> =>
   pipe(
     {
       beforeSharding: readonlyArray.size(tests.beforeSharding),

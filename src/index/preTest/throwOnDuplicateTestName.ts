@@ -19,14 +19,15 @@ const getFirstDuplicate = (arr: readonly string[]) =>
 
 export const throwOnDuplicateTestName: (
   res: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>
-) => TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]> = taskEither.chainEitherK((tests) =>
-  pipe(
-    tests,
-    readonlyArray.map(({ name }) => name),
-    getFirstDuplicate,
-    either.bimap(
-      (name): SuiteError.Union => ({ type: 'DuplicateTestName', name }),
-      () => tests
+) => TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]> = taskEither.chainEitherK(
+  (tests) =>
+    pipe(
+      tests,
+      readonlyArray.map(({ name }) => name),
+      getFirstDuplicate,
+      either.bimap(
+        (name): SuiteError.Union => ({ type: 'DuplicateTestName', name }),
+        () => tests
+      )
     )
-  )
 );
