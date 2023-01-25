@@ -7,7 +7,9 @@ import type * as SuiteError from './suiteError';
 import type * as TestError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
+import * as testUnitError from './testUnitError';
 import type * as TestUnitSuccess from './testUnitSuccess';
+import * as testUnitSuccess from './testUnitSuccess';
 
 export type {
   Assert,
@@ -19,7 +21,13 @@ export type {
   TestUnitSuccess,
 };
 
+export { testUnitError, testUnitSuccess };
+
 export type Named<T> = { readonly name: string; readonly value: T };
+
+export const named =
+  <T>(name: string) =>
+  (value: T): Named<T> => ({ name, value });
 
 export type TestSuccess = { readonly timeElapsedMs: number };
 

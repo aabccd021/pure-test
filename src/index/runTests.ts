@@ -37,6 +37,7 @@ import type {
   TestUnitResult,
   TestUnitSuccess,
 } from './type';
+import { named, testUnitError, testUnitSuccess } from './type';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -275,36 +276,30 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (
-  group: Named<TestUnit.Group>
-): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
+const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.Union, TestUnitSuccess.Union> =>
   pipe(
-    group.value.asserts,
-    runGroupTests({ concurrency: group.value.concurrency }),
+    group.asserts,
+    runGroupTests({ concurrency: group.concurrency }),
     task.map((testResults) =>
       pipe(
         testResults,
         eitherArrayIsAllRight,
-        either.bimap(
-          (results): Named<TestUnitError.GroupError> => ({
-            name: group.name,
-            value: { code: 'GroupError' as const, results },
-          }),
-          (results: readonly Named<TestSuccess>[]): Named<TestUnitSuccess.Group> => ({
-            name: group.name,
-            value: { unit: 'group', results },
-          })
-        )
+        either.bimap(testUnitError.groupError, testUnitSuccess.group)
       )
     )
   );
+
+const runGroupNamed = (
+  group: Named<TestUnit.Group>
+): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
+  pipe(group.value, runGroup, taskEither.bimap(named(group.name), named(group.name)));
 
 const runTestUnit = (
   testUnit: Named<TestUnit.Union>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   match(testUnit.value)
     .with({ type: 'test' }, (value) => runTestAsUnit({ name: testUnit.name, value }))
-    .with({ type: 'group' }, (value) => runGroup({ name: testUnit.name, value }))
+    .with({ type: 'group' }, (value) => runGroupNamed({ name: testUnit.name, value }))
     .exhaustive();
 
 const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
