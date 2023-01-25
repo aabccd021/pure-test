@@ -1,5 +1,5 @@
 import { assert, postTest, runTests, test } from '@src';
-import { ioRef, readonlyArray, string, task, taskEither } from 'fp-ts';
+import { ioRef, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 const green = '\x1b[32m';
@@ -36,9 +36,8 @@ const caseToTest = (tc: Case) =>
         )
       ),
       task.chainIOK((logRef) => logRef.read),
-      task.map(string.split('\n')),
       assert.task(
-        assert.equalArray([
+        assert.stringInLinesEqual([
           `${red}${bold}${invert} ERROR ${invertEnd}${boldEnd}${colorEnd} TestRunError`,
           `  ${red}${bold}${invert} FAIL ${invertEnd}${boldEnd}${colorEnd} foo`,
           `  ${red}${bold}TestError${boldEnd}${colorEnd}`,

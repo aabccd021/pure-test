@@ -1,4 +1,12 @@
-import { either as E, number, option as O, readonlyArray, readonlyRecord, task as T } from 'fp-ts';
+import {
+  either as E,
+  number,
+  option as O,
+  readonlyArray,
+  readonlyRecord,
+  string,
+  task as T,
+} from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Option } from 'fp-ts/Option';
@@ -34,6 +42,14 @@ export const numberArrayIsSortedAsc = (received: readonly number[]): Assert.Equa
   expected: readonlyArray.sort(number.Ord)(received),
   received,
 });
+
+export const stringInLinesEqual =
+  (expected: readonly string[]) =>
+  (received: string): Assert.Equal => ({
+    assert: 'Equal',
+    expected,
+    received: string.split('\n')(received),
+  });
 
 const pick = (big: unknown, small: unknown): unknown =>
   Array.isArray(big) && Array.isArray(small)
