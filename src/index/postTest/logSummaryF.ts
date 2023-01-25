@@ -10,13 +10,13 @@ import type { SuiteResult, TestUnitResult } from '../type';
 const testResultsToSummaryStr = (testResults: readonly TestUnitResult[]): Option<string> =>
   pipe(
     {
-      passedCount: pipe(testResults, readonlyArray.rights, readonlyArray.size),
-      failedCount: pipe(testResults, readonlyArray.lefts, readonlyArray.size),
+      passed: pipe(testResults, readonlyArray.rights, readonlyArray.size),
+      failed: pipe(testResults, readonlyArray.lefts, readonlyArray.size),
     },
-    ({ passedCount, failedCount }) => [
+    (testCount) => [
       c.bold(c.inverse(' DONE ')),
-      c.bold(c.green(`   Passed ${passedCount}`)),
-      c.bold(c.red(`   Failed ${failedCount}`)),
+      c.bold(c.green(`   Passed ${testCount.passed}`)),
+      c.bold(c.red(`   Failed ${testCount.failed}`)),
       '',
     ],
     readonlyArray.intercalate(string.Monoid)('\n'),
