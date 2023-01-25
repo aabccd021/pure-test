@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, LeftOf, TestError, TestResult, TestUnitResult } from '../../type';
+import type { Change, TestError, TestResult, TestUnitError, TestUnitResult } from '../../type';
 
 const getPrefix = (changeType: Change['type']) =>
   match(changeType)
@@ -45,7 +45,7 @@ export const formatTestError = (error: TestError.Union): readonly string[] =>
     )
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
-export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: TestError.Union) =>
+export const testErrorToLines = (testUnitError: TestUnitError.Union, value: TestError.Union) =>
   pipe(
     value,
     formatTestError,
@@ -54,14 +54,14 @@ export const testErrorToLines = (testUnitError: LeftOf<TestUnitResult>, value: T
     readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitError.name}`)
   );
 
-const groupErrorToLines = (testUnitError: LeftOf<TestUnitResult>, results: readonly TestResult[]) =>
+const groupErrorToLines = (testUnitError: TestUnitError.Union, results: readonly TestResult[]) =>
   pipe(
     results,
     readonlyArray.lefts,
     readonlyArray.chain(({ error }) => testErrorToLines(testUnitError, error))
   );
 
-const formatErrorResult = (testUnitError: LeftOf<TestUnitResult>): readonly string[] =>
+const formatErrorResult = (testUnitError: TestUnitError.Union): readonly string[] =>
   match(testUnitError)
     .with({ code: 'GroupError' }, ({ results }) => groupErrorToLines(testUnitError, results))
     .with({ code: 'TestError' }, ({ value }) => testErrorToLines(testUnitError, value))

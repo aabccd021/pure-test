@@ -1,4 +1,4 @@
-import type { Either, Left, Right } from 'fp-ts/Either';
+import type { Either } from 'fp-ts/Either';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type * as Assert from './assert';
@@ -19,17 +19,16 @@ export type {
   TestUnitSuccess,
 };
 
-export type RightOf<E> = E extends Right<infer R> ? R : never;
-export type LeftOf<E> = E extends Left<infer L> ? L : never;
+export type TestSuccess = { readonly name: string; readonly timeElapsedMs: number };
 
 export type TestResult = Either<
   { readonly name: string; readonly error: TestError.Union },
-  { readonly name: string; readonly timeElapsedMs: number }
+  TestSuccess
 >;
 
 export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccess.Union>;
 
-export type SuiteSuccess = readonly RightOf<TestUnitResult>[];
+export type SuiteSuccess = readonly TestUnitSuccess.Union[];
 
 export type SuiteResult = Either<SuiteError.Union, SuiteSuccess>;
 
