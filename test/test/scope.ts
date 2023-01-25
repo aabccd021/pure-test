@@ -1,4 +1,4 @@
-import type { SuiteSuccess } from '@src';
+import type { TestUnitSuccess } from '@src';
 import { assert, runTests, scope, test } from '@src';
 import { readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -8,7 +8,7 @@ type TestCase = {
   readonly name: string;
   readonly scope1Name: string;
   readonly scope2Name: string;
-  readonly result: DeepPartial<SuiteSuccess>;
+  readonly result: readonly DeepPartial<TestUnitSuccess.Union>[];
 };
 
 const caseToTest = (tc: TestCase) =>
