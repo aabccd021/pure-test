@@ -231,7 +231,7 @@ const runTest = (test: Named<TestUnit.Test>): Task<TestResult> =>
     runWithRetry(test.value.retry),
     taskEither.bimap(
       (value: TestError.Union): Named<TestError.Union> => ({ name: test.name, value }),
-      ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: test.name })
+      ({ timeElapsedMs }): Named<TestSuccess> => ({ name: test.name, value: { timeElapsedMs } })
     )
   );
 
@@ -264,7 +264,7 @@ const runGroup = (
             name: group.name,
             value: { code: 'GroupError' as const, results },
           }),
-          (results: readonly TestSuccess[]): Named<TestUnitSuccess.Union> => ({
+          (results: readonly Named<TestSuccess>[]): Named<TestUnitSuccess.Union> => ({
             name: group.name,
             value: { unit: 'group', results },
           })
@@ -284,7 +284,7 @@ const runTestAsUnit = (
         name,
         value: { code: 'TestError' as const, value },
       }),
-      ({ name, timeElapsedMs }: TestSuccess): Named<TestUnitSuccess.Union> => ({
+      ({ name, value: { timeElapsedMs } }: Named<TestSuccess>): Named<TestUnitSuccess.Union> => ({
         name,
         value: { unit: 'test' as const, timeElapsedMs },
       })
