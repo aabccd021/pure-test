@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestUnitError, TestUnitResult, TestUnitRight } from '../type';
+import type { SuiteResult, TestUnitLeft, TestUnitResult, TestUnitRight } from '../type';
 
 const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
@@ -15,32 +15,32 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
   pipe(
     testUnitResult,
     either.match(
-      (testUnitError: TestUnitError.Union): readonly string[] =>
-        match(testUnitError)
-          .with({ code: 'GroupError' }, ({ results }): readonly string[] =>
+      (testUnitLeft: TestUnitLeft): readonly string[] =>
+        match(testUnitLeft.value)
+          .with({ code: 'GroupError' }, (groupError): readonly string[] =>
             pipe(
-              results,
+              groupError.results,
               readonlyArray.chain(
                 either.match(
                   (testResult) => [failed(testResult.name)],
                   (testResult) => [passed(testResult.name)]
                 )
               ),
-              readonlyArray.map((x) => `  ${x}`),
-              readonlyArray.prepend(failed(testUnitError.name))
+              readonlyArray.map((x: string) => `  ${x}`),
+              readonlyArray.prepend(failed(testUnitLeft.name))
             )
           )
-          .with({ code: 'TestError' }, (): readonly string[] => [failed(testUnitError.name)])
+          .with({ code: 'TestError' }, (): readonly string[] => [failed(testUnitLeft.name)])
           .exhaustive(),
-      ({ name, value }: TestUnitRight): readonly string[] =>
-        match(value)
+      (testUnitRight: TestUnitRight): readonly string[] =>
+        match(testUnitRight.value)
           .with({ unit: 'group' }, ({ results }): readonly string[] =>
             pipe(
               results,
-              readonlyArray.map(() => passed(name))
+              readonlyArray.map(() => passed(testUnitRight.name))
             )
           )
-          .with({ unit: 'test' }, (): readonly string[] => [passed(name)])
+          .with({ unit: 'test' }, (): readonly string[] => [passed(testUnitRight.name)])
           .exhaustive()
     )
   );

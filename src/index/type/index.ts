@@ -30,7 +30,12 @@ export type TestUnitRight = {
   readonly value: TestUnitSuccess.Union;
 };
 
-export type TestUnitResult = Either<TestUnitError.Union, TestUnitRight>;
+export type TestUnitLeft = {
+  readonly name: string;
+  readonly value: TestUnitError.Union;
+};
+
+export type TestUnitResult = Either<TestUnitLeft, TestUnitRight>;
 
 export type SuiteResult = Either<SuiteError.Union, readonly TestUnitRight[]>;
 

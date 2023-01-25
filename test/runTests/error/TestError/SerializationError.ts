@@ -24,8 +24,10 @@ const caseToTest = (tc: Case) =>
           results: [
             either.left({
               name: 'foo',
-              code: 'TestError',
-              value: { code: 'SerializationError' as const, path: tc.errorPath },
+              value: {
+                code: 'TestError',
+                value: { code: 'SerializationError' as const, path: tc.errorPath },
+              },
             }),
           ],
         })

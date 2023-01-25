@@ -9,7 +9,7 @@ import type {
   TestError,
   TestFail,
   TestResult,
-  TestUnitError,
+  TestUnitLeft,
   TestUnitResult,
 } from '../../type';
 
@@ -53,31 +53,35 @@ export const formatTestError = (error: TestError.Union): readonly string[] =>
     .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
 
 export const testErrorToLines = (
-  testUnitError: TestUnitError.Union,
+  testUnitLeft: TestUnitLeft,
   value: TestError.Union
 ): readonly string[] =>
   pipe(
     value,
     formatTestError,
     readonlyArray.prepend(''),
-    readonlyArray.prepend(c.red(c.bold(`${testUnitError.code}`))),
-    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitError.name}`)
+    readonlyArray.prepend(c.red(c.bold(`${testUnitLeft.value.code}`))),
+    readonlyArray.prepend(`${c.red(c.bold(c.inverse(' FAIL ')))} ${testUnitLeft.name}`)
   );
 
 const groupErrorToLines = (
-  testUnitError: TestUnitError.Union,
+  testUnitLeft: TestUnitLeft,
   results: readonly TestResult[]
 ): readonly string[] =>
   pipe(
     results,
     readonlyArray.lefts,
-    readonlyArray.chain((testFail: TestFail) => testErrorToLines(testUnitError, testFail.value))
+    readonlyArray.chain((testFail: TestFail) => testErrorToLines(testUnitLeft, testFail.value))
   );
 
-const formatErrorResult = (testUnitError: TestUnitError.Union): readonly string[] =>
-  match(testUnitError)
-    .with({ code: 'GroupError' }, ({ results }) => groupErrorToLines(testUnitError, results))
-    .with({ code: 'TestError' }, ({ value }) => testErrorToLines(testUnitError, value))
+const formatErrorResult = (testUnitLeft: TestUnitLeft): readonly string[] =>
+  match(testUnitLeft.value)
+    .with({ code: 'GroupError' }, (groupError): readonly string[] =>
+      groupErrorToLines(testUnitLeft, groupError.results)
+    )
+    .with({ code: 'TestError' }, (testError): readonly string[] =>
+      testErrorToLines(testUnitLeft, testError.value)
+    )
     .exhaustive();
 
 export const testErrorToContentLines = (results: readonly TestUnitResult[]): readonly string[] =>

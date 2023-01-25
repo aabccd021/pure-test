@@ -33,7 +33,7 @@ import type {
   TestResult,
   TestSuccess,
   TestUnit,
-  TestUnitError,
+  TestUnitLeft,
   TestUnitResult,
   TestUnitRight,
 } from './type';
@@ -249,7 +249,7 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.GroupError, TestUnitRight> =>
+const runGroup = (group: TestUnit.Group): TaskEither<TestUnitLeft, TestUnitRight> =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
@@ -258,10 +258,12 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.GroupError, T
         testResults,
         eitherArrayIsAllRight,
         either.bimap(
-          (results: readonly TestResult[]): TestUnitError.GroupError => ({
+          (results: readonly TestResult[]): TestUnitLeft => ({
             name: group.name,
-            code: 'GroupError' as const,
-            results,
+            value: {
+              code: 'GroupError' as const,
+              results,
+            },
           }),
           (results: readonly TestSuccess[]): TestUnitRight => ({
             name: group.name,
@@ -275,15 +277,17 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.GroupError, T
     )
   );
 
-const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitError.TestError, TestUnitRight> =>
+const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, TestUnitRight> =>
   pipe(
     test,
     runTest,
     taskEither.bimap(
-      ({ name, value }: TestFail): TestUnitError.TestError => ({
-        code: 'TestError' as const,
+      ({ name, value }: TestFail): TestUnitLeft => ({
         name,
-        value,
+        value: {
+          code: 'TestError' as const,
+          value,
+        },
       }),
       ({ name, timeElapsedMs }: TestSuccess): TestUnitRight => ({
         name,
@@ -295,7 +299,7 @@ const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitError.TestError,
     )
   );
 
-const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitError.Union, TestUnitRight> =>
+const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitLeft, TestUnitRight> =>
   match(testUnit)
     .with({ type: 'test' }, runTestAsUnit)
     .with({ type: 'group' }, runGroup)
