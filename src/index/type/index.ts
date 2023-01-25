@@ -6,8 +6,9 @@ import type * as ShardingError from './shardingError';
 import type * as TestError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
+import type * as TestUnitSuccess from './testUnitSuccess';
 
-export type { Assert, ShardingError, TestError, TestUnit, TestUnitError };
+export type { Assert, ShardingError, TestError, TestUnit, TestUnitError, TestUnitSuccess };
 
 export type RightOf<E> = E extends Right<infer R> ? R : never;
 export type LeftOf<E> = E extends Left<infer L> ? L : never;
@@ -17,15 +18,7 @@ export type TestResult = Either<
   { readonly name: string; readonly timeElapsedMs: number }
 >;
 
-export type TestUnitSuccessResult =
-  | {
-      readonly unit: 'group';
-      readonly name: string;
-      readonly results: readonly RightOf<TestResult>[];
-    }
-  | { readonly unit: 'test'; readonly name: string; readonly timeElapsedMs: number };
-
-export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccessResult>;
+export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccess.Union>;
 
 export type SuiteResult = Either<
   | { readonly type: 'DuplicateTestName'; readonly name: string }

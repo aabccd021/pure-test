@@ -33,7 +33,7 @@ import type {
   TestUnit,
   TestUnitError,
   TestUnitResult,
-  TestUnitSuccessResult,
+  TestUnitSuccess,
 } from './type';
 
 const indent = (line: string): string => `  ${line}`;
@@ -268,7 +268,7 @@ const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
             name,
             value: error,
           }),
-          ({ name, timeElapsedMs }): TestUnitSuccessResult => ({
+          ({ name, timeElapsedMs }): TestUnitSuccess.Union => ({
             unit: 'test' as const,
             name,
             timeElapsedMs,
