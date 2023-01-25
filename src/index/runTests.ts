@@ -217,9 +217,9 @@ const measureElapsed =
     );
   };
 
-const runTest = (test: Named<TestUnit.Test>): Task<TestResult> =>
+const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
-    taskEither.tryCatch(test.value.act, unhandledException),
+    taskEither.tryCatch(test.act, unhandledException),
     measureElapsed,
     taskEither.chainEitherKW(({ timeElapsedMs, value }) =>
       pipe(
@@ -228,39 +228,24 @@ const runTest = (test: Named<TestUnit.Test>): Task<TestResult> =>
         either.map(() => ({ timeElapsedMs }))
       )
     ),
-    runWithTimeout(test.value.timeout),
-    runWithRetry(test.value.retry)
+    runWithTimeout(test.timeout),
+    runWithRetry(test.retry)
   );
 
 const runTestNamed = (
   test: Named<TestUnit.Test>
 ): TaskEither<Named<TestError.Union>, Named<TestSuccess>> =>
-  pipe(
-    test,
-    runTest,
-    taskEither.bimap(
-      (value: TestError.Union): Named<TestError.Union> => ({ name: test.name, value }),
-      (value: TestSuccess): Named<TestSuccess> => ({ name: test.name, value })
-    )
-  );
+  pipe(test.value, runTest, taskEither.bimap(named(test.name), named(test.name)));
 
 const runTestAsUnit = (
+  test: TestUnit.Test
+): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
+  pipe(test, runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test));
+
+const runTestAsUnitNamed = (
   test: Named<TestUnit.Test>
 ): TaskEither<Named<TestUnitError.TestError>, Named<TestUnitSuccess.Test>> =>
-  pipe(
-    test,
-    runTest,
-    taskEither.bimap(
-      (value: TestError.Union): Named<TestUnitError.TestError> => ({
-        name: test.name,
-        value: { code: 'TestError' as const, value },
-      }),
-      (value): Named<TestUnitSuccess.Test> => ({
-        name: test.name,
-        value: { unit: 'test' as const, value },
-      })
-    )
-  );
+  pipe(test.value, runTestAsUnit, taskEither.bimap(named(test.name), named(test.name)));
 
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({ concurrency: config.concurrency, run: runTestNamed });
@@ -298,7 +283,7 @@ const runTestUnit = (
   testUnit: Named<TestUnit.Union>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   match(testUnit.value)
-    .with({ type: 'test' }, (value) => runTestAsUnit({ name: testUnit.name, value }))
+    .with({ type: 'test' }, (value) => runTestAsUnitNamed({ name: testUnit.name, value }))
     .with({ type: 'group' }, (value) => runGroupNamed({ name: testUnit.name, value }))
     .exhaustive();
 
