@@ -44,8 +44,8 @@ export type DiffLines = (p: {
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
-  readonly tests: readonly TestUnit.Union[];
-}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly TestUnit.Union[])[]>;
+  readonly tests: readonly Named<TestUnit.Union>[];
+}) => TaskEither<ShardingError.ShardingStrategyError, readonly (readonly Named<TestUnit.Union>[])[]>;
 
 export type GetShardIndex = TaskEither<ShardingError.GetShardIndexError, number>;
 

@@ -216,9 +216,9 @@ const measureElapsed =
     );
   };
 
-const runTest = (test: TestUnit.Test): Task<TestResult> =>
+const runTest = (test: Named<TestUnit.Test>): Task<TestResult> =>
   pipe(
-    taskEither.tryCatch(test.act, unhandledException),
+    taskEither.tryCatch(test.value.act, unhandledException),
     measureElapsed,
     taskEither.chainEitherKW(({ timeElapsedMs, value }) =>
       pipe(
@@ -227,8 +227,8 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
         either.map(() => ({ timeElapsedMs }))
       )
     ),
-    runWithTimeout(test.timeout),
-    runWithRetry(test.retry),
+    runWithTimeout(test.value.timeout),
+    runWithRetry(test.value.retry),
     taskEither.bimap(
       (value: TestError.Union): Named<TestError.Union> => ({ name: test.name, value }),
       ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: test.name })
@@ -250,11 +250,11 @@ const eitherArrayIsAllRight = <L, R>(
   );
 
 const runGroup = (
-  group: TestUnit.Group
+  group: Named<TestUnit.Group>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   pipe(
-    group.asserts,
-    runGroupTests({ concurrency: group.concurrency }),
+    group.value.asserts,
+    runGroupTests({ concurrency: group.value.concurrency }),
     task.map((testResults: readonly TestResult[]) =>
       pipe(
         testResults,
@@ -274,7 +274,7 @@ const runGroup = (
   );
 
 const runTestAsUnit = (
-  test: TestUnit.Test
+  test: Named<TestUnit.Test>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
   pipe(
     test,
@@ -292,11 +292,11 @@ const runTestAsUnit = (
   );
 
 const runTestUnit = (
-  testUnit: TestUnit.Union
+  testUnit: Named<TestUnit.Union>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
-  match(testUnit)
-    .with({ type: 'test' }, runTestAsUnit)
-    .with({ type: 'group' }, runGroup)
+  match(testUnit.value)
+    .with({ type: 'test' }, (value) => runTestAsUnit({ name: testUnit.name, value }))
+    .with({ type: 'group' }, (value) => runGroup({ name: testUnit.name, value }))
     .exhaustive();
 
 const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
@@ -308,7 +308,7 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
 
 export const runTestUnits =
   (config: TestConfig) =>
-  (tests: readonly TestUnit.Union[]): Task<SuiteResult> =>
+  (tests: readonly Named<TestUnit.Union>[]): Task<SuiteResult> =>
     pipe(
       tests,
       runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),
@@ -317,5 +317,5 @@ export const runTestUnits =
 
 export const runTests =
   (config: TestConfig) =>
-  (testsTE: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>): Task<SuiteResult> =>
+  (testsTE: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>): Task<SuiteResult> =>
     pipe(testsTE, taskEither.chain(runTestUnits(config)));

@@ -4,19 +4,20 @@ import { pipe } from 'fp-ts/function';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type {
-  GetShardCount,
-  GetShardIndex,
-  ShardingError,
-  ShardingStrategy,
-  SuiteError,
-  TestUnit,
+    GetShardCount,
+    GetShardIndex,
+    Named,
+    ShardingError,
+    ShardingStrategy,
+    SuiteError,
+    TestUnit
 } from '../type';
 
 const getShardOnIndex =
   (index: number) =>
   (
-    shards: readonly (readonly TestUnit.Union[])[]
-  ): Either<ShardingError.ShardIndexOutOfBound, readonly TestUnit.Union[]> =>
+    shards: readonly (readonly Named<TestUnit.Union>[])[]
+  ): Either<ShardingError.ShardIndexOutOfBound, readonly Named<TestUnit.Union>[]> =>
     pipe(
       shards,
       readonlyArray.lookup(index - 1),
@@ -28,9 +29,9 @@ const getShardOnIndex =
     );
 
 const validateTestShards = (tests: {
-  readonly beforeSharding: readonly TestUnit.Union[];
-  readonly afterSharding: readonly (readonly TestUnit.Union[])[];
-}): Either<ShardingError.TestCountChangedAfterSharding, readonly (readonly TestUnit.Union[])[]> =>
+  readonly beforeSharding: readonly Named<TestUnit.Union>[];
+  readonly afterSharding: readonly (readonly Named<TestUnit.Union>[])[];
+}): Either<ShardingError.TestCountChangedAfterSharding, readonly (readonly Named<TestUnit.Union>[])[]> =>
   pipe(
     {
       beforeSharding: readonlyArray.size(tests.beforeSharding),
@@ -47,8 +48,8 @@ export const shardTests = (p: {
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
 }): ((
-  tests: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>
-) => TaskEither<SuiteError.Union, readonly TestUnit.Union[]>) =>
+  tests: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>
+) => TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,

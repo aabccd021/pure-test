@@ -1,4 +1,4 @@
-import type { TestUnit } from '@src';
+import type { Named, TestUnit } from '@src';
 import { readonlyArray, readonlyRecord, string } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { Ord } from 'fp-ts/Ord';
@@ -8,9 +8,9 @@ import { modify } from 'spectacles-ts';
 const keepOrd: Ord<string> = { compare: () => 1, equals: string.Eq.equals };
 
 export const scope: (
-  ts: ReadonlyRecord<string, { readonly tests: readonly TestUnit.Union[] }>
-) => readonly TestUnit.Union[] = readonlyRecord.foldMapWithIndex(keepOrd)(
-  readonlyArray.getMonoid<TestUnit.Union>()
+  ts: ReadonlyRecord<string, { readonly tests: readonly Named<TestUnit.Union>[] }>
+) => readonly Named<TestUnit.Union>[] = readonlyRecord.foldMapWithIndex(keepOrd)(
+  readonlyArray.getMonoid<Named<TestUnit.Union>>()
 )((idx, val) =>
   pipe(
     val.tests,
