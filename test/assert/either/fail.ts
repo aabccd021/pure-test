@@ -1,4 +1,4 @@
-import type { Change, LeftOf, SuiteResult } from '@src';
+import type { Change, SuiteError } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equal<LeftOf<SuiteResult>>({
+        assert.equal<SuiteError.Union>({
           type: 'TestRunError',
           results: [
             either.left({

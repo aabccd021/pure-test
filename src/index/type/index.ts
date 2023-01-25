@@ -3,12 +3,21 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type * as Assert from './assert';
 import type * as ShardingError from './shardingError';
+import type * as SuiteError from './suiteError';
 import type * as TestError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
 import type * as TestUnitSuccess from './testUnitSuccess';
 
-export type { Assert, ShardingError, TestError, TestUnit, TestUnitError, TestUnitSuccess };
+export type {
+  Assert,
+  ShardingError,
+  SuiteError,
+  TestError,
+  TestUnit,
+  TestUnitError,
+  TestUnitSuccess,
+};
 
 export type RightOf<E> = E extends Right<infer R> ? R : never;
 export type LeftOf<E> = E extends Left<infer L> ? L : never;
@@ -20,12 +29,9 @@ export type TestResult = Either<
 
 export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccess.Union>;
 
-export type SuiteResult = Either<
-  | { readonly type: 'DuplicateTestName'; readonly name: string }
-  | { readonly type: 'ShardingError'; readonly value: ShardingError.Union }
-  | { readonly type: 'TestRunError'; readonly results: readonly TestUnitResult[] },
-  readonly RightOf<TestUnitResult>[]
->;
+export type SuiteSuccess = readonly RightOf<TestUnitResult>[];
+
+export type SuiteResult = Either<SuiteError.Union, SuiteSuccess>;
 
 export type Concurrency =
   | { readonly type: 'parallel' }

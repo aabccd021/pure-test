@@ -5,18 +5,18 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { LeftOf, SuiteResult } from '../../type';
+import type { SuiteError, SuiteResult } from '../../type';
 import { shardingErrorToContentLines } from './shardingErrorToContentLines';
 import { testErrorToContentLines } from './testErrorToContentLines';
 
-const suiteErrorToContentLines = (suiteError: LeftOf<SuiteResult>): readonly string[] =>
+const suiteErrorToContentLines = (suiteError: SuiteError.Union): readonly string[] =>
   match(suiteError)
     .with({ type: 'TestRunError' }, ({ results }) => testErrorToContentLines(results))
     .with({ type: 'DuplicateTestName' }, ({ name }) => [` Test name: ${name}`])
     .with({ type: 'ShardingError' }, ({ value }) => shardingErrorToContentLines(value))
     .exhaustive();
 
-const suiteErrorToLines = (suiteError: LeftOf<SuiteResult>): readonly string[] =>
+const suiteErrorToLines = (suiteError: SuiteError.Union): readonly string[] =>
   pipe(
     suiteError,
     suiteErrorToContentLines,

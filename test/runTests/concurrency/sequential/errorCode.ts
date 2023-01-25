@@ -1,4 +1,4 @@
-import type { LeftOf, SuiteResult, TestUnitResult } from '@src';
+import type { SuiteError, TestUnitResult } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, option, readonlyArray, task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -27,7 +27,7 @@ const caseToTest = (tc: TestCase) =>
       ]),
       runTests({ concurrency: { type: 'sequential', failFast: tc.failFast } }),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<LeftOf<SuiteResult>>({
+        assert.equalDeepPartial<SuiteError.Union>({
           type: 'TestRunError',
           results: [
             either.right({ name: 'should pass' }),

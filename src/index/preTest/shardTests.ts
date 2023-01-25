@@ -6,10 +6,9 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import type {
   GetShardCount,
   GetShardIndex,
-  LeftOf,
   ShardingError,
   ShardingStrategy,
-  SuiteResult,
+  SuiteError,
   TestUnit,
 } from '../type';
 
@@ -48,8 +47,8 @@ export const shardTests = (p: {
   readonly count: GetShardCount;
   readonly strategy: ShardingStrategy;
 }): ((
-  tests: TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Union[]>
-) => TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Union[]>) =>
+  tests: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>
+) => TaskEither<SuiteError.Union, readonly TestUnit.Union[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,

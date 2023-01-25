@@ -1,17 +1,15 @@
 import { either, task } from 'fp-ts';
 import { flow } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
-import type { TaskEither } from 'fp-ts/TaskEither';
+import type { Task } from 'fp-ts/Task';
 
-import type { LeftOf, RightOf, SuiteResult, TestUnitResult } from '../type';
+import type { SuiteResult } from '../type';
 
 export type Env = { readonly process: Pick<typeof process, 'exit'> };
 
 export const exitF = (env: {
   readonly process: { readonly exit: (exitCode: number | undefined) => IO<void> };
-}): ((
-  res: TaskEither<LeftOf<SuiteResult>, readonly RightOf<TestUnitResult>[]>
-) => TaskEither<LeftOf<SuiteResult>, readonly RightOf<TestUnitResult>[]>) =>
+}): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
   task.chainFirstIOK(
     flow(
       either.match(

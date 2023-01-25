@@ -25,7 +25,7 @@ import type {
   Assert,
   Change,
   Concurrency,
-  LeftOf,
+  SuiteError,
   SuiteResult,
   TestConfig,
   TestError,
@@ -286,7 +286,7 @@ const aggregateTestResult: (testUnitResult: readonly TestUnitResult[]) => SuiteR
 
 export const runTests = (
   config: TestConfig
-): ((tests: TaskEither<LeftOf<SuiteResult>, readonly TestUnit.Union[]>) => Task<SuiteResult>) =>
+): ((tests: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),

@@ -4,7 +4,7 @@ import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
 import { match } from 'ts-pattern';
 
-import type { LeftOf, SuiteResult, TestUnitSuccess } from '../type';
+import type { SuiteError, SuiteResult, TestUnitSuccess } from '../type';
 
 const testUnitSuccessResultToLines = (
   testUnitSuccessResult: TestUnitSuccess.Union
@@ -19,7 +19,7 @@ const suiteResultRightToLines = (
 ): readonly string[] =>
   pipe(testUnitSuccessResults, readonlyArray.chain(testUnitSuccessResultToLines));
 
-const suiteResultLeftToLines = (suiteResultLeft: LeftOf<SuiteResult>): readonly string[] =>
+const suiteResultLeftToLines = (suiteResultLeft: SuiteError.Union): readonly string[] =>
   match(suiteResultLeft)
     .with({ type: 'TestRunError' }, () => [])
     .with({ type: 'ShardingError' }, () => [])
