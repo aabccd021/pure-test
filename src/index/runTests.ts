@@ -103,7 +103,7 @@ const hasNoChange = readonlyArray.foldMap(boolean.MonoidAll)(
 
 const assertionError =
   ({ received, expected }: { readonly received: unknown; readonly expected: unknown }) =>
-  (changes: readonly Change[]) => ({
+  (changes: readonly Change[]): TestError.AssertionError => ({
     code: 'AssertionError' as const,
     changes,
     received,
@@ -113,7 +113,10 @@ const assertionError =
 const serialize = (value: unknown): Either<TestError.SerializationError, string> =>
   pipe(value, unknownToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')));
 
-export const diffResult = (result: { readonly received: unknown; readonly expected: unknown }) =>
+export const diffResult = (result: {
+  readonly received: unknown;
+  readonly expected: unknown;
+}): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
   pipe(
     result,
     readonlyRecord.map(serialize),
@@ -122,7 +125,9 @@ export const diffResult = (result: { readonly received: unknown; readonly expect
     either.chainW(either.fromPredicate(hasNoChange, assertionError(result)))
   );
 
-export const runAssert = (assert: Assert.Union): Either<TestError.Union, unknown> =>
+export const runAssert = (
+  assert: Assert.Union
+): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
   match(assert).with({ assert: 'Equal' }, diffResult).exhaustive();
 
 const runSequentialFailFast =
@@ -211,7 +216,7 @@ const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
     task.map(({ timeElapsedMs, result }) =>
       pipe(
         result,
-        either.chain(runAssert),
+        either.chainW(runAssert),
         either.map((newResult) => ({ timeElapsedMs, result: newResult }))
       )
     ),
