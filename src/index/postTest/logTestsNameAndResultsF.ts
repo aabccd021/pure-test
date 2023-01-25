@@ -34,13 +34,13 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
           .exhaustive(),
       (testUnitRight: Named<TestUnitSuccess.Union>): readonly string[] =>
         match(testUnitRight.value)
-          .with({ unit: 'group' }, ({ results }): readonly string[] =>
+          .with({ unit: 'Group' }, ({ results }): readonly string[] =>
             pipe(
               results,
               readonlyArray.map(() => passed(testUnitRight.name))
             )
           )
-          .with({ unit: 'test' }, (): readonly string[] => [passed(testUnitRight.name)])
+          .with({ unit: 'Test' }, (): readonly string[] => [passed(testUnitRight.name)])
           .exhaustive()
     )
   );

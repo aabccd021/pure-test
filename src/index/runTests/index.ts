@@ -67,11 +67,11 @@ const runTestUnit = (
 ): TaskEither<TestUnitError.Union, testUnitSuccess.Union> =>
   match(testUnit)
     .with(
-      { unit: 'test' },
+      { unit: 'Test' },
       flow(runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test))
     )
     .with(
-      { unit: 'group' },
+      { unit: 'Group' },
       flow(runGroup, taskEither.bimap(testUnitError.groupError, testUnitSuccess.group))
     )
     .exhaustive();
