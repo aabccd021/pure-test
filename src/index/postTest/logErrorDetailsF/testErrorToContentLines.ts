@@ -6,8 +6,8 @@ import { match } from 'ts-pattern';
 
 import type {
   Change,
+  Named,
   TestError,
-  TestFail,
   TestResult,
   TestUnitLeft,
   TestUnitResult,
@@ -71,7 +71,9 @@ const groupErrorToLines = (
   pipe(
     results,
     readonlyArray.lefts,
-    readonlyArray.chain((testFail: TestFail) => testErrorToLines(testUnitLeft, testFail.value))
+    readonlyArray.chain((testFail: Named<TestError.Union>) =>
+      testErrorToLines(testUnitLeft, testFail.value)
+    )
   );
 
 const formatErrorResult = (testUnitLeft: TestUnitLeft): readonly string[] =>

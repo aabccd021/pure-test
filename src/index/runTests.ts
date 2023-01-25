@@ -1,13 +1,13 @@
 import {
-  apply,
-  boolean,
-  either,
-  readonlyArray,
-  readonlyNonEmptyArray,
-  readonlyRecord,
-  string,
-  task,
-  taskEither,
+    apply,
+    boolean,
+    either,
+    readonlyArray,
+    readonlyNonEmptyArray,
+    readonlyRecord,
+    string,
+    task,
+    taskEither
 } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
@@ -20,23 +20,22 @@ import * as retry from 'retry-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
-import { diffLines } from './_internal/libs/diffLines';
 import type {
-  Assert,
-  Change,
-  Concurrency,
-  SuiteError,
-  SuiteResult,
-  TestConfig,
-  TestError,
-  TestFail,
-  TestResult,
-  TestSuccess,
-  TestUnit,
-  TestUnitLeft,
-  TestUnitResult,
-  TestUnitRight,
+    Assert,
+    Change,
+    Concurrency,
+    Named,
+    SuiteError,
+    SuiteResult,
+    TestConfig,
+    TestError, TestResult,
+    TestSuccess,
+    TestUnit,
+    TestUnitLeft,
+    TestUnitResult,
+    TestUnitRight
 } from './type';
+import { diffLines } from './_internal/libs/diffLines';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -230,7 +229,7 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
     runWithTimeout(test.timeout),
     runWithRetry(test.retry),
     taskEither.bimap(
-      (value: TestError.Union): TestFail => ({ name: test.name, value }),
+      (value: TestError.Union): Named<TestError.Union> => ({ name: test.name, value }),
       ({ timeElapsedMs }): TestSuccess => ({ timeElapsedMs, name: test.name })
     )
   );
@@ -276,7 +275,7 @@ const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitLeft, TestUnitRi
     test,
     runTest,
     taskEither.bimap(
-      ({ name, value }: TestFail): TestUnitLeft => ({
+      ({ name, value }: Named<TestError.Union>): TestUnitLeft => ({
         name,
         value: { code: 'TestError' as const, value },
       }),
