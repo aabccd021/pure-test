@@ -10,7 +10,7 @@ import {
   taskEither,
 } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { flow, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import type { ReadonlyRecord } from 'fp-ts/ReadonlyRecord';
 import type { Task } from 'fp-ts/Task';
@@ -30,6 +30,7 @@ import type {
   TestConfig,
   TestError,
   TestResult,
+  TestSuccess,
   TestUnit,
   TestUnitError,
   TestUnitResult,
@@ -242,59 +243,79 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (group: TestUnit.Group): Task<TestUnitResult> =>
+const runGroup = (
+  group: TestUnit.Group
+): TaskEither<TestUnitError.GroupError, TestUnitSuccess.Group> =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
-    task.map(
-      flow(
+    task.map((testResults) =>
+      pipe(
+        testResults,
         eitherArrayIsAllRight,
         either.bimap(
-          (results): TestUnitError.Union => ({
+          (results): TestUnitError.GroupError => ({
             name: group.name,
             code: 'GroupError' as const,
             results,
           }),
-          (results) => ({ unit: 'group', name: group.name, results })
+          (results): TestUnitSuccess.Group => ({ unit: 'group', name: group.name, results })
         )
       )
     )
   );
 
-const runTestUnit = (test: TestUnit.Union): Task<TestUnitResult> =>
-  match(test)
-    .with(
-      { type: 'test' },
-      flow(
-        runTest,
-        taskEither.bimap(
-          ({ name, error }): TestUnitError.Union => ({
-            code: 'TestError' as const,
-            name,
-            value: error,
-          }),
-          ({ name, timeElapsedMs }): TestUnitSuccess.Union => ({
-            unit: 'test' as const,
-            name,
-            timeElapsedMs,
-          })
-        )
-      )
-    )
+const testLeftToTestUnitError = ({
+  name,
+  error,
+}: {
+  readonly name: string;
+  readonly error: TestError.Union;
+}): TestUnitError.TestError => ({
+  code: 'TestError' as const,
+  name,
+  value: error,
+});
+
+const testSuccessToTestUnitSuccess = ({
+  name,
+  timeElapsedMs,
+}: TestSuccess): TestUnitSuccess.Test => ({
+  unit: 'test' as const,
+  name,
+  timeElapsedMs,
+});
+
+const runTestAsUnit = (
+  test: TestUnit.Test
+): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
+  pipe(test, runTest, taskEither.bimap(testLeftToTestUnitError, testSuccessToTestUnitSuccess));
+
+const runTestUnit = (
+  testUnit: TestUnit.Union
+): TaskEither<TestUnitError.Union, TestUnitSuccess.Union> =>
+  match(testUnit)
+    .with({ type: 'test' }, runTestAsUnit)
     .with({ type: 'group' }, runGroup)
     .exhaustive();
 
-const aggregateTestResult: (testUnitResult: readonly TestUnitResult[]) => SuiteResult = flow(
-  eitherArrayIsAllRight,
-  either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
-);
-
-export const runTests = (
-  config: TestConfig
-): ((tests: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>) => Task<SuiteResult>) =>
-  taskEither.chain(
-    flow(
-      runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),
-      task.map(aggregateTestResult)
-    )
+const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
+  pipe(
+    testUnitResults,
+    eitherArrayIsAllRight,
+    either.mapLeft((results) => ({ type: 'TestRunError' as const, results }))
   );
+
+export const runTestUnits =
+  (config: TestConfig) =>
+  (tests: readonly TestUnit.Union[]): Task<SuiteResult> =>
+    pipe(
+      tests,
+      runWithConcurrency({ concurrency: config.concurrency, run: runTestUnit }),
+      task.map(testUnitResultsToSuiteResult)
+    );
+
+export const runTests =
+  (config: TestConfig) =>
+  (testsTE: TaskEither<SuiteError.Union, readonly TestUnit.Union[]>): Task<SuiteResult> =>
+    pipe(testsTE, taskEither.chain(runTestUnits(config)));
