@@ -242,11 +242,6 @@ const runTestAsUnit = (
 ): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
   pipe(test, runTest, taskEither.bimap(testUnitError.testError, testUnitSuccess.test));
 
-const runTestAsUnitNamed = (
-  test: Named<TestUnit.Test>
-): TaskEither<Named<TestUnitError.TestError>, Named<TestUnitSuccess.Test>> =>
-  pipe(test.value, runTestAsUnit, taskEither.bimap(named(test.name), named(test.name)));
-
 const runGroupTests = (config: Pick<TestUnit.Group, 'concurrency'>) =>
   runWithConcurrency({ concurrency: config.concurrency, run: runTestNamed });
 
@@ -274,19 +269,16 @@ const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.Union, TestUn
     )
   );
 
-const runGroupNamed = (
-  group: Named<TestUnit.Group>
-): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
-  pipe(group.value, runGroup, taskEither.bimap(named(group.name), named(group.name)));
-
 const runTestUnit = (
   testUnit: Named<TestUnit.Union>
 ): TaskEither<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>> =>
-  match(testUnit.value)
-    .with({ type: 'test' }, (value) => runTestAsUnitNamed({ name: testUnit.name, value }))
-    .with({ type: 'group' }, (value) => runGroupNamed({ name: testUnit.name, value }))
-    .exhaustive();
-
+  pipe(
+    match(testUnit.value)
+      .with({ type: 'test' }, runTestAsUnit)
+      .with({ type: 'group' }, runGroup)
+      .exhaustive(),
+    taskEither.bimap(named(testUnit.name), named(testUnit.name))
+  );
 const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
   pipe(
     testUnitResults,
