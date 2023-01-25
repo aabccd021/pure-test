@@ -1,3 +1,4 @@
+import { concurrencyDefault } from './_internal/concurrencyDefault';
 import type { ConcurrencyConfig, Named, TestUnit } from './type';
 import type { Test } from './type/testUnit';
 
@@ -10,6 +11,6 @@ export const group = (param: {
   value: {
     type: 'group',
     asserts: param.asserts,
-    concurrency: param.concurrency ?? { type: 'parallel' },
+    concurrency: concurrencyDefault(param.concurrency),
   },
 });

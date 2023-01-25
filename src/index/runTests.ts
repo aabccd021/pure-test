@@ -19,11 +19,12 @@ import * as iots from 'io-ts';
 import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
+import { concurrencyDefault } from './_internal/concurrencyDefault';
 import { diffLines } from './_internal/libs/diffLines';
 import type {
   Assert,
   Change,
-  ConcurrencyConfig,
+  ConcurrencyConfigRequired,
   Named,
   SuiteError,
   SuiteResult,
@@ -168,21 +169,14 @@ const runSequentialFailFast =
 
 const runSequential =
   <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
-  ({
-    failFast,
-  }: {
-    readonly failFast?: false;
-  }): ((tests: readonly T[]) => Task<readonly Either<L, R>[]>) =>
-    match(failFast)
-      .with(undefined, () => runSequentialFailFast(run))
-      .with(false, () => readonlyArray.traverse(task.ApplicativeSeq)(run))
-      .exhaustive();
+  (config: { readonly failFast: boolean }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
+    config.failFast ? runSequentialFailFast(run) : readonlyArray.traverse(task.ApplicativeSeq)(run);
 
 const runWithConcurrency = <T, L, R>({
   concurrency,
   run,
 }: {
-  readonly concurrency: ConcurrencyConfig;
+  readonly concurrency: ConcurrencyConfigRequired;
   readonly run: (t: T) => TaskEither<L, R>;
 }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
   match(concurrency)
@@ -285,4 +279,4 @@ export const runTestsWithFilledDefaultConfig =
     pipe(testsTE, taskEither.chain(runTestUnits(config)));
 
 export const runTests = (config: TestConfig) =>
-  runTestsWithFilledDefaultConfig({ concurrency: config.concurrency ?? { type: 'parallel' } });
+  runTestsWithFilledDefaultConfig({ concurrency: concurrencyDefault(config.concurrency) });
