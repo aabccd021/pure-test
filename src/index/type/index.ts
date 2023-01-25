@@ -6,6 +6,7 @@ import type * as ShardingError from './shardingError';
 import type * as SuiteError from './suiteError';
 import * as suiteError from './suiteError';
 import type * as TestError from './testError';
+import * as testError from './testError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
 import * as testUnitError from './testUnitError';
@@ -22,7 +23,7 @@ export type {
   TestUnitSuccess,
 };
 
-export { suiteError, testUnitError, testUnitSuccess };
+export { suiteError, testError, testUnitError, testUnitSuccess };
 
 export type Named<T> = { readonly name: string; readonly value: T };
 

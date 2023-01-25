@@ -1,20 +1,3 @@
-import type {
-  Assert,
-  Change,
-  ConcurrencyConfig,
-  Named,
-  SuiteError,
-  SuiteResult,
-  TestConfig,
-  TestConfigRequired,
-  TestError,
-  TestResult,
-  TestSuccess,
-  TestUnit,
-  TestUnitError,
-  TestUnitResult,
-} from '@src';
-import { named, suiteError, testUnitError, testUnitSuccess } from '@src';
 import {
   apply,
   boolean,
@@ -37,6 +20,23 @@ import { retrying } from 'retry-ts/lib/Task';
 import { match } from 'ts-pattern';
 
 import { diffLines } from './_internal/libs/diffLines';
+import type {
+  Assert,
+  Change,
+  ConcurrencyConfig,
+  Named,
+  SuiteError,
+  SuiteResult,
+  TestConfig,
+  TestConfigRequired,
+  TestError,
+  TestResult,
+  TestSuccess,
+  TestUnit,
+  TestUnitError,
+  TestUnitResult,
+} from './type';
+import { named, suiteError, testError, testUnitError, testUnitSuccess } from './type';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -103,7 +103,7 @@ const unknownToLines =
       : pipe(
           obj,
           iots.UnknownRecord.decode,
-          either.mapLeft(() => ({ code: 'SerializationError' as const, path })),
+          either.mapLeft(() => testError.serializationError(path)),
           either.chain(
             traverseEitherRecordWithIndex((index, value) => unknownToLines([...path, index])(value))
           ),
@@ -114,28 +114,26 @@ const hasNoChange = readonlyArray.foldMap(boolean.MonoidAll)(
   (change: Change) => change.type === '0'
 );
 
-const assertionError =
-  ({ received, expected }: { readonly received: unknown; readonly expected: unknown }) =>
-  (changes: readonly Change[]): TestError.AssertionError => ({
-    code: 'AssertionError' as const,
-    changes,
-    received,
-    expected,
-  });
-
 const serialize = (value: unknown): Either<TestError.SerializationError, string> =>
   pipe(value, unknownToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')));
 
-export const assertEqual = (result: {
+export const assertEqual = ({
+  received,
+  expected,
+}: {
   readonly received: unknown;
   readonly expected: unknown;
 }): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
   pipe(
-    result,
+    { received, expected },
     readonlyRecord.map(serialize),
     apply.sequenceS(either.Apply),
     either.map(diffLines),
-    either.chainW(either.fromPredicate(hasNoChange, assertionError(result)))
+    either.chainW(
+      either.fromPredicate(hasNoChange, (changes) =>
+        testError.assertionError({ changes, received, expected })
+      )
+    )
   );
 
 export const runAssert = (
@@ -192,17 +190,12 @@ const runWithConcurrency = <T, L, R>({
     .with({ type: 'sequential' }, runSequential(run))
     .exhaustive();
 
-const unhandledException = (exception: unknown) => ({
-  code: 'UnhandledException' as const,
-  exception,
-});
-
 const runWithTimeout =
   <L, T>(timeout: TestUnit.Test['timeout']) =>
   (te: TaskEither<L, T>) =>
     task
       .getRaceMonoid<Either<L | TestError.TimedOut, T>>()
-      .concat(te, pipe({ code: 'TimedOut' as const }, taskEither.left, task.delay(timeout)));
+      .concat(te, task.delay(timeout)(taskEither.left(testError.timedOut)));
 
 const runWithRetry =
   (retryConfig: TestUnit.Test['retry']) =>
@@ -223,23 +216,20 @@ const runWithMeasureElapsed =
     );
   };
 
-const measureElapsedChainEitherW =
-  <L1, L2, R1, R2>(run: (t: R1) => Either<L2, R2>) =>
-  (te: TaskEither<L1, WithTimeElapsed<R1>>): TaskEither<L1 | L2, WithTimeElapsed<R2>> =>
+const measureElapsedChainEitherW = <L1, L2, R1, R2>(
+  run: (t: R1) => Either<L2, R2>
+): ((te: TaskEither<L1, WithTimeElapsed<R1>>) => TaskEither<L1 | L2, WithTimeElapsed<R2>>) =>
+  taskEither.chainEitherKW(({ timeElapsedMs, result: oldResult }) =>
     pipe(
-      te,
-      taskEither.chainEitherKW(({ timeElapsedMs, result: oldResult }) =>
-        pipe(
-          oldResult,
-          run,
-          either.map((result) => ({ timeElapsedMs, result }))
-        )
-      )
-    );
+      oldResult,
+      run,
+      either.map((result) => ({ timeElapsedMs, result }))
+    )
+  );
 
 const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
-    runWithMeasureElapsed(taskEither.tryCatch(test.act, unhandledException)),
+    runWithMeasureElapsed(taskEither.tryCatch(test.act, testError.unhandledException)),
     measureElapsedChainEitherW(runAssert),
     runWithTimeout(test.timeout),
     runWithRetry(test.retry)

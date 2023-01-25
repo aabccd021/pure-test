@@ -12,6 +12,7 @@ import type {
   SuiteError,
   TestUnit,
 } from '../type';
+import { suiteError } from '../type';
 
 const getShardOnIndex =
   (index: number) =>
@@ -65,6 +66,6 @@ export const shardTests = (p: {
           either.chainW(getShardOnIndex(index))
         )
       ),
-      TE.mapLeft((value) => ({ type: 'ShardingError' as const, value }))
+      TE.mapLeft(suiteError.shardingError)
     )
   );
