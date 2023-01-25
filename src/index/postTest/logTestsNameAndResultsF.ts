@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { SuiteResult, TestUnitResult } from '../type';
+import type { SuiteResult, TestUnitError, TestUnitResult, TestUnitRight } from '../type';
 
 const failed = (name: string) => `  ${c.red('×')} ${name}`;
 
@@ -15,9 +15,9 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
   pipe(
     testUnitResult,
     either.match(
-      (testUnitError) =>
+      (testUnitError: TestUnitError.Union): readonly string[] =>
         match(testUnitError)
-          .with({ code: 'GroupError' }, ({ results }) =>
+          .with({ code: 'GroupError' }, ({ results }): readonly string[] =>
             pipe(
               results,
               readonlyArray.chain(
@@ -30,17 +30,17 @@ const testUnitResultToStr = (testUnitResult: TestUnitResult): readonly string[] 
               readonlyArray.prepend(failed(testUnitError.name))
             )
           )
-          .with({ code: 'TestError' }, () => [failed(testUnitError.name)])
+          .with({ code: 'TestError' }, (): readonly string[] => [failed(testUnitError.name)])
           .exhaustive(),
-      (result) =>
-        match(result)
-          .with({ unit: 'group' }, ({ results }) =>
+      ({ name, value }: TestUnitRight): readonly string[] =>
+        match(value)
+          .with({ unit: 'group' }, ({ results }): readonly string[] =>
             pipe(
               results,
-              readonlyArray.map(({ name }) => passed(name))
+              readonlyArray.map(() => passed(name))
             )
           )
-          .with({ unit: 'test' }, ({ name }) => [passed(name)])
+          .with({ unit: 'test' }, (): readonly string[] => [passed(name)])
           .exhaustive()
     )
   );

@@ -25,9 +25,14 @@ export type TestFail = { readonly name: string; readonly value: TestError.Union 
 
 export type TestResult = Either<TestFail, TestSuccess>;
 
-export type TestUnitResult = Either<TestUnitError.Union, TestUnitSuccess.Union>;
+export type TestUnitRight = {
+  readonly name: string;
+  readonly value: TestUnitSuccess.Union;
+};
 
-export type SuiteResult = Either<SuiteError.Union, readonly TestUnitSuccess.Union[]>;
+export type TestUnitResult = Either<TestUnitError.Union, TestUnitRight>;
+
+export type SuiteResult = Either<SuiteError.Union, readonly TestUnitRight[]>;
 
 export type Concurrency =
   | { readonly type: 'parallel' }

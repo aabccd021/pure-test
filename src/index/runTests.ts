@@ -35,7 +35,7 @@ import type {
   TestUnit,
   TestUnitError,
   TestUnitResult,
-  TestUnitSuccess,
+  TestUnitRight,
 } from './type';
 
 const indent = (line: string): string => `  ${line}`;
@@ -249,9 +249,7 @@ const eitherArrayIsAllRight = <L, R>(
     )
   );
 
-const runGroup = (
-  group: TestUnit.Group
-): TaskEither<TestUnitError.GroupError, TestUnitSuccess.Group> =>
+const runGroup = (group: TestUnit.Group): TaskEither<TestUnitError.GroupError, TestUnitRight> =>
   pipe(
     group.asserts,
     runGroupTests({ concurrency: group.concurrency }),
@@ -265,19 +263,19 @@ const runGroup = (
             code: 'GroupError' as const,
             results,
           }),
-          (results: readonly TestSuccess[]): TestUnitSuccess.Group => ({
-            unit: 'group',
+          (results: readonly TestSuccess[]): TestUnitRight => ({
             name: group.name,
-            results,
+            value: {
+              unit: 'group',
+              results,
+            },
           })
         )
       )
     )
   );
 
-const runTestAsUnit = (
-  test: TestUnit.Test
-): TaskEither<TestUnitError.TestError, TestUnitSuccess.Test> =>
+const runTestAsUnit = (test: TestUnit.Test): TaskEither<TestUnitError.TestError, TestUnitRight> =>
   pipe(
     test,
     runTest,
@@ -287,17 +285,17 @@ const runTestAsUnit = (
         name,
         value,
       }),
-      ({ name, timeElapsedMs }: TestSuccess): TestUnitSuccess.Test => ({
-        unit: 'test' as const,
+      ({ name, timeElapsedMs }: TestSuccess): TestUnitRight => ({
         name,
-        timeElapsedMs,
+        value: {
+          unit: 'test' as const,
+          timeElapsedMs,
+        },
       })
     )
   );
 
-const runTestUnit = (
-  testUnit: TestUnit.Union
-): TaskEither<TestUnitError.Union, TestUnitSuccess.Union> =>
+const runTestUnit = (testUnit: TestUnit.Union): TaskEither<TestUnitError.Union, TestUnitRight> =>
   match(testUnit)
     .with({ type: 'test' }, runTestAsUnit)
     .with({ type: 'group' }, runGroup)
