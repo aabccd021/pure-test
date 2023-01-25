@@ -51,7 +51,23 @@ export const formatTestError = (error: TestError.Union): readonly string[] =>
     .with({ code: 'AssertionError' }, ({ changes }) =>
       readonlyArray.flatten([changesNums(changes), changesToString(changes)])
     )
-    .otherwise((err) => pipe(JSON.stringify(err, undefined, 2), string.split('\n')));
+    .with({ code: 'TimedOut' }, () => ['Test timed out'])
+    .with({ code: 'SerializationError' }, ({ path }) =>
+      pipe(
+        path,
+        readonlyArray.map((numberOrString) => `${numberOrString}`),
+        readonlyArray.intercalate(string.Monoid)('.'),
+        (pathStr) => [`Error to serialize object on path: ${pathStr}`]
+      )
+    )
+    .with({ code: 'UnhandledException' }, ({ exception }) =>
+      pipe(
+        JSON.stringify(exception, undefined, 2),
+        string.split('\n'),
+        readonlyArray.prepend('Unhanandled exception thrown: ')
+      )
+    )
+    .exhaustive();
 
 export const testErrorToLines = (
   testUnitLeft: Named<TestUnitError.Union>,

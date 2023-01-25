@@ -4,35 +4,19 @@ import type { IO } from 'fp-ts/IO';
 import type { Option } from 'fp-ts/Option';
 import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
-import { modify } from 'spectacles-ts';
-import { match } from 'ts-pattern';
 
 import type { SuiteResult, TestUnitResult } from '../type';
 
 const testResultsToSummaryStr = (testResults: readonly TestUnitResult[]): Option<string> =>
   pipe(
-    testResults,
-    readonlyArray.reduce({ passed: 0, failed: 0 }, (summaryAcc, testResult) =>
-      pipe(
-        testResult,
-        either.match(
-          () =>
-            pipe(
-              summaryAcc,
-              modify('failed', (x) => x + 1)
-            ),
-          () =>
-            pipe(
-              summaryAcc,
-              modify('passed', (x) => x + 1)
-            )
-        )
-      )
-    ),
-    ({ passed, failed }) => [
+    {
+      passedCount: pipe(testResults, readonlyArray.rights, readonlyArray.size),
+      failedCount: pipe(testResults, readonlyArray.lefts, readonlyArray.size),
+    },
+    ({ passedCount, failedCount }) => [
       c.bold(c.inverse(' DONE ')),
-      c.bold(c.green(`   Passed ${passed}`)),
-      c.bold(c.red(`   Failed ${failed}`)),
+      c.bold(c.green(`   Passed ${passedCount}`)),
+      c.bold(c.red(`   Failed ${failedCount}`)),
       '',
     ],
     readonlyArray.intercalate(string.Monoid)('\n'),
@@ -46,9 +30,9 @@ export const logSummaryF = (env: {
     flow(
       either.match(
         (suiteError) =>
-          match(suiteError)
-            .with({ code: 'TestRunError' }, ({ results }) => testResultsToSummaryStr(results))
-            .otherwise(() => option.none),
+          suiteError.code === 'TestRunError'
+            ? testResultsToSummaryStr(suiteError.results)
+            : option.none,
         flow(readonlyArray.map(either.right), testResultsToSummaryStr)
       ),
       ioOption.fromOption,
