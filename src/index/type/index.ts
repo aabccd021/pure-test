@@ -2,6 +2,8 @@ import type { Either } from 'fp-ts/Either';
 import type { TaskEither } from 'fp-ts/TaskEither';
 
 import type * as Assert from './assert';
+import type { Named } from './named';
+import * as named from './named';
 import type * as ShardingError from './shardingError';
 import type * as SuiteError from './suiteError';
 import * as suiteError from './suiteError';
@@ -15,6 +17,7 @@ import * as testUnitSuccess from './testUnitSuccess';
 
 export type {
   Assert,
+  Named,
   ShardingError,
   SuiteError,
   TestError,
@@ -23,13 +26,7 @@ export type {
   TestUnitSuccess,
 };
 
-export { suiteError, testError, testUnitError, testUnitSuccess };
-
-export type Named<T> = { readonly name: string; readonly value: T };
-
-export const named =
-  <T>(name: string) =>
-  (value: T): Named<T> => ({ name, value });
+export { named, suiteError, testError, testUnitError, testUnitSuccess };
 
 export type TestSuccess = { readonly timeElapsedMs: number };
 
