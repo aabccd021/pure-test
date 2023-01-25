@@ -203,23 +203,28 @@ const runWithRetry =
     retrying(test.retry ?? retry.limitRetries(0), () => te, either.isLeft);
 
 const measureElapsed =
-  <A>(a: Task<A>): Task<{ readonly timeElapsedMs: number; readonly result: A }> =>
+  <L, R>(
+    a: TaskEither<L, R>
+  ): TaskEither<L, { readonly timeElapsedMs: number; readonly value: R }> =>
   async () => {
     const start = performance.now();
     const result = await a();
     const timeElapsedMs = performance.now() - start;
-    return { result, timeElapsedMs };
+    return pipe(
+      result,
+      either.map((value) => ({ timeElapsedMs, value }))
+    );
   };
 
 const runTest = (assertion: TestUnit.Test): Task<TestResult> =>
   pipe(
     taskEither.tryCatch(assertion.act, unhandledException),
     measureElapsed,
-    task.map(({ timeElapsedMs, result }) =>
+    taskEither.chainEitherKW(({ timeElapsedMs, value }) =>
       pipe(
-        result,
-        either.chainW(runAssert),
-        either.map((newResult) => ({ timeElapsedMs, result: newResult }))
+        value,
+        runAssert,
+        either.map(() => ({ timeElapsedMs }))
       )
     ),
     runWithTimeout({ timeout: assertion.timeout }),
