@@ -66,7 +66,7 @@ export const testErrorToLines = (testError: TestError.Union): readonly string[] 
       .with({ code: 'UnhandledException' }, ({ exception }) =>
         readonlyArray.flatten([
           ['Unhanandled exception thrown: '],
-          string.split('\n')(JSON.stringify(exception, undefined, 2)),
+          string.split('\n')(JSON.stringify(exception.serialized, undefined, 2)),
         ])
       )
       .exhaustive(),

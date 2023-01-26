@@ -59,8 +59,10 @@
     "io-ts": "^2.2.20",
     "picocolors": "^1.0.0",
     "retry-ts": "^0.1.4",
+    "serialize-error": "^11.0.0",
     "spectacles-ts": "^1.0.7",
-    "ts-pattern": "^4.0.6"
+    "ts-pattern": "^4.0.6",
+    "tsimportlib": "^0.0.3"
   },
   "devDependencies": {
     "@types/diff": "^5.0.2",

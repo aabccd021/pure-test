@@ -1,13 +1,16 @@
 import { either, readonlyArray, task, taskEither } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
-import { flow, pipe } from 'fp-ts/function';
+import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import { retrying } from 'retry-ts/lib/Task';
+import type { ErrorObject } from 'serialize-error';
 import { match } from 'ts-pattern';
+import { dynamicImport } from 'tsimportlib';
 
 import { concurrencyDefault } from '../_internal/concurrencyDefault';
 import type {
+  Assert,
   Named,
   SuiteError,
   SuiteResult,
@@ -46,9 +49,34 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryConfig, () => te, either.isLeft);
 
+const serializeError =
+  (error: unknown): Task<ErrorObject> =>
+  async () => {
+    const serializeErrorModule = (await dynamicImport(
+      'serialize-error',
+      module
+      // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    )) as typeof import('serialize-error');
+    return serializeErrorModule.serializeError(error);
+  };
+
+const runAct = (act: Task<Assert.Union>): TaskEither<TestError.UnhandledException, Assert.Union> =>
+  pipe(
+    taskEither.tryCatch(act, identity),
+    taskEither.orElse((exception) =>
+      pipe(
+        exception,
+        serializeError,
+        task.map((serialized) =>
+          either.left(testError.unhandledException({ value: exception, serialized }))
+        )
+      )
+    )
+  );
+
 const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
-    timeElapsed.ofTaskEither(taskEither.tryCatch(test.act, testError.unhandledException)),
+    timeElapsed.ofTaskEither(runAct(test.act)),
     timeElapsed.chainEitherKW(runAssert),
     runWithTimeout(test.timeout),
     runWithRetry(test.retry)

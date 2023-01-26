@@ -28,10 +28,16 @@ export const timedOut: TimedOut = { code: 'TimedOut' };
 
 export type UnhandledException = {
   readonly code: 'UnhandledException';
-  readonly exception: unknown;
+  readonly exception: {
+    readonly value: unknown;
+    readonly serialized: unknown;
+  };
 };
 
-export const unhandledException = (exception: unknown): UnhandledException => ({
+export const unhandledException = (exception: {
+  readonly value: unknown;
+  readonly serialized: unknown;
+}): UnhandledException => ({
   code: 'UnhandledException' as const,
   exception,
 });

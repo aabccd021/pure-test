@@ -15,11 +15,13 @@ specifiers:
   pnpm: ^7.25.0
   retry-ts: ^0.1.4
   semantic-release: ^20.0.2
+  serialize-error: ^11.0.0
   spectacles-ts: ^1.0.7
   ts-essentials: ^9.3.0
   ts-node: ^10.9.1
   ts-pattern: ^4.0.6
   tsconfig-paths: ^4.1.2
+  tsimportlib: ^0.0.3
   typescript: ^4.9.4
 
 dependencies:
@@ -29,8 +31,10 @@ dependencies:
   io-ts: 2.2.20_fp-ts@2.13.1
   picocolors: 1.0.0
   retry-ts: 0.1.4_fp-ts@2.13.1
+  serialize-error: 11.0.0
   spectacles-ts: 1.0.7_fp-ts@2.13.1
   ts-pattern: 4.0.6
+  tsimportlib: 0.0.3
 
 devDependencies:
   '@types/diff': 5.0.2
@@ -3507,6 +3511,13 @@ packages:
       lru-cache: 6.0.0
     dev: true
 
+  /serialize-error/11.0.0:
+    resolution: {integrity: sha512-YKrURWDqcT3VGX/s/pCwaWtpfJEEaEw5Y4gAnQDku92b/HjVj4r4UhA5QrMVMFotymK2wIWs5xthny5SMFu7Vw==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      type-fest: 2.19.0
+    dev: false
+
   /shebang-command/2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
     engines: {node: '>=8'}
@@ -3870,6 +3881,10 @@ packages:
       strip-bom: 3.0.0
     dev: true
 
+  /tsimportlib/0.0.3:
+    resolution: {integrity: sha512-U9sW2/3D0P4IVRnhH2RCqjCP0sG66qvb4ahB0aQln5xGMphDjntz5rdk0rFZ6Fg+lW3L+i+gRnIl4VvNBvxiQw==}
+    dev: false
+
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
@@ -3928,7 +3943,6 @@ packages:
   /type-fest/2.19.0:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
     engines: {node: '>=12.20'}
-    dev: true
 
   /typed-array-length/1.0.4:
     resolution: {integrity: sha512-KjZypGq+I/H7HI5HlOoGHkWUUGq+Q0TPhQurLbyrVrvnKTBgzLhIJ7j6J/XTQOi0d1RjyZ0wdas8bKs2p0x3Ng==}

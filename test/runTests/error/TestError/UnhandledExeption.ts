@@ -1,13 +1,14 @@
-import type { SuiteError } from '@src';
+import type { Assert, SuiteError, TestError } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, readonlyArray, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
+import type { DeepPartial } from 'ts-essentials';
 
 type Case = {
   readonly name: string;
-  readonly received: Task<string>;
-  readonly exception: unknown;
+  readonly act: Task<Assert.Union>;
+  readonly exception: DeepPartial<TestError.UnhandledException['exception']>;
 };
 
 const caseToTest = (tc: Case) =>
@@ -15,18 +16,24 @@ const caseToTest = (tc: Case) =>
     name: tc.name,
     act: pipe(
       taskEither.right([
-        test({ name: 'foo', act: pipe(tc.received, assert.task(assert.equal('foo'))) }),
+        test({
+          name: 'Unhandled exception test',
+          act: tc.act,
+        }),
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equal<SuiteError.Union>({
+        assert.equalDeepPartial<SuiteError.Union>({
           code: 'TestRunError',
           results: [
             either.left({
-              name: 'foo',
+              name: 'Unhandled exception test',
               value: {
-                code: 'TestError',
-                value: { code: 'UnhandledException' as const, exception: tc.exception },
+                code: 'TestError' as const,
+                value: {
+                  code: 'UnhandledException' as const,
+                  exception: tc.exception,
+                },
               },
             }),
           ],
@@ -37,10 +44,27 @@ const caseToTest = (tc: Case) =>
 
 const cases: readonly Case[] = [
   {
-    name: 'should return UnhandledException when unhandled exception is thrown',
+    name: 'should return UnhandledException when non promise is rejected',
     // eslint-disable-next-line functional/no-promise-reject
-    received: () => Promise.reject('bar'),
-    exception: 'bar',
+    act: () => Promise.reject('baz'),
+    exception: {
+      value: 'baz',
+      serialized: 'baz',
+    },
+  },
+
+  {
+    name: 'should return UnhandledException when exception is thrown',
+    act: async () => {
+      // eslint-disable-next-line functional/no-throw-statement
+      throw Error('bar');
+    },
+    exception: {
+      serialized: {
+        message: 'bar',
+        name: 'Error',
+      },
+    },
   },
 ];
 
