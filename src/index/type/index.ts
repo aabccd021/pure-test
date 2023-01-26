@@ -91,7 +91,16 @@ export type TestError = TypeOf<typeof TestError>;
 
 export { named, shardingError, suiteError, testUnitError, testUnitSuccess };
 
-export type TestSuccess = { readonly timeElapsedMs: number };
+export const TestSuccess = summon((F) =>
+  F.interface(
+    {
+      timeElapsedMs: F.number(),
+    },
+    'TestSuccess'
+  )
+);
+
+export type TestSuccess = AType<typeof TestSuccess>;
 
 export type TestResult = Either<TestError['Union'], TestSuccess>;
 
