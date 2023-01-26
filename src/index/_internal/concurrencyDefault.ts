@@ -1,11 +1,13 @@
-import type { ConcurrencyConfigRequired } from '@src';
 import { pipe } from 'fp-ts/function';
 
 import type { ConcurrencyConfig } from '../type';
 
 export const concurrencyDefault = (
-  config: ConcurrencyConfig | undefined
-): ConcurrencyConfigRequired =>
+  config:
+    | { readonly type: 'parallel' }
+    | { readonly type: 'sequential'; readonly failFast?: false }
+    | undefined
+): ConcurrencyConfig =>
   pipe(config ?? { type: 'parallel' as const }, (c) =>
     c.type === 'sequential' ? { type: 'sequential' as const, failFast: c.failFast ?? true } : c
   );

@@ -39,15 +39,9 @@ export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSucces
 
 export type ConcurrencyConfig =
   | { readonly type: 'parallel' }
-  | { readonly type: 'sequential'; readonly failFast?: false };
-
-export type ConcurrencyConfigRequired =
-  | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast: boolean };
 
-export type TestConfig = { readonly concurrency?: ConcurrencyConfig };
-
-export type TestConfigRequired = { readonly concurrency: ConcurrencyConfigRequired };
+export type TestConfig = { readonly concurrency: ConcurrencyConfig };
 
 export type Change = { readonly type: '-' | '+' | '0'; readonly value: string };
 

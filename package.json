@@ -36,8 +36,12 @@
     ]
   },
   "eslintConfig": {
+    "plugins": [
+      "fp-ts-strict"
+    ],
     "extends": [
-      "chimeraant"
+      "chimeraant",
+      "plugin:fp-ts-strict/recommended"
     ],
     "rules": {
       "import/no-cycle": "off",
@@ -68,6 +72,7 @@
     "c8": "^7.12.0",
     "eslint": "^8.30.0",
     "eslint-config-chimeraant": "^1.2.9",
+    "eslint-plugin-fp-ts-strict": "^0.1.1",
     "exec-main": "^1.0.1",
     "pnpm": "^7.25.0",
     "semantic-release": "^20.0.2",

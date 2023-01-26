@@ -12,7 +12,6 @@ import type {
   SuiteError,
   SuiteResult,
   TestConfig,
-  TestConfigRequired,
   TestError,
   TestResult,
   TestUnit,
@@ -80,7 +79,7 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
   pipe(testUnitResults, eitherArrayIsAllRight, either.mapLeft(suiteError.testRunError));
 
 export const runTestsWithFilledDefaultConfig = (
-  config: TestConfigRequired
+  config: TestConfig
 ): ((
   testsTE: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>
 ) => Task<SuiteResult>) =>
@@ -94,5 +93,8 @@ export const runTestsWithFilledDefaultConfig = (
     )
   );
 
-export const runTests = (config: TestConfig) =>
-  runTestsWithFilledDefaultConfig({ concurrency: concurrencyDefault(config.concurrency) });
+export const runTests = (config: {
+  readonly concurrency?:
+    | { readonly type: 'parallel' }
+    | { readonly type: 'sequential'; readonly failFast?: false };
+}) => runTestsWithFilledDefaultConfig({ concurrency: concurrencyDefault(config.concurrency) });
