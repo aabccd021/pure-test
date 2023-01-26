@@ -38,11 +38,9 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   {
     name: 'should return UnhandledException when unhandled exception is thrown',
-    received: async () => {
-      // eslint-disable-next-line functional/no-throw-statement
-      throw new Error('foo');
-    },
-    exception: {},
+    // eslint-disable-next-line functional/no-promise-reject
+    received: () => Promise.reject('bar'),
+    exception: 'bar',
   },
 ];
 
