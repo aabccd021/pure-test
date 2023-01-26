@@ -20,7 +20,7 @@ import * as testUnitError from './testUnitError';
 import type * as TestUnitSuccess from './testUnitSuccess';
 import * as testUnitSuccess from './testUnitSuccess';
 
-const { summon } = summonFor({});
+const { summon, tagged } = summonFor({});
 
 export type { Assert, Named, ShardingError, SuiteError, TestUnit, TestUnitError, TestUnitSuccess };
 
@@ -102,7 +102,16 @@ export const TestSuccess = summon((F) =>
 
 export type TestSuccess = AType<typeof TestSuccess>;
 
-export type TestResult = Either<TestError['Union'], TestSuccess>;
+export const TestResult = tagged('_tag')({
+  Left: summon((F) =>
+    F.interface({ _tag: F.stringLiteral('Left'), left: TestError.Union(F) }, 'Left')
+  ),
+  Right: summon((F) =>
+    F.interface({ _tag: F.stringLiteral('Right'), right: TestSuccess(F) }, 'Right')
+  ),
+});
+
+export type TestResult = AType<typeof TestResult>;
 
 export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>>;
 
