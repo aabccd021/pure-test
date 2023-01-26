@@ -22,7 +22,7 @@ const suiteSuccessToLines = (
   pipe(
     suiteSuccess,
     readonlyArray.map(({ name }) => `  ${c.green('✓')} ${name}`),
-    readonlyArray.concat(['', `${readonlyArray.size(suiteSuccess)} tests passed`])
+    readonlyArray.concat(['', `All ${readonlyArray.size(suiteSuccess)} tests passed`])
   );
 
 export const logSummaryF = (env: {

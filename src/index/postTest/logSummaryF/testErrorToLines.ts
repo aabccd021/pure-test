@@ -80,10 +80,14 @@ const testUnitGroupErrorToLines = (groupError: TestUnitError.GroupError): readon
     groupError.results,
     readonlyArray.lefts,
     readonlyArray.chain((testFail: Named<TestError.Union>): readonly string[] =>
-      readonlyArray.flatten([
-        [`${c.red(c.bold(c.inverse(border(testFail.value.code))))} ${c.bold(testFail.name)}`],
-        testErrorToLines(testFail.value),
-      ])
+      pipe(
+        [
+          ['', `${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testFail.name)}`],
+          testErrorToLines(testFail.value),
+        ],
+        readonlyArray.flatten,
+        indent
+      )
     )
   );
 

@@ -1,4 +1,4 @@
-import { assert, test } from '@src';
+import { assert, group, test } from '@src';
 import { readonlyArray, task } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -16,4 +16,4 @@ const cases: readonly Case[] = [
   { name: 'boolean', received: true, expected: true },
 ];
 
-export const tests = readonlyArray.map(caseToTest)(cases);
+export const tests = [group({ name: 'passu', asserts: readonlyArray.map(caseToTest)(cases) })];
