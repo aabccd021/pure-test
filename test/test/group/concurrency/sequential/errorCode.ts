@@ -21,7 +21,7 @@ const caseToTest = (tc: TestCase) =>
         group({
           name: 'sequential group test',
           concurrency: { type: 'sequential', failFast: tc.failFast },
-          asserts: [
+          tests: [
             test({ name: 'should pass', act: pipe('foo', assert.equal('foo'), task.of) }),
             test({
               name: 'should fail',

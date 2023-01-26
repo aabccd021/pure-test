@@ -7,12 +7,12 @@ export const group = (param: {
   readonly concurrency?:
     | { readonly type: 'parallel' }
     | { readonly type: 'sequential'; readonly failFast?: false };
-  readonly asserts: readonly Named<Test>[];
+  readonly tests: readonly Named<Test>[];
 }): Named<TestUnit.Group> => ({
   name: param.name,
   value: {
     unit: 'Group',
-    tests: param.asserts,
+    tests: param.tests,
     concurrency: concurrencyDefault(param.concurrency),
   },
 });
