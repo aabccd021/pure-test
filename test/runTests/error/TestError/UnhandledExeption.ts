@@ -8,7 +8,7 @@ import type { DeepPartial } from 'ts-essentials';
 type Case = {
   readonly name: string;
   readonly act: Task<Assert.Union>;
-  readonly exception: DeepPartial<TestError.UnhandledException['exception']>;
+  readonly exception: DeepPartial<TestError['UnhandledException']['exception']>;
 };
 
 const caseToTest = (tc: Case) =>

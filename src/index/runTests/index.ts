@@ -15,13 +15,12 @@ import type {
   SuiteError,
   SuiteResult,
   TestConfig,
-  TestError,
   TestResult,
   TestUnit,
   TestUnitError,
   TestUnitResult,
 } from '../type';
-import { named, suiteError, testError, testUnitError, testUnitSuccess } from '../type';
+import { named, suiteError, TestError, testUnitError, testUnitSuccess } from '../type';
 import { runAssert } from './assert';
 import { runWithConcurrency } from './runWithConcurrency';
 import * as timeElapsed from './timeElapsed';
@@ -41,8 +40,8 @@ const runWithTimeout =
   <L, T>(timeout: TestUnit.Test['timeout']) =>
   (te: TaskEither<L, T>) =>
     task
-      .getRaceMonoid<Either<L | TestError.TimedOut, T>>()
-      .concat(te, task.delay(timeout)(taskEither.left(testError.timedOut)));
+      .getRaceMonoid<Either<L | TestError['TimedOut'], T>>()
+      .concat(te, task.delay(timeout)(taskEither.left(TestError.Union.as.TimedOut({}))));
 
 const runWithRetry =
   (retryConfig: TestUnit.Test['retry']) =>
@@ -60,7 +59,9 @@ const serializeError =
     return serializeErrorModule.serializeError(error);
   };
 
-const runAct = (act: Task<Assert.Union>): TaskEither<TestError.UnhandledException, Assert.Union> =>
+const runAct = (
+  act: Task<Assert.Union>
+): TaskEither<TestError['UnhandledException'], Assert.Union> =>
   pipe(
     taskEither.tryCatch(act, identity),
     taskEither.orElse((exception) =>
@@ -68,7 +69,11 @@ const runAct = (act: Task<Assert.Union>): TaskEither<TestError.UnhandledExceptio
         exception,
         serializeError,
         task.map((serialized) =>
-          either.left(testError.unhandledException({ value: exception, serialized }))
+          either.left(
+            TestError.Union.as.UnhandledException({
+              exception: { value: exception, serialized },
+            })
+          )
         )
       )
     )

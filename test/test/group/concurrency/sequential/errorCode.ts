@@ -9,7 +9,7 @@ type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
   readonly errorAfterFailedTest: readonly DeepPartial<
-    Either<Named<TestError.Union>, Named<TestSuccess>>
+    Either<Named<TestError['Union']>, Named<TestSuccess>>
   >[];
 };
 

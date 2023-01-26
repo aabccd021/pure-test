@@ -1,6 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@morphic-ts/batteries': ^3.0.0
+  '@morphic-ts/model-algebras': ^3.0.0
+  '@morphic-ts/summoners': ^3.0.0
   '@types/diff': ^5.0.2
   '@types/node': ^18.11.18
   c8: ^7.12.0
@@ -11,6 +14,7 @@ specifiers:
   fp-ts: ^2.13.1
   fp-ts-std: ^0.15.1
   io-ts: ^2.2.20
+  make-union-morphic-ts: ^1.0.7
   picocolors: ^1.0.0
   pnpm: ^7.25.0
   retry-ts: ^0.1.4
@@ -25,10 +29,14 @@ specifiers:
   typescript: ^4.9.4
 
 dependencies:
+  '@morphic-ts/batteries': 3.0.0_ljogjlciannwm3nucb2c2w5a34
+  '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+  '@morphic-ts/summoners': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
   diff: 5.1.0
   fp-ts: 2.13.1
   fp-ts-std: 0.15.1_sddbbwftoqt3d5g3p7ix53ouca
   io-ts: 2.2.20_fp-ts@2.13.1
+  make-union-morphic-ts: 1.0.7_tkkhkw7abvjyxavu6h6oqh543q
   picocolors: 1.0.0
   retry-ts: 0.1.4_fp-ts@2.13.1
   serialize-error: 11.0.0
@@ -155,6 +163,194 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
+
+  /@morphic-ts/adt/3.0.0:
+    resolution: {integrity: sha512-6ci3vrN19sHBPKpyZc4qnHECqk59lxftm8h1NZLfECsHpcdM4l8mkKakZ5OQ6m90oKxZrIJqgZAzSr3hJ2hZ5g==}
+    dependencies:
+      fp-ts: 2.13.1
+      monocle-ts: 2.3.13_fp-ts@2.13.1
+    dev: false
+
+  /@morphic-ts/algebras/3.0.0:
+    resolution: {integrity: sha512-hPVproq3vAi/OqSGJmHi3oqVc9fDN/PODen+9diFBcy6j/rAwpaB/sjhBB0UbRaYxbLqjhGePxXImSjto9OoHA==}
+    dependencies:
+      '@morphic-ts/common': 3.0.0
+    dev: false
+
+  /@morphic-ts/batteries/3.0.0_ljogjlciannwm3nucb2c2w5a34:
+    resolution: {integrity: sha512-gFR+6aKRbcIUxXK/7JjnBjrM6RQqiw35StqgE2bzl3wxHrWvAeciDBAU9FcfeLIe0TcbtqyVeqcFTrF99RUJLw==}
+    peerDependencies:
+      fast-equals: ^2.0.0
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      monocle-ts: ^2.0.1
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/adt': 3.0.0
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/eq-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      '@morphic-ts/fastcheck-interpreters': 3.0.0_kjf5gmtjlu54gvtwipxfstg35e
+      '@morphic-ts/io-ts-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      '@morphic-ts/json-schema-interpreters': 3.0.0_x2qpmuq5piogdi3dqvgneo65hu
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      '@morphic-ts/ord-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      '@morphic-ts/show-interpreters': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      '@morphic-ts/summoners': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fast-equals: 2.0.4
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      monocle-ts: 2.3.13_fp-ts@2.13.1
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    transitivePeerDependencies:
+      - fast-check
+      - fp-ts-contrib
+    dev: false
+
+  /@morphic-ts/common/3.0.0:
+    resolution: {integrity: sha512-X5473jHmD9pHCyrEvvgeMDnezKAWh6pl1doFmwEfiZZmCm0ZGrfVbnt7LbwWuFNDkBgKXIBj1R2ERRL0qQk9IQ==}
+    dev: false
+
+  /@morphic-ts/eq-interpreters/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-fA/vkoAq60dvojLAZRdr6q1gu5FkxOgGHKY83JpN7PA25EMOjV+HYPYSfMlvqRtaDMYC+tPV1oLGKzc898RcvQ==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fast-equals: 2.0.4
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/fastcheck-interpreters/3.0.0_kjf5gmtjlu54gvtwipxfstg35e:
+    resolution: {integrity: sha512-hdMC1h3yO3leOnboZzImJmoqNj/xyaXRPsOn1gKXCQHUWDRPMVcQO7rX7zDWLuArJuCYF2gCROvH8a6oMLCdhw==}
+    peerDependencies:
+      fast-check: ^2.6.0
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fast-check: 2.25.0
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/io-ts-interpreters/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-wkKQIlTpBWkrKEs5f+/8iJmCo1vW/aBKb85aW+/325gh676igY4qWYc9X9p59ElKh6UXwxI04dGiO5h2ECQoAg==}
+    peerDependencies:
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    transitivePeerDependencies:
+      - fp-ts
+    dev: false
+
+  /@morphic-ts/json-schema-interpreters/3.0.0_x2qpmuq5piogdi3dqvgneo65hu:
+    resolution: {integrity: sha512-KmQEn5uuCWnCkIl773bjOQFc9K3nQl+ur5rm32vCCwQDxGk0Q2MFHA5W5lvybfh6f3FGVLpzmCp6OT9qUC3lHw==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+      fp-ts-contrib: ^0.1.12
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fp-ts: 2.13.1
+      fp-ts-contrib: 0.1.29_fp-ts@2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/model-algebras/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-1It0q+HfyDTeE0hGvKfjXiRWXnkg6hWudPlzn2b5AqFIZcuqW71jY0mlrua2AfaBRGXU4W7xLlDqIox0wrfPUw==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/ord-interpreters/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-lAwHRPZNbHtReqj7vkLD+1TmfZuA3jglqzNV4GANG7SlrH1VwmTgJkEs80Y1WY+mKpzEd3Tozzp41vK7mX494Q==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/show-interpreters/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-W6Vs6AyrDKPMkF2Fwnw6fspx+xiAwRPOxuJ9U2gEeRAanA1izbscx6J+bZTA0MKTk0GiJH/B1B6mnJ5Z1lpdsA==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+      io-ts: ^2.1.3
+      io-ts-types: ^0.5.6
+      newtype-ts: ^0.3.3
+    dependencies:
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      io-ts-types: 0.5.19_3r4zs434vtthvwddf63cdxp364
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
+
+  /@morphic-ts/summoners/3.0.0_kbreipgeul5zkwjj22x33nfq5m:
+    resolution: {integrity: sha512-6F0IKdd/lD5UDkAcDJVRmx9S5UWlxttLWRaW3+s7ux8IGn+6WZ/EgcgYePfzytlqRwzDD+2wfEg3vNnTVJ2Bkw==}
+    peerDependencies:
+      fp-ts: ^2.5.3
+    dependencies:
+      '@morphic-ts/adt': 3.0.0
+      '@morphic-ts/algebras': 3.0.0
+      '@morphic-ts/common': 3.0.0
+      '@morphic-ts/model-algebras': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+      fp-ts: 2.13.1
+    transitivePeerDependencies:
+      - io-ts
+      - io-ts-types
+      - newtype-ts
+    dev: false
 
   /@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1754,6 +1950,13 @@ packages:
       strip-final-newline: 3.0.0
     dev: true
 
+  /fast-check/2.25.0:
+    resolution: {integrity: sha512-wRUT2KD2lAmT75WNIJIHECawoUUMHM0I5jrlLXGtGeqmPL8jl/EldUDjY1VCp6fDY8yflyfUeIOsOBrIbIiArg==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      pure-rand: 5.0.5
+    dev: false
+
   /fast-deep-equal/3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
     dev: true
@@ -1761,6 +1964,10 @@ packages:
   /fast-diff/1.2.0:
     resolution: {integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==}
     dev: true
+
+  /fast-equals/2.0.4:
+    resolution: {integrity: sha512-caj/ZmjHljPrZtbzJ3kfH5ia/k4mTJe/qSiXAGzxZWRZgsgDV0cvNaQULqUX8t0/JVlzzEdYOwCN5DmzTxoD4w==}
+    dev: false
 
   /fast-glob/3.2.12:
     resolution: {integrity: sha512-DVj4CQIYYow0BlaelwK1pHl5n5cRSJfM60UA0zK891sVInoPri2Ekj7+e1CT3/3qxXenpI+nBBmQAcJPJgaj4w==}
@@ -1879,6 +2086,14 @@ packages:
       cross-spawn: 7.0.3
       signal-exit: 3.0.7
     dev: true
+
+  /fp-ts-contrib/0.1.29_fp-ts@2.13.1:
+    resolution: {integrity: sha512-y+f+xlZqYgj2t+Alu/oat10UC491PByvH7XrT0ITc/DbDJK7LDJLShZJy2orjE7PlcJkO5niDenc1A/woyeB/Q==}
+    peerDependencies:
+      fp-ts: ^2.1.2
+    dependencies:
+      fp-ts: 2.13.1
+    dev: false
 
   /fp-ts-std/0.15.1_sddbbwftoqt3d5g3p7ix53ouca:
     resolution: {integrity: sha512-JvWjUki14fxuse8QAFubdNi4g+o7qWq94n31sxlD8hobl8KbyfguK69yQZBkNQu+q+8b5yYxgyevs003w6sDNA==}
@@ -2243,6 +2458,20 @@ packages:
       from2: 2.3.0
       p-is-promise: 3.0.0
     dev: true
+
+  /io-ts-types/0.5.19_3r4zs434vtthvwddf63cdxp364:
+    resolution: {integrity: sha512-kQOYYDZG5vKre+INIDZbLeDJe+oM+4zLpUkjXyTMyUfoCpjJNyi29ZLkuEAwcPufaYo3yu/BsemZtbdD+NtRfQ==}
+    peerDependencies:
+      fp-ts: ^2.0.0
+      io-ts: ^2.0.0
+      monocle-ts: ^2.0.0
+      newtype-ts: ^0.3.2
+    dependencies:
+      fp-ts: 2.13.1
+      io-ts: 2.2.20_fp-ts@2.13.1
+      monocle-ts: 2.3.13_fp-ts@2.13.1
+      newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
+    dev: false
 
   /io-ts/2.2.20_fp-ts@2.13.1:
     resolution: {integrity: sha512-Rq2BsYmtwS5vVttie4rqrOCIfHCS9TgpRLFpKQCM1wZBBRY9nWVGmEvm2FnDbSE2un1UE39DvFpTR5UL47YDcA==}
@@ -2656,6 +2885,17 @@ packages:
   /make-error/1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
     dev: true
+
+  /make-union-morphic-ts/1.0.7_tkkhkw7abvjyxavu6h6oqh543q:
+    resolution: {integrity: sha512-qT/Ke/TQIfIVZUCh5tu3ctTaA/VmtdD7BDZb8VWHMovITWxlsNDBW52CR3XPFuWOSrWmi50RLTMjqFcJcRgcUw==}
+    hasBin: true
+    peerDependencies:
+      '@morphic-ts/batteries': ^3.0.0
+      '@morphic-ts/summoners': ^3.0.0
+    dependencies:
+      '@morphic-ts/batteries': 3.0.0_ljogjlciannwm3nucb2c2w5a34
+      '@morphic-ts/summoners': 3.0.0_kbreipgeul5zkwjj22x33nfq5m
+    dev: false
 
   /map-obj/1.0.1:
     resolution: {integrity: sha512-7N/q3lyZ+LVCp7PzuxrJr4KMbBE2hW7BT7YNia330OFxIf4d3r5zVpicP2650l7CPN6RM9zOJRl3NGpqSiw3Eg==}
@@ -3243,6 +3483,10 @@ packages:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
     engines: {node: '>=6'}
     dev: true
+
+  /pure-rand/5.0.5:
+    resolution: {integrity: sha512-BwQpbqxSCBJVpamI6ydzcKqyFmnd5msMWUGvzXLm1aXvusbbgkbOto/EUPM00hjveJEaJtdbhUjKSzWRhQVkaw==}
+    dev: false
 
   /q/1.5.1:
     resolution: {integrity: sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw==}

@@ -13,14 +13,14 @@ import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import * as iots from 'io-ts';
 
 import { diffLines } from '../../_internal/libs/diffLines';
-import type { Change, TestError } from '../../type';
-import { testError } from '../../type';
+import type { Change } from '../../type';
+import { TestError } from '../../type';
 
 const indent = (line: string): string => `  ${line}`;
 
 const unknownToLines =
-  (path: readonly (number | string)[]) =>
-  (obj: unknown): Either<readonly (number | string)[], ReadonlyNonEmptyArray<string>> =>
+  (path: readonly string[]) =>
+  (obj: unknown): Either<readonly string[], ReadonlyNonEmptyArray<string>> =>
     typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
       ? either.right([JSON.stringify(obj)])
       : obj === undefined
@@ -29,7 +29,7 @@ const unknownToLines =
       ? pipe(
           obj,
           readonlyArray.traverseWithIndex(either.Applicative)((index, value) =>
-            unknownToLines([...path, index])(value)
+            unknownToLines([...path, `${index}`])(value)
           ),
           either.map(
             flow(
@@ -70,7 +70,7 @@ export const equal = ({
 }: {
   readonly received: unknown;
   readonly expected: unknown;
-}): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
+}): Either<TestError['AssertionError'] | TestError['SerializationError'], readonly Change[]> =>
   pipe(
     { received, expected },
     readonlyRecord.map((value) =>
@@ -79,7 +79,7 @@ export const equal = ({
         unknownToLines([]),
         either.bimap(
           (path) =>
-            testError.serializationError({
+            TestError.Union.as.SerializationError({
               path,
               forceSerializedValue: JSON.stringify(value, undefined, 2),
             }),
@@ -92,7 +92,7 @@ export const equal = ({
     either.chainW(
       either.fromPredicate(
         readonlyArray.foldMap(boolean.MonoidAll)((change: Change) => change.type === '0'),
-        (changes) => testError.assertionError({ changes, received, expected })
+        (changes) => TestError.Union.as.AssertionError({ changes, received, expected })
       )
     )
   );

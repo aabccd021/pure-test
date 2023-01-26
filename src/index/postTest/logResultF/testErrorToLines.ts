@@ -4,7 +4,8 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, Named, suiteError, TestError, TestUnitError } from '../../type';
+import type { Change, Named, suiteError, TestUnitError } from '../../type';
+import { TestError } from '../../type';
 
 const border = (x: string) => ` ${x} `;
 
@@ -43,34 +44,32 @@ const changesToSummaryLines = (changes: readonly Change[]): readonly string[] =>
   '',
 ];
 
-export const testErrorToLines = (testError: TestError.Union): readonly string[] =>
-  readonlyArray.flatten([
-    [c.red(c.bold(testError.code))],
-    match(testError)
-      .with({ code: 'AssertionError' }, ({ changes }) =>
-        pipe(
-          [changesToSummaryLines(changes), changesToLines(changes)],
-          readonlyArray.flatten,
-          indent
-        )
-      )
-      .with({ code: 'TimedOut' }, () => ['Test timed out'])
-      .with({ code: 'SerializationError' }, ({ path, forceSerializedValue }) =>
-        pipe(
-          path,
-          readonlyArray.map((numberOrString) => `.${numberOrString}`),
-          readonlyArray.intercalate(string.Monoid)(''),
-          (pathStr) => [`Error to serialize object on path: ${pathStr}`, forceSerializedValue]
-        )
-      )
-      .with({ code: 'UnhandledException' }, ({ exception }) =>
-        readonlyArray.flatten([
-          ['Unhanandled exception thrown: '],
-          string.split('\n')(JSON.stringify(exception.serialized, undefined, 2)),
-        ])
-      )
-      .exhaustive(),
-  ]);
+export const testErrorToContentLines: (testError: TestError['Union']) => readonly string[] =
+  TestError.Union.matchStrict({
+    AssertionError: ({ changes }) =>
+      pipe(
+        [changesToSummaryLines(changes), changesToLines(changes)],
+        readonlyArray.flatten,
+        indent
+      ),
+
+    TimedOut: () => ['Test timed out'],
+    SerializationError: ({ path, forceSerializedValue }) =>
+      pipe(
+        path,
+        readonlyArray.map((numberOrString) => `.${numberOrString}`),
+        readonlyArray.intercalate(string.Monoid)(''),
+        (pathStr) => [`Error to serialize object on path: ${pathStr}`, forceSerializedValue]
+      ),
+    UnhandledException: ({ exception }) =>
+      readonlyArray.flatten([
+        ['Unhanandled exception thrown: '],
+        string.split('\n')(JSON.stringify(exception.serialized, undefined, 2)),
+      ]),
+  });
+
+export const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
+  readonlyArray.flatten([[c.red(c.bold(testError.code))], testErrorToContentLines(testError)]);
 
 const testUnitTestErrorToLines = (testError: TestUnitError.TestError): readonly string[] =>
   testErrorToLines(testError.value);
@@ -79,7 +78,7 @@ const testUnitGroupErrorToLines = (groupError: TestUnitError.GroupError): readon
   pipe(
     groupError.results,
     readonlyArray.lefts,
-    readonlyArray.chain((testFail: Named<TestError.Union>): readonly string[] =>
+    readonlyArray.chain((testFail: Named<TestError['Union']>): readonly string[] =>
       pipe(
         [
           ['', `${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testFail.name)}`],
