@@ -4,3 +4,4 @@ coverage
 cjs
 esm
 tsconfig.dist.json
+test-result.json

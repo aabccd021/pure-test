@@ -1,6 +1,9 @@
+// eslint-disable-next-line import/no-nodejs-modules
+import * as fs from 'node:fs/promises';
+
 import * as src from '@src';
 import * as srcNode from '@src/node';
-import { taskEither } from 'fp-ts';
+import { task, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
 import * as assert from './assert';
@@ -18,5 +21,9 @@ export const main = pipe(
   src.preTest.throwOnDuplicateTestName,
   src.runTests({}),
   src.postTest.logResult,
+  task.chainFirst(
+    (suiteResult) => () =>
+      fs.writeFile('test-result.json', JSON.stringify(suiteResult, undefined, 2))
+  ),
   srcNode.postTest.exit
 );

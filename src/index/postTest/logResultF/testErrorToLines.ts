@@ -55,12 +55,12 @@ export const testErrorToLines = (testError: TestError.Union): readonly string[] 
         )
       )
       .with({ code: 'TimedOut' }, () => ['Test timed out'])
-      .with({ code: 'SerializationError' }, ({ path }) =>
+      .with({ code: 'SerializationError' }, ({ path, forceSerializedValue }) =>
         pipe(
           path,
           readonlyArray.map((numberOrString) => `.${numberOrString}`),
           readonlyArray.intercalate(string.Monoid)(''),
-          (pathStr) => [`Error to serialize object on path: ${pathStr}`]
+          (pathStr) => [`Error to serialize object on path: ${pathStr}`, forceSerializedValue]
         )
       )
       .with({ code: 'UnhandledException' }, ({ exception }) =>

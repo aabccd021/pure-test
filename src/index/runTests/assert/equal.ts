@@ -20,7 +20,7 @@ const indent = (line: string): string => `  ${line}`;
 
 const unknownToLines =
   (path: readonly (number | string)[]) =>
-  (obj: unknown): Either<TestError.SerializationError, ReadonlyNonEmptyArray<string>> =>
+  (obj: unknown): Either<readonly (number | string)[], ReadonlyNonEmptyArray<string>> =>
     typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string' || obj === null
       ? either.right([JSON.stringify(obj)])
       : obj === undefined
@@ -42,7 +42,7 @@ const unknownToLines =
       : pipe(
           obj,
           iots.UnknownRecord.decode,
-          either.mapLeft(() => testError.serializationError(path)),
+          either.mapLeft(() => path),
           either.chain(
             readonlyRecord.traverseWithIndex(either.Applicative)((index, value) =>
               unknownToLines([...path, index])(value)
@@ -73,8 +73,19 @@ export const equal = ({
 }): Either<TestError.AssertionError | TestError.SerializationError, readonly Change[]> =>
   pipe(
     { received, expected },
-    readonlyRecord.map(
-      flow(unknownToLines([]), either.map(readonlyArray.intercalate(string.Monoid)('\n')))
+    readonlyRecord.map((value) =>
+      pipe(
+        value,
+        unknownToLines([]),
+        either.bimap(
+          (path) =>
+            testError.serializationError({
+              path,
+              forceSerializedValue: JSON.stringify(value, undefined, 2),
+            }),
+          readonlyArray.intercalate(string.Monoid)('\n')
+        )
+      )
     ),
     apply.sequenceS(either.Apply),
     either.map(diffLines),

@@ -16,4 +16,4 @@ const cases: readonly Case[] = [
   { name: 'boolean', received: true, expected: true },
 ];
 
-export const tests = [group({ name: 'passu', tests: readonlyArray.map(caseToTest)(cases) })];
+export const tests = [group({ name: 'pass', tests: readonlyArray.map(caseToTest)(cases) })];

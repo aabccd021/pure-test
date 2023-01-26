@@ -3,11 +3,12 @@ import type { Change } from '.';
 export type SerializationError = {
   readonly code: 'SerializationError';
   readonly path: readonly (number | string)[];
+  readonly forceSerializedValue: string;
 };
 
-export const serializationError = (path: readonly (number | string)[]): SerializationError => ({
+export const serializationError = (p: Omit<SerializationError, 'code'>): SerializationError => ({
+  ...p,
   code: 'SerializationError' as const,
-  path,
 });
 
 export type AssertionError = {
@@ -26,18 +27,17 @@ export type TimedOut = { readonly code: 'TimedOut' };
 
 export const timedOut: TimedOut = { code: 'TimedOut' };
 
-export type UnhandledException = {
-  readonly code: 'UnhandledException';
-  readonly exception: {
-    readonly value: unknown;
-    readonly serialized: unknown;
-  };
-};
-
-export const unhandledException = (exception: {
+type SerializedException = {
   readonly value: unknown;
   readonly serialized: unknown;
-}): UnhandledException => ({
+};
+
+export type UnhandledException = {
+  readonly code: 'UnhandledException';
+  readonly exception: SerializedException;
+};
+
+export const unhandledException = (exception: SerializedException): UnhandledException => ({
   code: 'UnhandledException' as const,
   exception,
 });

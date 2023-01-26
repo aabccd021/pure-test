@@ -79,7 +79,8 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
     timeElapsed.ofTaskEither(runAct(test.act)),
     timeElapsed.chainEitherKW(runAssert),
     runWithTimeout(test.timeout),
-    runWithRetry(test.retry)
+    runWithRetry(test.retry),
+    taskEither.map(({ timeElapsedMs }) => ({ timeElapsedMs }))
   );
 
 const runGroup = (group: TestUnit.Group) =>
