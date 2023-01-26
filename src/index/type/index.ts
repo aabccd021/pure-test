@@ -17,12 +17,10 @@ import * as suiteError from './suiteError';
 import type * as TestUnit from './testUnit';
 import type * as TestUnitError from './testUnitError';
 import * as testUnitError from './testUnitError';
-import type * as TestUnitSuccess from './testUnitSuccess';
-import * as testUnitSuccess from './testUnitSuccess';
 
 const { summon, tagged } = summonFor({});
 
-export type { Assert, Named, ShardingError, SuiteError, TestUnit, TestUnitError, TestUnitSuccess };
+export type { Assert, Named, ShardingError, SuiteError, TestUnit, TestUnitError };
 
 export const Change = summon((F) =>
   F.interface(
@@ -89,7 +87,7 @@ export const TestError = makeUnion(summon)('code')({
 
 export type TestError = TypeOf<typeof TestError>;
 
-export { named, shardingError, suiteError, testUnitError, testUnitSuccess };
+export { named, shardingError, suiteError, testUnitError };
 
 export const TestSuccess = summon((F) =>
   F.interface(
@@ -113,9 +111,40 @@ export const TestResult = tagged('_tag')({
 
 export type TestResult = AType<typeof TestResult>;
 
-export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSuccess.Union>>;
+export const TestUnitSuccess = makeUnion(summon)('unit')({
+  Test: summon((F) =>
+    F.interface(
+      {
+        unit: F.stringLiteral('Test'),
+        value: TestSuccess(F),
+      },
+      'Test'
+    )
+  ),
+  Group: summon((F) =>
+    F.interface(
+      {
+        unit: F.stringLiteral('Group'),
+        results: F.array(
+          F.interface(
+            {
+              name: F.string(),
+              value: TestSuccess(F),
+            },
+            'Group.results'
+          )
+        ),
+      },
+      'Group'
+    )
+  ),
+});
 
-export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess.Union>[]>;
+export type TestUnitSuccess = TypeOf<typeof TestUnitSuccess>;
+
+export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSuccess['Union']>>;
+
+export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess['Union']>[]>;
 
 export type ConcurrencyConfig =
   | { readonly type: 'parallel' }

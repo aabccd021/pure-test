@@ -8,7 +8,7 @@ type TestCase = {
   readonly name: string;
   readonly scope1Name: string;
   readonly scope2Name: string;
-  readonly result: readonly DeepPartial<Named<TestUnitSuccess.Union>>[];
+  readonly result: readonly DeepPartial<Named<TestUnitSuccess['Union']>>[];
 };
 
 const caseToTest = (tc: TestCase) =>

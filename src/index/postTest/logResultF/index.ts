@@ -17,7 +17,7 @@ const suiteErrorToLines = (suiteError: SuiteError.Union): readonly string[] =>
     .exhaustive();
 
 const suiteSuccessToLines = (
-  suiteSuccess: readonly Named<TestUnitSuccess.Union>[]
+  suiteSuccess: readonly Named<TestUnitSuccess['Union']>[]
 ): readonly string[] =>
   pipe(
     suiteSuccess,
