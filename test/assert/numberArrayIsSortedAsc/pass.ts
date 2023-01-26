@@ -10,8 +10,11 @@ const caseToTest = (tc: Case) =>
 const cases: readonly Case[] = [
   { name: 'empty array', received: [] },
   { name: 'one number', received: [1] },
-  { name: 'two number', received: [1, 2] },
-  { name: 'three number', received: [1, 2, 3] },
+  { name: 'two numbers', received: [1, 2] },
+  { name: 'three numbers', received: [1, 2, 3] },
+  { name: 'three numbers with duplicate', received: [1, 2, 2, 3] },
+  { name: 'three numbers with two duplicate', received: [1, 2, 2, 3, 3] },
+  { name: 'three duplicate', received: [1, 2, 2, 2, 3] },
 ];
 
 export const tests = readonlyArray.map(caseToTest)(cases);

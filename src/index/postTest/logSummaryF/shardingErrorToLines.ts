@@ -1,9 +1,9 @@
 import { match } from 'ts-pattern';
 
-import type { ShardingError } from '../../type';
+import type { SuiteError } from '../../type';
 
-export const shardingErrorToContentLines = (error: ShardingError.Union): readonly string[] =>
-  match(error)
+export const shardingErrorToLines = (error: SuiteError.ShardingError): readonly string[] =>
+  match(error.value)
     .with({ code: 'ShardCountIsUnspecified' }, () => [`shard count is unspecified`])
     .with({ code: 'ShardCountIsNotANumber' }, ({ value }) => [
       `shard count is not a number : ${value}`,

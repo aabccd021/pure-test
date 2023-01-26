@@ -5,7 +5,7 @@ import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import { match } from 'ts-pattern';
 
-import type { ConcurrencyConfigRequired } from '../type';
+import type { ConcurrencyConfig } from '../type';
 
 const runSequentialFailFast =
   <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
@@ -41,7 +41,7 @@ export const runWithConcurrency = <T, L, R>({
   concurrency,
   run,
 }: {
-  readonly concurrency: ConcurrencyConfigRequired;
+  readonly concurrency: ConcurrencyConfig;
   readonly run: (t: T) => TaskEither<L, R>;
 }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
   match(concurrency)

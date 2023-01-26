@@ -1,4 +1,4 @@
-import type { Assert, ConcurrencyConfigRequired, Named } from '@src';
+import type { Assert, ConcurrencyConfig, Named } from '@src';
 import type { Task } from 'fp-ts/Task';
 import type * as retry from 'retry-ts';
 
@@ -11,7 +11,7 @@ export type Test = {
 
 export type Group = {
   readonly unit: 'Group';
-  readonly concurrency: ConcurrencyConfigRequired;
+  readonly concurrency: ConcurrencyConfig;
   readonly tests: readonly Named<Test>[];
 };
 
