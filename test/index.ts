@@ -17,6 +17,6 @@ export const main = pipe(
   taskEither.right,
   src.preTest.throwOnDuplicateTestName,
   src.runTests({}),
-  src.postTest.logSummary,
+  src.postTest.logResult,
   srcNode.postTest.exit
 );

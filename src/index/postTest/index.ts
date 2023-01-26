@@ -1,3 +1,3 @@
 export { exitF } from './exitF';
-export { logSummary } from './logSummary';
-export { logSummaryF } from './logSummaryF';
+export { logResult } from './logResult';
+export { logResultF } from './logResultF';

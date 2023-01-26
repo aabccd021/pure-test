@@ -21,11 +21,11 @@ const suiteSuccessToLines = (
 ): readonly string[] =>
   pipe(
     suiteSuccess,
-    readonlyArray.map(({ name }) => `  ${c.green('✓')} ${name}`),
+    readonlyArray.map(({ name }) => ` ${c.green('✓')} ${name}`),
     readonlyArray.concat(['', `All ${readonlyArray.size(suiteSuccess)} tests passed`])
   );
 
-export const logSummaryF = (env: {
+export const logResultF = (env: {
   readonly console: { readonly log: (str: string) => IO<void> };
 }): ((res: Task<SuiteResult>) => Task<SuiteResult>) =>
   task.chainFirstIOK(
