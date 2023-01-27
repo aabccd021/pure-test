@@ -19,9 +19,9 @@
   "module": "./esm/index.js",
   "types": "./cjs/index.d.ts",
   "exports": {
-    "./cjs/node": {
-      "require": "./cjs/node/index.js",
-      "import": "./esm/node/index.js"
+    "./cjs/node18": {
+      "require": "./cjs/node18.js",
+      "import": "./esm/node18.js"
     }
   },
   "release": {
@@ -45,7 +45,7 @@
     },
     "overrides": [
       {
-        "files": "**/node/**/*.ts",
+        "files": "src/node18.ts",
         "rules": {
           "import/no-nodejs-modules": "off"
         }

@@ -17,7 +17,7 @@ const caseToTest = (tc: {
             test({ name: 'tesnNme', act: pipe(tc.received, assert.equal('foo'), task.of) }),
           ]),
           runTests({}),
-          postTest.exitF({ process: { exit: exitCodeRef.write } })
+          postTest.exit({ exit: exitCodeRef.write })
         )
       ),
       task.chainIOK((exitCodeRef) => exitCodeRef.read),

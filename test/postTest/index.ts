@@ -1,5 +1,5 @@
 import { scope } from '@src';
 
-import * as exitF from './exitF';
+import * as exit from './exit';
 
-export const tests = scope({ exitF });
+export const tests = scope({ exitF: exit });

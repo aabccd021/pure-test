@@ -1,12 +1,12 @@
-import type { GetShardCount, GetShardCountFromArgs } from '@src';
+import type { Env, GetShardCount } from '@src';
 import { ShardingError } from '@src';
 import { either, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 import * as std from 'fp-ts-std';
 
-export const getCountFromArgs = (provider: GetShardCountFromArgs): GetShardCount =>
+export const getCountFromArgs = (env: Pick<Env, 'getShardCountFromArgs'>): GetShardCount =>
   pipe(
-    provider,
+    env.getShardCountFromArgs,
     taskEither.fromTaskOption(() => ShardingError.as.ShardCountIsUnspecified({})),
     taskEither.chainEitherKW((shardCountStr) =>
       pipe(

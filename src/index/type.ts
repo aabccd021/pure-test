@@ -3,6 +3,7 @@ import { summonFor } from '@morphic-ts/batteries/lib/summoner-ESBST';
 import type {} from '@morphic-ts/model-algebras/lib/types';
 import type { AType } from '@morphic-ts/summoners';
 import { makeTagged } from '@morphic-ts/summoners';
+import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TaskOption } from 'fp-ts/TaskOption';
@@ -183,16 +184,16 @@ export const SuiteResult = summon((F) =>
 
 export type SuiteResult = AType<typeof SuiteResult>;
 
-export type WriteStringToFile = (p: {
-  readonly path: string;
-  readonly value: string;
-}) => TaskEither<unknown, unknown>;
-
-export type ReadFileAsString = (p: { readonly path: string }) => TaskEither<unknown, string>;
-
-export type GetShardCountFromArgs = TaskOption<string>;
-
-export type GetShardIndexFromArgs = TaskOption<string>;
+export type Env = {
+  readonly writeStringToFile: (p: {
+    readonly path: string;
+    readonly value: string;
+  }) => TaskEither<unknown, unknown>;
+  readonly readFileAsString: (p: { readonly path: string }) => TaskEither<unknown, string>;
+  readonly getShardCountFromArgs: TaskOption<string>;
+  readonly getShardIndexFromArgs: TaskOption<string>;
+  readonly exit: (exitCode: number | undefined) => IO<void>;
+};
 
 export type TestConfig = { readonly concurrency: ConcurrencyConfig };
 

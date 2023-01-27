@@ -1,5 +1,5 @@
 import * as src from '@src';
-import * as srcNode from '@src/node';
+import { env } from '@src/node18';
 import { taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
@@ -18,5 +18,5 @@ export const main = pipe(
   src.preTest.throwOnDuplicateTestName,
   src.runTests({}),
   src.postTest.logResult,
-  srcNode.postTest.exit
+  src.postTest.exit(env)
 );
