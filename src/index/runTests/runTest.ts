@@ -15,8 +15,8 @@ const runWithTimeout =
   <L, T>(timeoutMs: number) =>
   (te: TaskEither<L, T>) =>
     task
-      .getRaceMonoid<Either<L | TestError['TimedOut'], T>>()
-      .concat(te, task.delay(timeoutMs)(taskEither.left(TestError.Union.as.TimedOut({}))));
+      .getRaceMonoid<Either<L | TestError, T>>()
+      .concat(te, task.delay(timeoutMs)(taskEither.left(TestError.as.TimedOut({}))));
 
 const runWithRetry =
   (retryPolicy: RetryPolicy) =>
@@ -25,13 +25,13 @@ const runWithRetry =
 
 const serializeUnhandledException: <R>(
   te: TaskEither<unknown, R>
-) => TaskEither<TestError['UnhandledException'], R> = taskEither.orElseW((exception) =>
+) => TaskEither<TestError, R> = taskEither.orElseW((exception) =>
   pipe(
     exception,
     serializeError,
     task.map((serialized) =>
       either.left(
-        TestError.Union.as.UnhandledException({ exception: { value: exception, serialized } })
+        TestError.as.UnhandledException({ exception: { value: exception, serialized } })
       )
     )
   )

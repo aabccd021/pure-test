@@ -22,7 +22,7 @@ const caseToTest = (tc: Case) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<SuiteError['Union']>({
+        assert.equalDeepPartial<SuiteError>({
           code: 'TestRunError',
           results: [
             either.left({

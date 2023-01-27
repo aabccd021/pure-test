@@ -7,13 +7,13 @@ import * as std from 'fp-ts-std';
 export const getIndexFromArgs = (provider: GetShardIndexFromArgs): GetShardIndex =>
   pipe(
     provider,
-    taskEither.fromTaskOption(() => ShardingError.Union.as.ShardIndexIsUnspecified({})),
+    taskEither.fromTaskOption(() => ShardingError.as.ShardIndexIsUnspecified({})),
     taskEither.chainEitherKW((shardIndexStr) =>
       pipe(
         shardIndexStr,
         std.number.fromString,
         either.fromOption(() =>
-          ShardingError.Union.as.ShardIndexIsNotANumber({ value: shardIndexStr })
+          ShardingError.as.ShardIndexIsNotANumber({ value: shardIndexStr })
         )
       )
     )

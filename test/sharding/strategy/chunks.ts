@@ -7,7 +7,7 @@ import type { DeepPartial } from 'ts-essentials';
 
 type TestCase = {
   readonly shardCount: number;
-  readonly result: ReadonlyNonEmptyArray<readonly DeepPartial<Named<TestUnitSuccess['Union']>>[]>;
+  readonly result: ReadonlyNonEmptyArray<readonly DeepPartial<Named<TestUnitSuccess>>[]>;
 };
 
 const caseToTest = (tc: TestCase) =>

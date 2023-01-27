@@ -7,13 +7,13 @@ import * as std from 'fp-ts-std';
 export const getCountFromArgs = (provider: GetShardCountFromArgs): GetShardCount =>
   pipe(
     provider,
-    taskEither.fromTaskOption(() => ShardingError.Union.as.ShardCountIsUnspecified({})),
+    taskEither.fromTaskOption(() => ShardingError.as.ShardCountIsUnspecified({})),
     taskEither.chainEitherKW((shardCountStr) =>
       pipe(
         shardCountStr,
         std.number.fromString,
         either.fromOption(() =>
-          ShardingError.Union.as.ShardCountIsNotANumber({ value: shardCountStr })
+          ShardingError.as.ShardCountIsNotANumber({ value: shardCountStr })
         )
       )
     )

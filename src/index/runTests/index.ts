@@ -43,15 +43,15 @@ const runGroup = (group: Group) =>
 
 const runTestUnit = (
   testUnit: TestUnit
-): TaskEither<TestUnitError['Union'], TestUnitSuccess['Union']> =>
+): TaskEither<TestUnitError, TestUnitSuccess> =>
   match(testUnit)
     .with(
       { unit: 'Test' },
       flow(
         runTest,
         taskEither.bimap(
-          (value) => TestUnitError.Union.as.TestError({ value }),
-          (value) => TestUnitSuccess.Union.as.Test({ value })
+          (value) => TestUnitError.as.TestError({ value }),
+          (value) => TestUnitSuccess.as.Test({ value })
         )
       )
     )
@@ -60,8 +60,8 @@ const runTestUnit = (
       flow(
         runGroup,
         taskEither.bimap(
-          (results) => TestUnitError.Union.as.GroupError({ results }),
-          (results) => TestUnitSuccess.Union.as.Group({ results })
+          (results) => TestUnitError.as.GroupError({ results }),
+          (results) => TestUnitSuccess.as.Group({ results })
         )
       )
     )
@@ -71,12 +71,12 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
   pipe(
     testUnitResults,
     eitherArrayIsAllRight,
-    either.mapLeft((results) => SuiteError.Union.as.TestRunError({ results }))
+    either.mapLeft((results) => SuiteError.as.TestRunError({ results }))
   );
 
 const runTestsWithFilledDefaultConfig = (
   config: TestConfig
-): ((testsTE: TaskEither<SuiteError['Union'], readonly Named<TestUnit>[]>) => Task<SuiteResult>) =>
+): ((testsTE: TaskEither<SuiteError, readonly Named<TestUnit>[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({

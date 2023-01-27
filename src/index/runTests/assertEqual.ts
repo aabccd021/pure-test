@@ -70,7 +70,7 @@ export const assertEqual = ({
 }: {
   readonly received: unknown;
   readonly expected: unknown;
-}): Either<TestError['AssertionError'] | TestError['SerializationError'], readonly Change[]> =>
+}): Either<TestError | TestError, readonly Change[]> =>
   pipe(
     { received, expected },
     readonlyRecord.map((value) =>
@@ -79,7 +79,7 @@ export const assertEqual = ({
         unknownToLines([]),
         either.bimap(
           (path) =>
-            TestError.Union.as.SerializationError({
+            TestError.as.SerializationError({
               path,
               forceSerializedValue: JSON.stringify(value, undefined, 2),
             }),
@@ -92,7 +92,7 @@ export const assertEqual = ({
     either.chainW(
       either.fromPredicate(
         readonlyArray.foldMap(boolean.MonoidAll)((change: Change) => change.type === '0'),
-        (changes) => TestError.Union.as.AssertionError({ changes, received, expected })
+        (changes) => TestError.as.AssertionError({ changes, received, expected })
       )
     )
   );

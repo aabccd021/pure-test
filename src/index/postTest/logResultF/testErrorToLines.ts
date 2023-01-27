@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, Named, SuiteError } from '../../type';
+import type { Change, Named, TestUnitResult } from '../../type';
 import { TestError, TestUnitError } from '../../type';
 
 const border = (x: string) => ` ${x} `;
@@ -44,40 +44,35 @@ const changesToSummaryLines = (changes: readonly Change[]): readonly string[] =>
   '',
 ];
 
-const testErrorToContentLines: (testError: TestError['Union']) => readonly string[] =
-  TestError.Union.matchStrict({
-    AssertionError: ({ changes }) =>
-      pipe(
-        [changesToSummaryLines(changes), changesToLines(changes)],
-        readonlyArray.flatten,
-        indent
-      ),
+const testErrorToContentLines: (testError: TestError) => readonly string[] = TestError.matchStrict({
+  AssertionError: ({ changes }) =>
+    pipe([changesToSummaryLines(changes), changesToLines(changes)], readonlyArray.flatten, indent),
 
-    TimedOut: () => ['Test timed out'],
-    SerializationError: ({ path, forceSerializedValue }) =>
-      pipe(
-        path,
-        readonlyArray.map((numberOrString) => `.${numberOrString}`),
-        readonlyArray.intercalate(string.Monoid)(''),
-        (pathStr) => [`Error to serialize object on path: ${pathStr}`, forceSerializedValue]
-      ),
-    UnhandledException: ({ exception }) =>
-      readonlyArray.flatten([
-        ['Unhanandled exception thrown: '],
-        string.split('\n')(JSON.stringify(exception.serialized, undefined, 2)),
-      ]),
-  });
+  TimedOut: () => ['Test timed out'],
+  SerializationError: ({ path, forceSerializedValue }) =>
+    pipe(
+      path,
+      readonlyArray.map((numberOrString) => `.${numberOrString}`),
+      readonlyArray.intercalate(string.Monoid)(''),
+      (pathStr) => [`Error to serialize object on path: ${pathStr}`, forceSerializedValue]
+    ),
+  UnhandledException: ({ exception }) =>
+    readonlyArray.flatten([
+      ['Unhanandled exception thrown: '],
+      string.split('\n')(JSON.stringify(exception.serialized, undefined, 2)),
+    ]),
+});
 
-const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
+const testErrorToLines = (testError: TestError): readonly string[] =>
   readonlyArray.flatten([[c.red(c.bold(testError.code))], testErrorToContentLines(testError)]);
 
-const testUnitErrorToLines = TestUnitError.Union.matchStrict({
+const testUnitErrorToLines = TestUnitError.matchStrict({
   TestError: ({ value }) => testErrorToLines(value),
   GroupError: ({ results }) =>
     pipe(
       results,
       readonlyArray.lefts,
-      readonlyArray.chain((testFail: Named<TestError['Union']>): readonly string[] =>
+      readonlyArray.chain((testFail: Named<TestError>): readonly string[] =>
         pipe(
           [
             ['', `${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testFail.name)}`],
@@ -90,13 +85,13 @@ const testUnitErrorToLines = TestUnitError.Union.matchStrict({
     ),
 });
 
-const formatErrorResult = (testUnitLeft: Named<TestUnitError['Union']>): readonly string[] =>
+const formatErrorResult = (testUnitLeft: Named<TestUnitError>): readonly string[] =>
   readonlyArray.flatten([
     [`${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testUnitLeft.name)}`],
     testUnitErrorToLines(testUnitLeft.value),
   ]);
 
-export const testRunErrorToLines = ({ results }: SuiteError['TestRunError']): readonly string[] =>
+export const testRunErrorToLines = (results: readonly TestUnitResult[]): readonly string[] =>
   pipe(
     results,
     readonlyArray.map(either.match(formatErrorResult, () => [])),

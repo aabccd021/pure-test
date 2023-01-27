@@ -10,12 +10,12 @@ const getShardOnIndex =
   (index: number) =>
   (
     shards: readonly (readonly Named<TestUnit>[])[]
-  ): Either<ShardingError['ShardIndexOutOfBound'], readonly Named<TestUnit>[]> =>
+  ): Either<ShardingError, readonly Named<TestUnit>[]> =>
     pipe(
       shards,
       readonlyArray.lookup(index - 1),
       either.fromOption(() =>
-        ShardingError.Union.as.ShardIndexOutOfBound({
+        ShardingError.as.ShardIndexOutOfBound({
           index,
           shardCount: readonlyArray.size(shards),
         })
@@ -26,7 +26,7 @@ const validateTestShards = (tests: {
   readonly beforeSharding: readonly Named<TestUnit>[];
   readonly afterSharding: readonly (readonly Named<TestUnit>[])[];
 }): Either<
-  ShardingError['TestCountChangedAfterSharding'],
+  ShardingError,
   readonly (readonly Named<TestUnit>[])[]
 > =>
   pipe(
@@ -37,7 +37,7 @@ const validateTestShards = (tests: {
     (testCount) =>
       testCount.afterSharding === testCount.beforeSharding
         ? either.right(tests.afterSharding)
-        : either.left(ShardingError.Union.as.TestCountChangedAfterSharding({ testCount }))
+        : either.left(ShardingError.as.TestCountChangedAfterSharding({ testCount }))
   );
 
 export const shardTests = <L>(p: {
@@ -46,7 +46,7 @@ export const shardTests = <L>(p: {
   readonly strategy: ShardingStrategy;
 }): ((
   tests: TaskEither<L, readonly Named<TestUnit>[]>
-) => TaskEither<L | SuiteError['ShardingError'], readonly Named<TestUnit>[]>) =>
+) => TaskEither<L | SuiteError, readonly Named<TestUnit>[]>) =>
   taskEither.chainW((tests) =>
     pipe(
       TE.Do,
@@ -59,6 +59,6 @@ export const shardTests = <L>(p: {
           either.chainW(getShardOnIndex(index))
         )
       ),
-      TE.mapLeft((value) => SuiteError.Union.as.ShardingError({ value }))
+      TE.mapLeft((value) => SuiteError.as.ShardingError({ value }))
     )
   );

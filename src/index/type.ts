@@ -2,11 +2,10 @@ import { summonFor } from '@morphic-ts/batteries/lib/summoner-ESBST';
 // eslint-disable-next-line import/no-unassigned-import
 import type {} from '@morphic-ts/model-algebras/lib/types';
 import type { AType } from '@morphic-ts/summoners';
+import { makeTagged } from '@morphic-ts/summoners';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TaskOption } from 'fp-ts/TaskOption';
-import type { TypeOf } from 'make-union-morphic-ts';
-import { makeUnion } from 'make-union-morphic-ts';
 import type { RetryPolicy } from 'retry-ts';
 
 export type ConcurrencyConfig =
@@ -42,7 +41,7 @@ export const Change = summon((F) =>
 
 export type Change = AType<typeof Change>;
 
-export const TestError = makeUnion(summon)('code')({
+export const TestError = makeTagged(summon)('code')({
   SerializationError: summon((F) =>
     F.interface(
       {
@@ -69,27 +68,24 @@ export const TestError = makeUnion(summon)('code')({
     F.interface(
       {
         code: F.stringLiteral('UnhandledException'),
-        exception: F.interface(
-          { value: F.unknown(), serialized: F.unknown() },
-          'UnhandledException.exception'
-        ),
+        exception: F.interface({ value: F.unknown(), serialized: F.unknown() }, ''),
       },
       ''
     )
   ),
 });
 
-export type TestError = TypeOf<typeof TestError>;
+export type TestError = AType<typeof TestError>;
 
 export const TestSuccess = summon((F) => F.interface({ timeElapsedMs: F.number() }, ''));
 
 export type TestSuccess = AType<typeof TestSuccess>;
 
-export const TestResult = summon((F) => F.either(TestError.Union(F), TestSuccess(F)));
+export const TestResult = summon((F) => F.either(TestError(F), TestSuccess(F)));
 
 export type TestResult = AType<typeof TestResult>;
 
-export const TestUnitSuccess = makeUnion(summon)('unit')({
+export const TestUnitSuccess = makeTagged(summon)('unit')({
   Test: summon((F) => F.interface({ unit: F.stringLiteral('Test'), value: TestSuccess(F) }, '')),
   Group: summon((F) =>
     F.interface(
@@ -102,11 +98,11 @@ export const TestUnitSuccess = makeUnion(summon)('unit')({
   ),
 });
 
-export type TestUnitSuccess = TypeOf<typeof TestUnitSuccess>;
+export type TestUnitSuccess = AType<typeof TestUnitSuccess>;
 
-export const TestUnitError = makeUnion(summon)('code')({
+export const TestUnitError = makeTagged(summon)('code')({
   TestError: summon((F) =>
-    F.interface({ code: F.stringLiteral('TestError'), value: TestError.Union(F) }, '')
+    F.interface({ code: F.stringLiteral('TestError'), value: TestError(F) }, '')
   ),
   GroupError: summon((F) =>
     F.interface(
@@ -114,7 +110,7 @@ export const TestUnitError = makeUnion(summon)('code')({
         code: F.stringLiteral('GroupError'),
         results: F.array(
           F.either(
-            F.interface({ name: F.string(), value: TestError.Union(F) }, ''),
+            F.interface({ name: F.string(), value: TestError(F) }, ''),
             F.interface({ name: F.string(), value: TestSuccess(F) }, '')
           )
         ),
@@ -124,18 +120,18 @@ export const TestUnitError = makeUnion(summon)('code')({
   ),
 });
 
-export type TestUnitError = TypeOf<typeof TestUnitError>;
+export type TestUnitError = AType<typeof TestUnitError>;
 
 export const TestUnitResult = summon((F) =>
   F.either(
-    F.interface({ name: F.string(), value: TestUnitError.Union(F) }, ''),
-    F.interface({ name: F.string(), value: TestUnitSuccess.Union(F) }, '')
+    F.interface({ name: F.string(), value: TestUnitError(F) }, ''),
+    F.interface({ name: F.string(), value: TestUnitSuccess(F) }, '')
   )
 );
 
 export type TestUnitResult = AType<typeof TestUnitResult>;
 
-export const ShardingError = makeUnion(summon)('code')({
+export const ShardingError = makeTagged(summon)('code')({
   ShardIndexOutOfBound: summon((F) =>
     F.interface(
       { code: F.stringLiteral('ShardIndexOutOfBound'), index: F.number(), shardCount: F.number() },
@@ -168,14 +164,14 @@ export const ShardingError = makeUnion(summon)('code')({
   ),
 });
 
-export type ShardingError = TypeOf<typeof ShardingError>;
+export type ShardingError = AType<typeof ShardingError>;
 
-export const SuiteError = makeUnion(summon)('code')({
+export const SuiteError = makeTagged(summon)('code')({
   DuplicateTestName: summon((F) =>
     F.interface({ code: F.stringLiteral('DuplicateTestName'), name: F.string() }, '')
   ),
   ShardingError: summon((F) =>
-    F.interface({ code: F.stringLiteral('ShardingError'), value: ShardingError.Union(F) }, '')
+    F.interface({ code: F.stringLiteral('ShardingError'), value: ShardingError(F) }, '')
   ),
   TestRunError: summon((F) =>
     F.interface({ code: F.stringLiteral('TestRunError'), results: F.array(TestUnitResult(F)) }, '')
@@ -185,13 +181,10 @@ export const SuiteError = makeUnion(summon)('code')({
   ),
 });
 
-export type SuiteError = TypeOf<typeof SuiteError>;
+export type SuiteError = AType<typeof SuiteError>;
 
 export const SuiteResult = summon((F) =>
-  F.either(
-    SuiteError.Union(F),
-    F.array(F.interface({ name: F.string(), value: TestUnitSuccess.Union(F) }, ''))
-  )
+  F.either(SuiteError(F), F.array(F.interface({ name: F.string(), value: TestUnitSuccess(F) }, '')))
 );
 
 export type SuiteResult = AType<typeof SuiteResult>;
@@ -217,14 +210,8 @@ export type DiffLines = (p: {
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
   readonly tests: readonly Named<TestUnit>[];
-}) => TaskEither<ShardingError['ShardingStrategyError'], readonly (readonly Named<TestUnit>[])[]>;
+}) => TaskEither<ShardingError, readonly (readonly Named<TestUnit>[])[]>;
 
-export type GetShardIndex = TaskEither<
-  ShardingError['ShardIndexIsNotANumber'] | ShardingError['ShardIndexIsUnspecified'],
-  number
->;
+export type GetShardIndex = TaskEither<ShardingError | ShardingError, number>;
 
-export type GetShardCount = TaskEither<
-  ShardingError['ShardCountIsNotANumber'] | ShardingError['ShardCountIsUnspecified'],
-  number
->;
+export type GetShardCount = TaskEither<ShardingError | ShardingError, number>;

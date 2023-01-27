@@ -8,7 +8,7 @@ import type { Named, SuiteResult, TestUnitSuccess } from '../../type';
 import { ShardingError, SuiteError } from '../../type';
 import { testRunErrorToLines } from './testErrorToLines';
 
-const shardingErrorToLines = ShardingError.Union.matchStrict({
+const shardingErrorToLines = ShardingError.matchStrict({
   ShardCountIsUnspecified: () => [`shard count is unspecified`],
   ShardCountIsNotANumber: ({ value }) => [`shard count is not a number : ${value}`],
   ShardIndexIsUnspecified: () => [`shard index is unspecified`],
@@ -26,16 +26,14 @@ const shardingErrorToLines = ShardingError.Union.matchStrict({
   ShardingStrategyError: () => [`ShardingStrategyError`],
 });
 
-const suiteErrorToLines = SuiteError.Union.matchStrict({
-  TestRunError: testRunErrorToLines,
+const suiteErrorToLines = SuiteError.matchStrict({
+  TestRunError: ({ results }) => testRunErrorToLines(results),
   DuplicateTestName: ({ name }) => [`Found duplicate test name: ${name}`],
   ShardingError: ({ value }) => shardingErrorToLines(value),
   WriteResultError: () => [],
 });
 
-const suiteSuccessToLines = (
-  suiteSuccess: readonly Named<TestUnitSuccess['Union']>[]
-): readonly string[] =>
+const suiteSuccessToLines = (suiteSuccess: readonly Named<TestUnitSuccess>[]): readonly string[] =>
   pipe(
     suiteSuccess,
     readonlyArray.map(({ name }) => ` ${c.green('✓')} ${name}`),

@@ -9,7 +9,7 @@ type TestCase = {
   readonly name: string;
   readonly failFast: false | undefined;
   readonly errorAfterFailedTest: readonly DeepPartial<
-    Either<Named<TestError['Union']>, Named<TestSuccess>>
+    Either<Named<TestError>, Named<TestSuccess>>
   >[];
 };
 
@@ -36,7 +36,7 @@ const caseToTest = (tc: TestCase) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<SuiteError['Union']>({
+        assert.equalDeepPartial<SuiteError>({
           code: 'TestRunError',
           results: [
             either.left({

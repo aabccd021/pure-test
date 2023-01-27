@@ -60,7 +60,6 @@
     "fp-ts": "^2.13.1",
     "fp-ts-std": "^0.15.1",
     "io-ts": "^2.2.20",
-    "make-union-morphic-ts": "^1.0.7",
     "picocolors": "^1.0.0",
     "retry-ts": "^0.1.4",
     "serialize-error": "^11.0.0",

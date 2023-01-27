@@ -8,7 +8,7 @@ import type { DeepPartial } from 'ts-essentials';
 type Case = {
   readonly name: string;
   readonly act: Task<AssertEqual>;
-  readonly exception: DeepPartial<TestError['UnhandledException']['exception']>;
+  readonly testError: DeepPartial<TestError>;
 };
 
 const caseToTest = (tc: Case) =>
@@ -18,14 +18,14 @@ const caseToTest = (tc: Case) =>
       taskEither.right([test({ name: 'Unhandled exception test', act: tc.act })]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equalDeepPartial<SuiteError['Union']>({
+        assert.equalDeepPartial<SuiteError>({
           code: 'TestRunError',
           results: [
             either.left({
               name: 'Unhandled exception test',
               value: {
                 code: 'TestError' as const,
-                value: { code: 'UnhandledException' as const, exception: tc.exception },
+                value: tc.testError,
               },
             }),
           ],
@@ -39,7 +39,10 @@ const cases: readonly Case[] = [
     name: 'should return UnhandledException when non promise is rejected',
     // eslint-disable-next-line functional/no-promise-reject
     act: () => Promise.reject('baz'),
-    exception: { value: 'baz', serialized: 'baz' },
+    testError: {
+      code: 'UnhandledException' as const,
+      exception: { value: 'baz', serialized: 'baz' },
+    },
   },
 
   {
@@ -48,7 +51,10 @@ const cases: readonly Case[] = [
       // eslint-disable-next-line functional/no-throw-statement
       throw Error('bar');
     },
-    exception: { serialized: { message: 'bar', name: 'Error' } },
+    testError: {
+      code: 'UnhandledException' as const,
+      exception: { serialized: { message: 'bar', name: 'Error' } },
+    },
   },
 ];
 
