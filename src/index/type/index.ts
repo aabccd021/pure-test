@@ -16,9 +16,13 @@ import type * as SuiteError from './suiteError';
 import * as suiteError from './suiteError';
 import type * as TestUnit from './testUnit';
 
-const { summon } = summonFor({});
+type AppEnv = object;
+
+const { summon } = summonFor<AppEnv>({});
 
 export type { Assert, Named, ShardingError, SuiteError, TestUnit };
+
+export { named, shardingError, suiteError };
 
 export const Change = summon((F) =>
   F.interface(
@@ -84,8 +88,6 @@ export const TestError = makeUnion(summon)('code')({
 });
 
 export type TestError = TypeOf<typeof TestError>;
-
-export { named, shardingError, suiteError };
 
 export const TestSuccess = summon((F) =>
   F.interface(
