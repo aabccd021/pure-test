@@ -1,4 +1,4 @@
-import { either, readonlyArray, task, taskEither } from 'fp-ts';
+import { either, readonlyArray, task } from 'fp-ts';
 import type { Either } from 'fp-ts/Either';
 import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
@@ -17,7 +17,7 @@ import type {
   TestUnit,
   TestUnitResult,
 } from '../type';
-import { named, SuiteError, TestError, TestUnitError, TestUnitSuccess } from '../type';
+import { SuiteError, taskEither, TestError, TestUnitError, TestUnitSuccess } from '../type';
 import { runAssert } from './assert';
 import { runWithConcurrency } from './runWithConcurrency';
 import * as timeElapsed from './timeElapsed';
@@ -75,7 +75,10 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
 const runGroup = (group: TestUnit.Group) =>
   pipe(
     group.tests,
-    runWithConcurrency({ concurrency: group.concurrency, run: named.mapTaskEither(runTest) }),
+    runWithConcurrency({
+      concurrency: group.concurrency,
+      run: taskEither.bimapNamed(runTest),
+    }),
     task.map(eitherArrayIsAllRight)
   );
 
@@ -121,7 +124,7 @@ export const runTestsWithFilledDefaultConfig = (
     flow(
       runWithConcurrency({
         concurrency: config.concurrency,
-        run: named.mapTaskEither(runTestUnit),
+        run: taskEither.bimapNamed(runTestUnit),
       }),
       task.map(testUnitResultsToSuiteResult)
     )

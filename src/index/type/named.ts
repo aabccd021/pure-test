@@ -9,6 +9,6 @@ export const of =
   (value: T): Named<T> => ({ name, value });
 
 export const mapTaskEither =
-  <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
-  (namedT: Named<T>) =>
+  <T, L, R>(namedT: Named<T>) =>
+  (run: (t: T) => TaskEither<L, R>) =>
     pipe(namedT.value, run, taskEither.bimap(of(namedT.name), of(namedT.name)));

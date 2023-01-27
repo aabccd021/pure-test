@@ -11,6 +11,8 @@ import type { Named } from './named';
 import * as named from './named';
 import type * as TestUnit from './testUnit';
 
+export * as taskEither from './taskEither';
+
 type AppEnv = object;
 
 const { summon } = summonFor<AppEnv>({});
