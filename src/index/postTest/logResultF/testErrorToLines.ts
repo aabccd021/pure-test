@@ -4,8 +4,8 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, Named, SuiteError, TestUnitError } from '../../type';
-import { TestError } from '../../type';
+import type { Change, Named, SuiteError } from '../../type';
+import { TestError, TestUnitError } from '../../type';
 
 const border = (x: string) => ` ${x} `;
 
@@ -71,32 +71,29 @@ export const testErrorToContentLines: (testError: TestError['Union']) => readonl
 export const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
   readonlyArray.flatten([[c.red(c.bold(testError.code))], testErrorToContentLines(testError)]);
 
-const testUnitTestErrorToLines = (testError: TestUnitError['TestError']): readonly string[] =>
-  testErrorToLines(testError.value);
-
-const testUnitGroupErrorToLines = (groupError: TestUnitError['GroupError']): readonly string[] =>
-  pipe(
-    groupError.results,
-    readonlyArray.lefts,
-    readonlyArray.chain((testFail: Named<TestError['Union']>): readonly string[] =>
-      pipe(
-        [
-          ['', `${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testFail.name)}`],
-          testErrorToLines(testFail.value),
-        ],
-        readonlyArray.flatten,
-        indent
+const testUnitErrorToLines = TestUnitError.Union.matchStrict({
+  TestError: ({ value }) => testErrorToLines(value),
+  GroupError: ({ results }) =>
+    pipe(
+      results,
+      readonlyArray.lefts,
+      readonlyArray.chain((testFail: Named<TestError['Union']>): readonly string[] =>
+        pipe(
+          [
+            ['', `${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testFail.name)}`],
+            testErrorToLines(testFail.value),
+          ],
+          readonlyArray.flatten,
+          indent
+        )
       )
-    )
-  );
+    ),
+});
 
 const formatErrorResult = (testUnitLeft: Named<TestUnitError['Union']>): readonly string[] =>
   readonlyArray.flatten([
     [`${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testUnitLeft.name)}`],
-    match(testUnitLeft.value)
-      .with({ code: 'GroupError' }, testUnitGroupErrorToLines)
-      .with({ code: 'TestError' }, testUnitTestErrorToLines)
-      .exhaustive(),
+    testUnitErrorToLines(testUnitLeft.value),
   ]);
 
 export const testRunErrorToLines = ({ results }: SuiteError['TestRunError']): readonly string[] =>

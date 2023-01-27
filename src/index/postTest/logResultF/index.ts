@@ -3,18 +3,34 @@ import { flow, pipe } from 'fp-ts/function';
 import type { IO } from 'fp-ts/IO';
 import type { Task } from 'fp-ts/Task';
 import c from 'picocolors';
-import { match } from 'ts-pattern';
 
-import type { Named, SuiteError, SuiteResult, TestUnitSuccess } from '../../type';
-import { shardingErrorToLines } from './shardingErrorToLines';
+import type { Named, SuiteResult, TestUnitSuccess } from '../../type';
+import { ShardingError, SuiteError } from '../../type';
 import { testRunErrorToLines } from './testErrorToLines';
 
-const suiteErrorToLines = (suiteError: SuiteError['Union']): readonly string[] =>
-  match(suiteError)
-    .with({ code: 'TestRunError' }, testRunErrorToLines)
-    .with({ code: 'DuplicateTestName' }, ({ name }) => [`Found duplicate test name: ${name}`])
-    .with({ code: 'ShardingError' }, shardingErrorToLines)
-    .exhaustive();
+export const shardingErrorToLines = ShardingError.Union.matchStrict({
+  ShardCountIsUnspecified: () => [`shard count is unspecified`],
+  ShardCountIsNotANumber: ({ value }) => [`shard count is not a number : ${value}`],
+  ShardIndexIsUnspecified: () => [`shard index is unspecified`],
+  ShardIndexIsNotANumber: ({ value }) => [`shard index is not a number : ${value}`],
+  ShardIndexOutOfBound: ({ index, shardCount }) => [
+    `Shard index is out of bound:`,
+    `       index: ${index}`,
+    ` shard count: ${shardCount}`,
+  ],
+  TestCountChangedAfterSharding: ({ testCount }) => [
+    `Test count changed after sharding:`,
+    ` before: ${testCount.beforeSharding}`,
+    `  after: ${testCount.afterSharding}`,
+  ],
+  ShardingStrategyError: () => [`ShardingStrategyError`],
+});
+
+const suiteErrorToLines = SuiteError.Union.matchStrict({
+  TestRunError: testRunErrorToLines,
+  DuplicateTestName: ({ name }) => [`Found duplicate test name: ${name}`],
+  ShardingError: ({ value }) => shardingErrorToLines(value),
+});
 
 const suiteSuccessToLines = (
   suiteSuccess: readonly Named<TestUnitSuccess['Union']>[]
