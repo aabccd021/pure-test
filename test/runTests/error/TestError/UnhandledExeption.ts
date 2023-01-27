@@ -1,4 +1,4 @@
-import type { Assert, SuiteError, TestError } from '@src';
+import type { AssertEqual, SuiteError, TestError } from '@src';
 import { assert, runTests, test } from '@src';
 import { either, readonlyArray, taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
@@ -7,7 +7,7 @@ import type { DeepPartial } from 'ts-essentials';
 
 type Case = {
   readonly name: string;
-  readonly act: Task<Assert.Union>;
+  readonly act: Task<AssertEqual>;
   readonly exception: DeepPartial<TestError['UnhandledException']['exception']>;
 };
 

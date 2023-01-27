@@ -6,14 +6,18 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TypeOf } from 'make-union-morphic-ts';
 import { makeUnion } from 'make-union-morphic-ts';
 
-import type * as Assert from './assert';
 import type * as TestUnit from './testUnit';
+
+export type AssertEqual = {
+  readonly expected: unknown;
+  readonly received: unknown;
+};
 
 type AppEnv = object;
 
 const { summon } = summonFor<AppEnv>({});
 
-export type { Assert, TestUnit };
+export type { TestUnit };
 
 export type Named<T> = {
   readonly name: string;

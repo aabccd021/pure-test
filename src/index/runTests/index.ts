@@ -9,7 +9,7 @@ import { match } from 'ts-pattern';
 import { concurrencyDefault } from '../_internal/concurrencyDefault';
 import { serializeError } from '../_internal/libs/serializeError';
 import type {
-  Assert,
+  AssertEqual,
   Named,
   SuiteResult,
   TestConfig,
@@ -18,7 +18,7 @@ import type {
   TestUnitResult,
 } from '../type';
 import { SuiteError, TestError, TestUnitError, TestUnitSuccess } from '../type';
-import { runAssert } from './assert';
+import { assertEqual } from './assertEqual';
 import { runWithConcurrency } from './runWithConcurrency';
 import * as timeElapsed from './timeElapsed';
 
@@ -57,9 +57,7 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryConfig, () => te, either.isLeft);
 
-const runAct = (
-  act: Task<Assert.Union>
-): TaskEither<TestError['UnhandledException'], Assert.Union> =>
+const runAct = (act: Task<AssertEqual>): TaskEither<TestError['UnhandledException'], AssertEqual> =>
   pipe(
     taskEither.tryCatch(act, identity),
     taskEither.orElse((exception) =>
@@ -78,7 +76,7 @@ const runAct = (
 const runTest = (test: TestUnit.Test): Task<TestResult> =>
   pipe(
     timeElapsed.ofTaskEither(runAct(test.act)),
-    timeElapsed.chainEitherKW(runAssert),
+    timeElapsed.chainEitherKW(assertEqual),
     runWithTimeout(test.timeout),
     runWithRetry(test.retry),
     taskEither.map(({ timeElapsedMs }) => ({ timeElapsedMs }))

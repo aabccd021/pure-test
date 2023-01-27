@@ -12,9 +12,9 @@ import { flow, pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
 import * as iots from 'io-ts';
 
-import { diffLines } from '../../_internal/libs/diffLines';
-import type { Change } from '../../type';
-import { TestError } from '../../type';
+import { diffLines } from '../_internal/libs/diffLines';
+import type { Change } from '../type';
+import { TestError } from '../type';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -64,7 +64,7 @@ const unknownToLines =
           )
         );
 
-export const equal = ({
+export const assertEqual = ({
   received,
   expected,
 }: {

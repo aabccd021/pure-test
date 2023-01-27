@@ -1,3 +1,4 @@
+import type { AssertEqual } from '@src';
 import {
   either as E,
   number,
@@ -15,38 +16,34 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import * as iots from 'io-ts';
 import type { DeepPartial } from 'ts-essentials';
 
-import type { Assert } from './type';
-
 export const equal =
   <T>(expected: T) =>
-  (received: T): Assert.Equal => ({ assert: 'Equal', expected, received });
+  (received: T): AssertEqual => ({ expected, received });
 
 export const equalW =
   (expected: unknown) =>
-  (received: unknown): Assert.Equal => ({ assert: 'Equal', expected, received });
+  (received: unknown): AssertEqual => ({ expected, received });
 
 export const equalOption =
   <T>(expected: Option<T>) =>
-  (received: Option<T>): Assert.Equal => ({ assert: 'Equal', expected, received });
+  (received: Option<T>): AssertEqual => ({ expected, received });
 
 export const equalEither =
   <L, R>(expected: Either<L, R>) =>
-  (received: Either<L, R>): Assert.Equal => ({ assert: 'Equal', expected, received });
+  (received: Either<L, R>): AssertEqual => ({ expected, received });
 
 export const equalArray =
   <T>(expected: readonly T[]) =>
-  (received: readonly T[]): Assert.Equal => ({ assert: 'Equal', expected, received });
+  (received: readonly T[]): AssertEqual => ({ expected, received });
 
-export const numberArrayIsSortedAsc = (received: readonly number[]): Assert.Equal => ({
-  assert: 'Equal',
+export const numberArrayIsSortedAsc = (received: readonly number[]): AssertEqual => ({
   expected: readonlyArray.sort(number.Ord)(received),
   received,
 });
 
 export const stringInLinesEqual =
   (expected: readonly string[]) =>
-  (received: string): Assert.Equal => ({
-    assert: 'Equal',
+  (received: string): AssertEqual => ({
     expected,
     received: string.split('\n')(received),
   });
@@ -83,31 +80,31 @@ export const equalDeepPartial =
     pipe(pick(received, expected), equalW(expected));
 
 export const option =
-  <A>(toAssert: (r: A) => Assert.Union) =>
-  (o: Option<A>): Assert.Union =>
+  <A>(toAssert: (r: A) => AssertEqual) =>
+  (o: Option<A>): AssertEqual =>
     O.isSome(o) ? toAssert(o.value) : equal({ _tag: 'Some' })(o);
 
 export const either =
-  <L, R>(toAssert: (r: R) => Assert.Union) =>
-  (e: Either<L, R>): Assert.Union =>
+  <L, R>(toAssert: (r: R) => AssertEqual) =>
+  (e: Either<L, R>): AssertEqual =>
     E.isRight(e) ? toAssert(e.right) : equal({ _tag: 'Right' })(e);
 
 export const eitherLeft =
-  <L, R>(toAssert: (r: L) => Assert.Union) =>
-  (e: Either<L, R>): Assert.Union =>
+  <L, R>(toAssert: (r: L) => AssertEqual) =>
+  (e: Either<L, R>): AssertEqual =>
     E.isLeft(e) ? toAssert(e.left) : equal({ _tag: 'Left' })(e);
 
 export const taskEither =
-  <L, R>(toAssert: (r: R) => Assert.Union) =>
-  (te: TaskEither<L, R>): Task<Assert.Union> =>
+  <L, R>(toAssert: (r: R) => AssertEqual) =>
+  (te: TaskEither<L, R>): Task<AssertEqual> =>
     pipe(
       te,
       T.map((e) => (E.isRight(e) ? toAssert(e.right) : equal({ _tag: 'Right' })(e)))
     );
 
 export const taskEitherLeft =
-  <L, R>(toAssert: (l: L) => Assert.Union) =>
-  (te: TaskEither<L, R>): Task<Assert.Union> =>
+  <L, R>(toAssert: (l: L) => AssertEqual) =>
+  (te: TaskEither<L, R>): Task<AssertEqual> =>
     pipe(
       te,
       T.map((e) => (E.isLeft(e) ? toAssert(e.left) : equal({ _tag: 'Left' })(e)))
