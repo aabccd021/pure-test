@@ -2,27 +2,44 @@ import { summonFor } from '@morphic-ts/batteries/lib/summoner-ESBST';
 // eslint-disable-next-line import/no-unassigned-import
 import type {} from '@morphic-ts/model-algebras/lib/types';
 import type { AType } from '@morphic-ts/summoners';
+import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TypeOf } from 'make-union-morphic-ts';
 import { makeUnion } from 'make-union-morphic-ts';
+import type { RetryPolicy } from 'retry-ts';
 
-import type * as TestUnit from './testUnit';
+export type ConcurrencyConfig =
+  | { readonly type: 'parallel' }
+  | { readonly type: 'sequential'; readonly failFast: boolean };
 
 export type AssertEqual = {
   readonly expected: unknown;
   readonly received: unknown;
 };
 
-type AppEnv = object;
-
-const { summon } = summonFor<AppEnv>({});
-
-export type { TestUnit };
-
 export type Named<T> = {
   readonly name: string;
   readonly value: T;
 };
+
+export type Test = {
+  readonly unit: 'Test';
+  readonly act: Task<AssertEqual>;
+  readonly timeout: number;
+  readonly retry: RetryPolicy;
+};
+
+export type Group = {
+  readonly unit: 'Group';
+  readonly concurrency: ConcurrencyConfig;
+  readonly tests: readonly Named<Test>[];
+};
+
+export type TestUnit = Group | Test;
+
+type AppEnv = object;
+
+const { summon } = summonFor<AppEnv>({});
 
 export const Change = summon((F) =>
   F.interface({ type: F.keysOf({ '-': null, '+': null, '0': null }), value: F.string() }, '')
@@ -181,10 +198,6 @@ export const SuiteResult = summon((F) =>
 
 export type SuiteResult = AType<typeof SuiteResult>;
 
-export type ConcurrencyConfig =
-  | { readonly type: 'parallel' }
-  | { readonly type: 'sequential'; readonly failFast: boolean };
-
 export type TestConfig = { readonly concurrency: ConcurrencyConfig };
 
 export type DiffLines = (p: {
@@ -194,11 +207,8 @@ export type DiffLines = (p: {
 
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
-  readonly tests: readonly Named<TestUnit.Union>[];
-}) => TaskEither<
-  ShardingError['ShardingStrategyError'],
-  readonly (readonly Named<TestUnit.Union>[])[]
->;
+  readonly tests: readonly Named<TestUnit>[];
+}) => TaskEither<ShardingError['ShardingStrategyError'], readonly (readonly Named<TestUnit>[])[]>;
 
 export type GetShardIndex = TaskEither<
   ShardingError['ShardIndexIsNotANumber'] | ShardingError['ShardIndexIsUnspecified'],

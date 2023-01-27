@@ -1,6 +1,5 @@
 import { concurrencyDefault } from './_internal/concurrencyDefault';
-import type { Named, TestUnit } from './type';
-import type { Test } from './type/testUnit';
+import type { Group, Named, Test } from './type';
 
 export const group = (param: {
   readonly name: string;
@@ -8,7 +7,7 @@ export const group = (param: {
     | { readonly type: 'parallel' }
     | { readonly type: 'sequential'; readonly failFast?: false };
   readonly tests: readonly Named<Test>[];
-}): Named<TestUnit.Group> => ({
+}): Named<Group> => ({
   name: param.name,
   value: { unit: 'Group', tests: param.tests, concurrency: concurrencyDefault(param.concurrency) },
 });

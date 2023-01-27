@@ -19,8 +19,8 @@ const getFirstDuplicate = (arr: readonly string[]) =>
   );
 
 export const throwOnDuplicateTestName: <L>(
-  res: TaskEither<L, readonly Named<TestUnit.Union>[]>
-) => TaskEither<L | SuiteError['DuplicateTestName'], readonly Named<TestUnit.Union>[]> =
+  res: TaskEither<L, readonly Named<TestUnit>[]>
+) => TaskEither<L | SuiteError['DuplicateTestName'], readonly Named<TestUnit>[]> =
   taskEither.chainEitherKW((tests) =>
     pipe(
       tests,

@@ -10,8 +10,10 @@ import { concurrencyDefault } from '../_internal/concurrencyDefault';
 import { serializeError } from '../_internal/libs/serializeError';
 import type {
   AssertEqual,
+  Group,
   Named,
   SuiteResult,
+  Test,
   TestConfig,
   TestResult,
   TestUnit,
@@ -46,14 +48,14 @@ const eitherArrayIsAllRight = <L, R>(
   );
 
 const runWithTimeout =
-  <L, T>(timeout: TestUnit.Test['timeout']) =>
+  <L, T>(timeout: Test['timeout']) =>
   (te: TaskEither<L, T>) =>
     task
       .getRaceMonoid<Either<L | TestError['TimedOut'], T>>()
       .concat(te, task.delay(timeout)(taskEither.left(TestError.Union.as.TimedOut({}))));
 
 const runWithRetry =
-  (retryConfig: TestUnit.Test['retry']) =>
+  (retryConfig: Test['retry']) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryConfig, () => te, either.isLeft);
 
@@ -73,7 +75,7 @@ const runAct = (act: Task<AssertEqual>): TaskEither<TestError['UnhandledExceptio
     )
   );
 
-const runTest = (test: TestUnit.Test): Task<TestResult> =>
+const runTest = (test: Test): Task<TestResult> =>
   pipe(
     timeElapsed.ofTaskEither(runAct(test.act)),
     timeElapsed.chainEitherKW(assertEqual),
@@ -82,7 +84,7 @@ const runTest = (test: TestUnit.Test): Task<TestResult> =>
     taskEither.map(({ timeElapsedMs }) => ({ timeElapsedMs }))
   );
 
-const runGroup = (group: TestUnit.Group) =>
+const runGroup = (group: Group) =>
   pipe(
     group.tests,
     runWithConcurrency({
@@ -93,7 +95,7 @@ const runGroup = (group: TestUnit.Group) =>
   );
 
 const runTestUnit = (
-  testUnit: TestUnit.Union
+  testUnit: TestUnit
 ): TaskEither<TestUnitError['Union'], TestUnitSuccess['Union']> =>
   match(testUnit)
     .with(
@@ -127,9 +129,7 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
 
 export const runTestsWithFilledDefaultConfig = (
   config: TestConfig
-): ((
-  testsTE: TaskEither<SuiteError['Union'], readonly Named<TestUnit.Union>[]>
-) => Task<SuiteResult>) =>
+): ((testsTE: TaskEither<SuiteError['Union'], readonly Named<TestUnit>[]>) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(
       runWithConcurrency({
