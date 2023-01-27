@@ -3,9 +3,8 @@ import type { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
-import { match } from 'ts-pattern';
 
-import type { ConcurrencyConfig } from '../type';
+import { ConcurrencyConfig } from '../type';
 
 const runSequentialFailFast =
   <T, L, R>(run: (t: T) => TaskEither<L, R>) =>
@@ -44,7 +43,10 @@ export const runWithConcurrency = <T, L, R>({
   readonly concurrency: ConcurrencyConfig;
   readonly run: (t: T) => TaskEither<L, R>;
 }): ((ts: readonly T[]) => Task<readonly Either<L, R>[]>) =>
-  match(concurrency)
-    .with({ type: 'parallel' }, () => readonlyArray.traverse(task.ApplicativePar)(run))
-    .with({ type: 'sequential' }, runSequential(run))
-    .exhaustive();
+  pipe(
+    concurrency,
+    ConcurrencyConfig.matchStrict({
+      Parallel: () => readonlyArray.traverse(task.ApplicativePar)(run),
+      Sequential: runSequential(run),
+    })
+  );

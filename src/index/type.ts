@@ -8,32 +8,22 @@ import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TaskOption } from 'fp-ts/TaskOption';
 import type { RetryPolicy } from 'retry-ts';
 
-export type ConcurrencyConfig =
-  | { readonly type: 'parallel' }
-  | { readonly type: 'sequential'; readonly failFast: boolean };
-
 export type AssertEqual = { readonly expected: unknown; readonly received: unknown };
 
 export type Named<T> = { readonly name: string; readonly value: T };
 
-export type Test = {
-  readonly unit: 'Test';
-  readonly act: Task<AssertEqual>;
-  readonly timeout: number;
-  readonly retry: RetryPolicy;
-};
-
-export type Group = {
-  readonly unit: 'Group';
-  readonly concurrency: ConcurrencyConfig;
-  readonly tests: readonly Named<Test>[];
-};
-
-export type TestUnit = Group | Test;
-
 type AppEnv = object;
 
 const { summon } = summonFor<AppEnv>({});
+
+export const ConcurrencyConfig = makeTagged(summon)('type')({
+  Parallel: summon((F) => F.interface({ type: F.stringLiteral('Parallel') }, '')),
+  Sequential: summon((F) =>
+    F.interface({ type: F.stringLiteral('Sequential'), failFast: F.boolean() }, '')
+  ),
+});
+
+export type ConcurrencyConfig = AType<typeof ConcurrencyConfig>;
 
 export const UnknownRecord = summon((F) => F.record(F.string(), F.unknown()));
 
@@ -211,11 +201,26 @@ export type DiffLines = (p: {
   readonly received: string;
 }) => readonly Change[];
 
+export type GetShardIndex = TaskEither<ShardingError | ShardingError, number>;
+
+export type GetShardCount = TaskEither<ShardingError | ShardingError, number>;
+
+export type Test = {
+  readonly unit: 'Test';
+  readonly act: Task<AssertEqual>;
+  readonly timeout: number;
+  readonly retry: RetryPolicy;
+};
+
+export type Group = {
+  readonly unit: 'Group';
+  readonly concurrency: ConcurrencyConfig;
+  readonly tests: readonly Named<Test>[];
+};
+
+export type TestUnit = Group | Test;
+
 export type ShardingStrategy = (p: {
   readonly shardCount: number;
   readonly tests: readonly Named<TestUnit>[];
 }) => TaskEither<ShardingError, readonly (readonly Named<TestUnit>[])[]>;
-
-export type GetShardIndex = TaskEither<ShardingError | ShardingError, number>;
-
-export type GetShardCount = TaskEither<ShardingError | ShardingError, number>;

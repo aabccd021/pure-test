@@ -9,5 +9,7 @@ export const concurrencyDefault = (
     | undefined
 ): ConcurrencyConfig =>
   pipe(config ?? { type: 'parallel' as const }, (c) =>
-    c.type === 'sequential' ? { type: 'sequential' as const, failFast: c.failFast ?? true } : c
+    c.type === 'sequential'
+      ? { type: 'Sequential' as const, failFast: c.failFast ?? true }
+      : { type: 'Parallel' }
   );
