@@ -30,6 +30,7 @@ const suiteErrorToLines = SuiteError.Union.matchStrict({
   TestRunError: testRunErrorToLines,
   DuplicateTestName: ({ name }) => [`Found duplicate test name: ${name}`],
   ShardingError: ({ value }) => shardingErrorToLines(value),
+  WriteResultError: () => [],
 });
 
 const suiteSuccessToLines = (

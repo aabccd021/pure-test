@@ -4,6 +4,7 @@ import type {} from '@morphic-ts/model-algebras/lib/types';
 import type { AType } from '@morphic-ts/summoners';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
+import type { TaskOption } from 'fp-ts/TaskOption';
 import type { TypeOf } from 'make-union-morphic-ts';
 import { makeUnion } from 'make-union-morphic-ts';
 import type { RetryPolicy } from 'retry-ts';
@@ -179,6 +180,9 @@ export const SuiteError = makeUnion(summon)('code')({
   TestRunError: summon((F) =>
     F.interface({ code: F.stringLiteral('TestRunError'), results: F.array(TestUnitResult(F)) }, '')
   ),
+  WriteResultError: summon((F) =>
+    F.interface({ code: F.stringLiteral('WriteResultError'), value: F.unknown() }, '')
+  ),
 });
 
 export type SuiteError = TypeOf<typeof SuiteError>;
@@ -191,6 +195,17 @@ export const SuiteResult = summon((F) =>
 );
 
 export type SuiteResult = AType<typeof SuiteResult>;
+
+export type WriteStringToFile = (p: {
+  readonly path: string;
+  readonly value: string;
+}) => TaskEither<unknown, unknown>;
+
+export type ReadFileAsString = (p: { readonly path: string }) => TaskEither<unknown, string>;
+
+export type GetShardCountFromArgs = TaskOption<string>;
+
+export type GetShardIndexFromArgs = TaskOption<string>;
 
 export type TestConfig = { readonly concurrency: ConcurrencyConfig };
 
