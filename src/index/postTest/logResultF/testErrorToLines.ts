@@ -71,10 +71,10 @@ export const testErrorToContentLines: (testError: TestError['Union']) => readonl
 export const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
   readonlyArray.flatten([[c.red(c.bold(testError.code))], testErrorToContentLines(testError)]);
 
-const testUnitTestErrorToLines = (testError: TestUnitError.TestError): readonly string[] =>
+const testUnitTestErrorToLines = (testError: TestUnitError['TestError']): readonly string[] =>
   testErrorToLines(testError.value);
 
-const testUnitGroupErrorToLines = (groupError: TestUnitError.GroupError): readonly string[] =>
+const testUnitGroupErrorToLines = (groupError: TestUnitError['GroupError']): readonly string[] =>
   pipe(
     groupError.results,
     readonlyArray.lefts,
@@ -90,7 +90,7 @@ const testUnitGroupErrorToLines = (groupError: TestUnitError.GroupError): readon
     )
   );
 
-const formatErrorResult = (testUnitLeft: Named<TestUnitError.Union>): readonly string[] =>
+const formatErrorResult = (testUnitLeft: Named<TestUnitError['Union']>): readonly string[] =>
   readonlyArray.flatten([
     [`${c.red(c.bold(c.inverse(border('FAIL'))))} ${c.bold(testUnitLeft.name)}`],
     match(testUnitLeft.value)

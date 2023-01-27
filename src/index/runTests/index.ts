@@ -17,10 +17,9 @@ import type {
   TestConfig,
   TestResult,
   TestUnit,
-  TestUnitError,
   TestUnitResult,
 } from '../type';
-import { named, suiteError, TestError, testUnitError, TestUnitSuccess } from '../type';
+import { named, suiteError, TestError, TestUnitError, TestUnitSuccess } from '../type';
 import { runAssert } from './assert';
 import { runWithConcurrency } from './runWithConcurrency';
 import * as timeElapsed from './timeElapsed';
@@ -97,14 +96,15 @@ const runGroup = (group: TestUnit.Group) =>
 
 const runTestUnit = (
   testUnit: TestUnit.Union
-): TaskEither<TestUnitError.Union, TestUnitSuccess['Union']> =>
+): TaskEither<TestUnitError['Union'], TestUnitSuccess['Union']> =>
   match(testUnit)
     .with(
       { unit: 'Test' },
       flow(
         runTest,
-        taskEither.bimap(testUnitError.testError, (value) =>
-          TestUnitSuccess.Union.as.Test({ value })
+        taskEither.bimap(
+          (value) => TestUnitError.Union.as.TestError({ value }),
+          (value) => TestUnitSuccess.Union.as.Test({ value })
         )
       )
     )
@@ -112,8 +112,9 @@ const runTestUnit = (
       { unit: 'Group' },
       flow(
         runGroup,
-        taskEither.bimap(testUnitError.groupError, (results) =>
-          TestUnitSuccess.Union.as.Group({ results })
+        taskEither.bimap(
+          (results) => TestUnitError.Union.as.GroupError({ results }),
+          (results) => TestUnitSuccess.Union.as.Group({ results })
         )
       )
     )

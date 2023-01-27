@@ -15,12 +15,10 @@ import * as shardingError from './shardingError';
 import type * as SuiteError from './suiteError';
 import * as suiteError from './suiteError';
 import type * as TestUnit from './testUnit';
-import type * as TestUnitError from './testUnitError';
-import * as testUnitError from './testUnitError';
 
-const { summon, tagged } = summonFor({});
+const { summon } = summonFor({});
 
-export type { Assert, Named, ShardingError, SuiteError, TestUnit, TestUnitError };
+export type { Assert, Named, ShardingError, SuiteError, TestUnit };
 
 export const Change = summon((F) =>
   F.interface(
@@ -87,7 +85,7 @@ export const TestError = makeUnion(summon)('code')({
 
 export type TestError = TypeOf<typeof TestError>;
 
-export { named, shardingError, suiteError, testUnitError };
+export { named, shardingError, suiteError };
 
 export const TestSuccess = summon((F) =>
   F.interface(
@@ -100,14 +98,7 @@ export const TestSuccess = summon((F) =>
 
 export type TestSuccess = AType<typeof TestSuccess>;
 
-export const TestResult = tagged('_tag')({
-  Left: summon((F) =>
-    F.interface({ _tag: F.stringLiteral('Left'), left: TestError.Union(F) }, 'Left')
-  ),
-  Right: summon((F) =>
-    F.interface({ _tag: F.stringLiteral('Right'), right: TestSuccess(F) }, 'Right')
-  ),
-});
+export const TestResult = summon((F) => F.either(TestError.Union(F), TestSuccess(F)));
 
 export type TestResult = AType<typeof TestResult>;
 
@@ -142,7 +133,47 @@ export const TestUnitSuccess = makeUnion(summon)('unit')({
 
 export type TestUnitSuccess = TypeOf<typeof TestUnitSuccess>;
 
-export type TestUnitResult = Either<Named<TestUnitError.Union>, Named<TestUnitSuccess['Union']>>;
+export const TestUnitError = makeUnion(summon)('code')({
+  TestError: summon((F) =>
+    F.interface(
+      {
+        code: F.stringLiteral('TestError'),
+        value: TestError.Union(F),
+      },
+      'TestError'
+    )
+  ),
+  GroupError: summon((F) =>
+    F.interface(
+      {
+        code: F.stringLiteral('GroupError'),
+        results: F.array(
+          F.either(
+            F.interface(
+              {
+                name: F.string(),
+                value: TestError.Union(F),
+              },
+              'Group.results'
+            ),
+            F.interface(
+              {
+                name: F.string(),
+                value: TestSuccess(F),
+              },
+              'Group.results'
+            )
+          )
+        ),
+      },
+      'GroupError'
+    )
+  ),
+});
+
+export type TestUnitError = TypeOf<typeof TestUnitError>;
+
+export type TestUnitResult = Either<Named<TestUnitError['Union']>, Named<TestUnitSuccess['Union']>>;
 
 export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess['Union']>[]>;
 
