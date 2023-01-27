@@ -43,10 +43,7 @@ export const numberArrayIsSortedAsc = (received: readonly number[]): AssertEqual
 
 export const stringInLinesEqual =
   (expected: readonly string[]) =>
-  (received: string): AssertEqual => ({
-    expected,
-    received: string.split('\n')(received),
-  });
+  (received: string): AssertEqual => ({ expected, received: string.split('\n')(received) });
 
 const pick = (big: unknown, small: unknown): unknown =>
   Array.isArray(big) && Array.isArray(small)

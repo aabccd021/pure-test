@@ -12,15 +12,9 @@ export type ConcurrencyConfig =
   | { readonly type: 'parallel' }
   | { readonly type: 'sequential'; readonly failFast: boolean };
 
-export type AssertEqual = {
-  readonly expected: unknown;
-  readonly received: unknown;
-};
+export type AssertEqual = { readonly expected: unknown; readonly received: unknown };
 
-export type Named<T> = {
-  readonly name: string;
-  readonly value: T;
-};
+export type Named<T> = { readonly name: string; readonly value: T };
 
 export type Test = {
   readonly unit: 'Test';
