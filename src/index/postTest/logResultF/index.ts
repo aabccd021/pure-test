@@ -8,7 +8,7 @@ import type { Named, SuiteResult, TestUnitSuccess } from '../../type';
 import { ShardingError, SuiteError } from '../../type';
 import { testRunErrorToLines } from './testErrorToLines';
 
-export const shardingErrorToLines = ShardingError.Union.matchStrict({
+const shardingErrorToLines = ShardingError.Union.matchStrict({
   ShardCountIsUnspecified: () => [`shard count is unspecified`],
   ShardCountIsNotANumber: ({ value }) => [`shard count is not a number : ${value}`],
   ShardIndexIsUnspecified: () => [`shard index is unspecified`],

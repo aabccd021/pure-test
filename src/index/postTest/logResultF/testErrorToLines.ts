@@ -44,7 +44,7 @@ const changesToSummaryLines = (changes: readonly Change[]): readonly string[] =>
   '',
 ];
 
-export const testErrorToContentLines: (testError: TestError['Union']) => readonly string[] =
+const testErrorToContentLines: (testError: TestError['Union']) => readonly string[] =
   TestError.Union.matchStrict({
     AssertionError: ({ changes }) =>
       pipe(
@@ -68,7 +68,7 @@ export const testErrorToContentLines: (testError: TestError['Union']) => readonl
       ]),
   });
 
-export const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
+const testErrorToLines = (testError: TestError['Union']): readonly string[] =>
   readonlyArray.flatten([[c.red(c.bold(testError.code))], testErrorToContentLines(testError)]);
 
 const testUnitErrorToLines = TestUnitError.Union.matchStrict({

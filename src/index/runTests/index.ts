@@ -74,7 +74,7 @@ const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]
     either.mapLeft((results) => SuiteError.Union.as.TestRunError({ results }))
   );
 
-export const runTestsWithFilledDefaultConfig = (
+const runTestsWithFilledDefaultConfig = (
   config: TestConfig
 ): ((testsTE: TaskEither<SuiteError['Union'], readonly Named<TestUnit>[]>) => Task<SuiteResult>) =>
   taskEither.chain(
