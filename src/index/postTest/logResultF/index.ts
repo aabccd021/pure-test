@@ -9,7 +9,7 @@ import type { Named, SuiteError, SuiteResult, TestUnitSuccess } from '../../type
 import { shardingErrorToLines } from './shardingErrorToLines';
 import { testRunErrorToLines } from './testErrorToLines';
 
-const suiteErrorToLines = (suiteError: SuiteError.Union): readonly string[] =>
+const suiteErrorToLines = (suiteError: SuiteError['Union']): readonly string[] =>
   match(suiteError)
     .with({ code: 'TestRunError' }, testRunErrorToLines)
     .with({ code: 'DuplicateTestName' }, ({ name }) => [`Found duplicate test name: ${name}`])

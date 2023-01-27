@@ -4,7 +4,7 @@ import * as std from 'fp-ts-std';
 import c from 'picocolors';
 import { match } from 'ts-pattern';
 
-import type { Change, Named, suiteError, TestUnitError } from '../../type';
+import type { Change, Named, SuiteError, TestUnitError } from '../../type';
 import { TestError } from '../../type';
 
 const border = (x: string) => ` ${x} `;
@@ -99,7 +99,7 @@ const formatErrorResult = (testUnitLeft: Named<TestUnitError['Union']>): readonl
       .exhaustive(),
   ]);
 
-export const testRunErrorToLines = ({ results }: suiteError.TestRunError): readonly string[] =>
+export const testRunErrorToLines = ({ results }: SuiteError['TestRunError']): readonly string[] =>
   pipe(
     results,
     readonlyArray.map(either.match(formatErrorResult, () => [])),

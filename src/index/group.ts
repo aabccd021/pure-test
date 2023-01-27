@@ -10,9 +10,5 @@ export const group = (param: {
   readonly tests: readonly Named<Test>[];
 }): Named<TestUnit.Group> => ({
   name: param.name,
-  value: {
-    unit: 'Group',
-    tests: param.tests,
-    concurrency: concurrencyDefault(param.concurrency),
-  },
+  value: { unit: 'Group', tests: param.tests, concurrency: concurrencyDefault(param.concurrency) },
 });

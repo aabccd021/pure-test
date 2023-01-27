@@ -12,14 +12,13 @@ import { concurrencyDefault } from '../_internal/concurrencyDefault';
 import type {
   Assert,
   Named,
-  SuiteError,
   SuiteResult,
   TestConfig,
   TestResult,
   TestUnit,
   TestUnitResult,
 } from '../type';
-import { named, suiteError, TestError, TestUnitError, TestUnitSuccess } from '../type';
+import { named, SuiteError, TestError, TestUnitError, TestUnitSuccess } from '../type';
 import { runAssert } from './assert';
 import { runWithConcurrency } from './runWithConcurrency';
 import * as timeElapsed from './timeElapsed';
@@ -69,9 +68,7 @@ const runAct = (
         serializeError,
         task.map((serialized) =>
           either.left(
-            TestError.Union.as.UnhandledException({
-              exception: { value: exception, serialized },
-            })
+            TestError.Union.as.UnhandledException({ exception: { value: exception, serialized } })
           )
         )
       )
@@ -121,12 +118,16 @@ const runTestUnit = (
     .exhaustive();
 
 const testUnitResultsToSuiteResult = (testUnitResults: readonly TestUnitResult[]): SuiteResult =>
-  pipe(testUnitResults, eitherArrayIsAllRight, either.mapLeft(suiteError.testRunError));
+  pipe(
+    testUnitResults,
+    eitherArrayIsAllRight,
+    either.mapLeft((results) => SuiteError.Union.as.TestRunError({ results }))
+  );
 
 export const runTestsWithFilledDefaultConfig = (
   config: TestConfig
 ): ((
-  testsTE: TaskEither<SuiteError.Union, readonly Named<TestUnit.Union>[]>
+  testsTE: TaskEither<SuiteError['Union'], readonly Named<TestUnit.Union>[]>
 ) => Task<SuiteResult>) =>
   taskEither.chain(
     flow(

@@ -26,7 +26,7 @@ const caseToTest = (tc: Case) =>
       ]),
       runTests({}),
       assert.taskEitherLeft(
-        assert.equal<SuiteError.Union>({
+        assert.equal<SuiteError['Union']>({
           code: 'TestRunError',
           results: [
             either.left({
