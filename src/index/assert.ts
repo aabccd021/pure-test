@@ -1,4 +1,5 @@
 import type { AssertEqual } from '@src';
+import { UnknownRecord } from '@src';
 import {
   either as E,
   number,
@@ -13,7 +14,6 @@ import { pipe } from 'fp-ts/function';
 import type { Option } from 'fp-ts/Option';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
-import * as iots from 'io-ts';
 import type { DeepPartial } from 'ts-essentials';
 
 export const equal =
@@ -58,7 +58,7 @@ const pick = (big: unknown, small: unknown): unknown =>
           )
         )
       )
-    : iots.UnknownRecord.is(big) && iots.UnknownRecord.is(small)
+    : UnknownRecord.type.is(big) && UnknownRecord.type.is(small)
     ? pipe(
         small,
         readonlyRecord.filterMapWithIndex((smallIdx, smallV) =>

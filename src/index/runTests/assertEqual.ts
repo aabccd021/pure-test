@@ -10,11 +10,10 @@ import {
 import type { Either } from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
 import type { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray';
-import * as iots from 'io-ts';
 
 import { diffLines } from '../_internal/libs/diffLines';
 import type { Change } from '../type';
-import { TestError } from '../type';
+import { TestError, UnknownRecord } from '../type';
 
 const indent = (line: string): string => `  ${line}`;
 
@@ -41,7 +40,7 @@ const unknownToLines =
         )
       : pipe(
           obj,
-          iots.UnknownRecord.decode,
+          UnknownRecord.type.decode,
           either.mapLeft(() => path),
           either.chain(
             readonlyRecord.traverseWithIndex(either.Applicative)((index, value) =>

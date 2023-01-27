@@ -35,6 +35,10 @@ type AppEnv = object;
 
 const { summon } = summonFor<AppEnv>({});
 
+export const UnknownRecord = summon((F) => F.record(F.string(), F.unknown()));
+
+export type UnknownRecord = AType<typeof UnknownRecord>;
+
 export const Change = summon((F) =>
   F.interface({ type: F.keysOf({ '-': null, '+': null, '0': null }), value: F.string() }, '')
 );
