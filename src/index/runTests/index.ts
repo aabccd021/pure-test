@@ -4,11 +4,10 @@ import { flow, identity, pipe } from 'fp-ts/function';
 import type { Task } from 'fp-ts/Task';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import { retrying } from 'retry-ts/lib/Task';
-import type { ErrorObject } from 'serialize-error';
 import { match } from 'ts-pattern';
-import { dynamicImport } from 'tsimportlib';
 
 import { concurrencyDefault } from '../_internal/concurrencyDefault';
+import { serializeError } from '../_internal/libs/serializeError';
 import type {
   Assert,
   Named,
@@ -45,17 +44,6 @@ const runWithRetry =
   (retryConfig: TestUnit.Test['retry']) =>
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryConfig, () => te, either.isLeft);
-
-const serializeError =
-  (error: unknown): Task<ErrorObject> =>
-  async () => {
-    const serializeErrorModule = (await dynamicImport(
-      'serialize-error',
-      module
-      // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    )) as typeof import('serialize-error');
-    return serializeErrorModule.serializeError(error);
-  };
 
 const runAct = (
   act: Task<Assert.Union>
