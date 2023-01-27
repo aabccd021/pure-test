@@ -2,7 +2,6 @@ import { summonFor } from '@morphic-ts/batteries/lib/summoner-ESBST';
 // eslint-disable-next-line import/no-unassigned-import
 import type {} from '@morphic-ts/model-algebras/lib/types';
 import type { AType } from '@morphic-ts/summoners';
-import type { Either } from 'fp-ts/Either';
 import type { TaskEither } from 'fp-ts/TaskEither';
 import type { TypeOf } from 'make-union-morphic-ts';
 import { makeUnion } from 'make-union-morphic-ts';
@@ -20,7 +19,7 @@ export type { Assert, Named, TestUnit };
 export { named };
 
 export const Change = summon((F) =>
-  F.interface({ type: F.keysOf({ '-': null, '+': null, '0': null }), value: F.string() }, 'Change')
+  F.interface({ type: F.keysOf({ '-': null, '+': null, '0': null }), value: F.string() }, '')
 );
 
 export type Change = AType<typeof Change>;
@@ -33,7 +32,7 @@ export const TestError = makeUnion(summon)('code')({
         path: F.array(F.string()),
         forceSerializedValue: F.string(),
       },
-      'SerializationError'
+      ''
     )
   ),
   AssertionError: summon((F) =>
@@ -44,7 +43,7 @@ export const TestError = makeUnion(summon)('code')({
         received: F.unknown(),
         expected: F.unknown(),
       },
-      'AssertionError'
+      ''
     )
   ),
   TimedOut: summon((F) => F.interface({ code: F.stringLiteral('TimedOut') }, 'TimedOut')),
@@ -57,14 +56,14 @@ export const TestError = makeUnion(summon)('code')({
           'UnhandledException.exception'
         ),
       },
-      'UnhandledException'
+      ''
     )
   ),
 });
 
 export type TestError = TypeOf<typeof TestError>;
 
-export const TestSuccess = summon((F) => F.interface({ timeElapsedMs: F.number() }, 'TestSuccess'));
+export const TestSuccess = summon((F) => F.interface({ timeElapsedMs: F.number() }, ''));
 
 export type TestSuccess = AType<typeof TestSuccess>;
 
@@ -73,16 +72,14 @@ export const TestResult = summon((F) => F.either(TestError.Union(F), TestSuccess
 export type TestResult = AType<typeof TestResult>;
 
 export const TestUnitSuccess = makeUnion(summon)('unit')({
-  Test: summon((F) =>
-    F.interface({ unit: F.stringLiteral('Test'), value: TestSuccess(F) }, 'Test')
-  ),
+  Test: summon((F) => F.interface({ unit: F.stringLiteral('Test'), value: TestSuccess(F) }, '')),
   Group: summon((F) =>
     F.interface(
       {
         unit: F.stringLiteral('Group'),
-        results: F.array(F.interface({ name: F.string(), value: TestSuccess(F) }, 'Group.results')),
+        results: F.array(F.interface({ name: F.string(), value: TestSuccess(F) }, '')),
       },
-      'Group'
+      ''
     )
   ),
 });
@@ -91,7 +88,7 @@ export type TestUnitSuccess = TypeOf<typeof TestUnitSuccess>;
 
 export const TestUnitError = makeUnion(summon)('code')({
   TestError: summon((F) =>
-    F.interface({ code: F.stringLiteral('TestError'), value: TestError.Union(F) }, 'TestError')
+    F.interface({ code: F.stringLiteral('TestError'), value: TestError.Union(F) }, '')
   ),
   GroupError: summon((F) =>
     F.interface(
@@ -99,12 +96,12 @@ export const TestUnitError = makeUnion(summon)('code')({
         code: F.stringLiteral('GroupError'),
         results: F.array(
           F.either(
-            F.interface({ name: F.string(), value: TestError.Union(F) }, 'Group.results'),
-            F.interface({ name: F.string(), value: TestSuccess(F) }, 'Group.results')
+            F.interface({ name: F.string(), value: TestError.Union(F) }, ''),
+            F.interface({ name: F.string(), value: TestSuccess(F) }, '')
           )
         ),
       },
-      'GroupError'
+      ''
     )
   ),
 });
@@ -169,7 +166,14 @@ export const SuiteError = makeUnion(summon)('code')({
 
 export type SuiteError = TypeOf<typeof SuiteError>;
 
-export type SuiteResult = Either<SuiteError['Union'], readonly Named<TestUnitSuccess['Union']>[]>;
+export const SuiteResult = summon((F) =>
+  F.either(
+    SuiteError.Union(F),
+    F.array(F.interface({ name: F.string(), value: TestUnitSuccess.Union(F) }, ''))
+  )
+);
+
+export type SuiteResult = AType<typeof SuiteResult>;
 
 export type ConcurrencyConfig =
   | { readonly type: 'parallel' }
