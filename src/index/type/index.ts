@@ -21,7 +21,6 @@ type AppEnv = object;
 const { summon } = summonFor<AppEnv>({});
 
 export type { Assert, Named, ShardingError, SuiteError, TestUnit };
-
 export { named, shardingError, suiteError };
 
 export const Change = summon((F) =>
@@ -175,7 +174,14 @@ export const TestUnitError = makeUnion(summon)('code')({
 
 export type TestUnitError = TypeOf<typeof TestUnitError>;
 
-export type TestUnitResult = Either<Named<TestUnitError['Union']>, Named<TestUnitSuccess['Union']>>;
+export const TestUnitResult = summon((F) =>
+  F.either(
+    F.interface({ name: F.string(), value: TestUnitError.Union(F) }, ''),
+    F.interface({ name: F.string(), value: TestUnitSuccess.Union(F) }, '')
+  )
+);
+
+export type TestUnitResult = AType<typeof TestUnitResult>;
 
 export type SuiteResult = Either<SuiteError.Union, readonly Named<TestUnitSuccess['Union']>[]>;
 
