@@ -15,20 +15,14 @@ const getShardOnIndex =
       shards,
       readonlyArray.lookup(index - 1),
       either.fromOption(() =>
-        ShardingError.as.ShardIndexOutOfBound({
-          index,
-          shardCount: readonlyArray.size(shards),
-        })
+        ShardingError.as.ShardIndexOutOfBound({ index, shardCount: readonlyArray.size(shards) })
       )
     );
 
 const validateTestShards = (tests: {
   readonly beforeSharding: readonly Named<TestUnit>[];
   readonly afterSharding: readonly (readonly Named<TestUnit>[])[];
-}): Either<
-  ShardingError,
-  readonly (readonly Named<TestUnit>[])[]
-> =>
+}): Either<ShardingError, readonly (readonly Named<TestUnit>[])[]> =>
   pipe(
     {
       beforeSharding: readonlyArray.size(tests.beforeSharding),

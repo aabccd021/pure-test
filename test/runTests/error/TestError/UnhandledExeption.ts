@@ -23,10 +23,7 @@ const caseToTest = (tc: Case) =>
           results: [
             either.left({
               name: 'Unhandled exception test',
-              value: {
-                code: 'TestError' as const,
-                value: tc.testError,
-              },
+              value: { code: 'TestError' as const, value: tc.testError },
             }),
           ],
         })

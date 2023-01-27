@@ -41,9 +41,7 @@ const runGroup = (group: Group) =>
     task.map(eitherArrayIsAllRight)
   );
 
-const runTestUnit = (
-  testUnit: TestUnit
-): TaskEither<TestUnitError, TestUnitSuccess> =>
+const runTestUnit = (testUnit: TestUnit): TaskEither<TestUnitError, TestUnitSuccess> =>
   match(testUnit)
     .with(
       { unit: 'Test' },

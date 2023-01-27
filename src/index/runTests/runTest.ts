@@ -23,19 +23,18 @@ const runWithRetry =
   <L, R>(te: TaskEither<L, R>) =>
     retrying(retryPolicy, () => te, either.isLeft);
 
-const serializeUnhandledException: <R>(
-  te: TaskEither<unknown, R>
-) => TaskEither<TestError, R> = taskEither.orElseW((exception) =>
-  pipe(
-    exception,
-    serializeError,
-    task.map((serialized) =>
-      either.left(
-        TestError.as.UnhandledException({ exception: { value: exception, serialized } })
+const serializeUnhandledException: <R>(te: TaskEither<unknown, R>) => TaskEither<TestError, R> =
+  taskEither.orElseW((exception) =>
+    pipe(
+      exception,
+      serializeError,
+      task.map((serialized) =>
+        either.left(
+          TestError.as.UnhandledException({ exception: { value: exception, serialized } })
+        )
       )
     )
-  )
-);
+  );
 
 type TimeElapsed<T> = { readonly timeElapsedMs: number; readonly result: T };
 

@@ -12,9 +12,7 @@ export const getIndexFromArgs = (provider: GetShardIndexFromArgs): GetShardIndex
       pipe(
         shardIndexStr,
         std.number.fromString,
-        either.fromOption(() =>
-          ShardingError.as.ShardIndexIsNotANumber({ value: shardIndexStr })
-        )
+        either.fromOption(() => ShardingError.as.ShardIndexIsNotANumber({ value: shardIndexStr }))
       )
     )
   );

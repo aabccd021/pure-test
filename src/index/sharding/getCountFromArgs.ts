@@ -12,9 +12,7 @@ export const getCountFromArgs = (provider: GetShardCountFromArgs): GetShardCount
       pipe(
         shardCountStr,
         std.number.fromString,
-        either.fromOption(() =>
-          ShardingError.as.ShardCountIsNotANumber({ value: shardCountStr })
-        )
+        either.fromOption(() => ShardingError.as.ShardCountIsNotANumber({ value: shardCountStr }))
       )
     )
   );
