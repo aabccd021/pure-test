@@ -7,18 +7,18 @@ import type { TypeOf } from 'make-union-morphic-ts';
 import { makeUnion } from 'make-union-morphic-ts';
 
 import type * as Assert from './assert';
-import type { Named } from './named';
-import * as named from './named';
 import type * as TestUnit from './testUnit';
-
-export * as taskEither from './taskEither';
 
 type AppEnv = object;
 
 const { summon } = summonFor<AppEnv>({});
 
-export type { Assert, Named, TestUnit };
-export { named };
+export type { Assert, TestUnit };
+
+export type Named<T> = {
+  readonly name: string;
+  readonly value: T;
+};
 
 export const Change = summon((F) =>
   F.interface({ type: F.keysOf({ '-': null, '+': null, '0': null }), value: F.string() }, '')
