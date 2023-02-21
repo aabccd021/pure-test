@@ -6,6 +6,7 @@
     "lib": [
       "esnext"
     ],
+    "skipLibCheck": true,
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
