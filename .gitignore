@@ -1,4 +1,7 @@
 node_modules
 .direnv
-dist
 coverage
+cjs
+esm
+tsconfig.dist.json
+test-result.json

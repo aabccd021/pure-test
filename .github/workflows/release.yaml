@@ -17,18 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: chimeraant/dev@v1.3.3
-      - run: pnpm lint
+      - run: pnpm lint:full
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chimeraant/dev@v1.3.3
+      - run: pnpm build
 
   release:
     needs: [
       test,
-      lint 
+      lint,
+      build
     ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: chimeraant/dev@v1.3.3
-      - run: tsup
+      - run: pnpm build
       - run: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
