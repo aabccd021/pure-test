@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "lib": [
       "esnext"
     ],
+    "skipLibCheck": true,
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
@@ -14,12 +15,22 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "skipLibCheck": true,
+    "paths": {
+      "@src": [
+        "src/index/index.ts"
+      ],
+      "@src/node18": [
+        "src/node18.ts"
+      ]
+    },
     "strict": true,
     "target": "esnext"
   },
   "include": [
     "src",
     "test"
-  ]
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
 }

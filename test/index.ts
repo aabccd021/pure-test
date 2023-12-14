@@ -1,20 +1,22 @@
-import { readonlyArray } from 'fp-ts';
+import * as src from '@src';
+import { env } from '@src/node18';
+import { taskEither } from 'fp-ts';
 import { pipe } from 'fp-ts/function';
 
-import * as src from '../src';
-import * as srcNode from '../src/node';
-import * as exit from './exitF';
-import * as logErrorDetails from './logErrorDetailsF';
-import * as primitive from './primitive';
+import * as assert from './assert';
+import * as postTest from './postTest';
+import * as preTest from './preTest';
 import * as runTests from './runTests';
-import * as timeout from './timeout';
+import * as sharding from './sharding';
+import * as test from './test';
 
-const tests = [logErrorDetails.tests, exit.tests, timeout.tests, primitive.tests, runTests.tests];
+const tests = src.scope({ assert, postTest, preTest, runTests, test, sharding });
 
 export const main = pipe(
   tests,
-  readonlyArray.flatten,
+  taskEither.right,
+  src.preTest.throwOnDuplicateTestName,
   src.runTests({}),
-  src.logErrorDetails,
-  srcNode.exit
+  src.postTest.logResult,
+  src.postTest.exit(env)
 );
